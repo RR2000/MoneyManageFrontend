@@ -1,0 +1,22 @@
+<table>
+  <thead>
+  <tr>
+    <th>Date</th>
+    <th>Description</th>
+    <th *ngFor="let column of columns">{{ column }}</th>
+  </tr>
+  </thead>
+  <tbody>
+  <ng-container *ngFor="let row of accountsData">
+    <ng-container *ngFor="let transaction of row.transactions">
+      <tr>
+        <td>{{ transaction.completedDate }}</td>
+        <td>{{ transaction.description }}</td>
+        <td *ngFor="let column of columns">
+          <ng-container *ngIf="row.account === column">{{ transaction.amount }}</ng-container>
+        </td>
+      </tr>
+    </ng-container>
+  </ng-container>
+  </tbody>
+</table>
