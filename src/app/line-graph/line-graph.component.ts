@@ -1,15 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {Component, OnInit} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
 import Chart from 'chart.js/auto';
 
-interface ValueDatePair {
-  date: string;
-  value: number;
-}
-
-interface AccountSummary {
-  accountName: string;
-  summary: ValueDatePair[];
+interface TransactionDto {
+  account: string;
+  completedDate: string;
+  cumulativeAmount: number;
 }
 
 @Component({
@@ -20,41 +16,40 @@ interface AccountSummary {
 })
 export class LineGraphComponent implements OnInit {
   public chart: any;
+  public transactions: TransactionDto[] = [];
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+  }
 
   ngOnInit(): void {
-    // Make API request and update chart
     this.getDataAndRenderChart();
   }
 
   getDataAndRenderChart() {
-    const fromTimestamp = '2024-02-27 00:00:00.000';
-    const toTimestamp = '2024-03-19 23:59:59.999';
-    const apiUrl = `http://localhost:8080/api/transactions/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
+    const fromTimestamp = '2024-03-01 00:00:00.000';
+    const toTimestamp = '2024-03-29 23:59:59.999';
+    const accountName = 'Revolut_Current'; // Add accountName here
+    const apiUrl = `http://localhost:8080/api/transactions/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
 
-    this.http.get<AccountSummary[]>(apiUrl).subscribe((data) => {
+    this.http.get<TransactionDto[]>(apiUrl).subscribe((data) => {
       console.log("Data received:", data);
-      const labels = data[0].summary.map(item => item.date); // Assuming all summaries have the same dates
-      const datasets = this.processDataForChart(data);
-      console.log("Labels:", labels);
-      this.updateChart(labels, datasets);
+      this.transactions = data;
+      this.renderChart();
     });
   }
 
-  processDataForChart(data: AccountSummary[]): any[] {
-    const datasets = [];
-    const accounts = ["Revolut_Current", "Revolut_Savings", "Revolut_Pocket"];
+  renderChart() {
+    const labels = this.transactions.map(transaction => transaction.completedDate);
+    const datasets = this.processDataForChart();
+    console.log("Labels:", labels);
+    this.updateChart(labels, datasets);
+  }
 
-    for (const account of accounts) {
-      const dataPoints = data.find(summary => summary.accountName === account)?.summary.map(pair => pair.value) || [];
-      const dataset = {
-        label: account,
-        data: dataPoints
-      };
-      datasets.push(dataset);
-    }
-
+  processDataForChart(): any[] {
+    const datasets = [{
+      label: 'Cumulative Amount',
+      data: this.transactions.map(transaction => transaction.cumulativeAmount)
+    }];
     return datasets;
   }
 
@@ -63,8 +58,8 @@ export class LineGraphComponent implements OnInit {
     if (!this.chart) {
       this.chart = new Chart("MyChart", {
         type: 'line',
-        data: { labels, datasets },
-        options: { aspectRatio: 2.5 }
+        data: {labels, datasets},
+        options: {aspectRatio: 2.5}
       });
     } else {
       this.chart.data.labels = labels;
