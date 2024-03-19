@@ -17,7 +17,7 @@ import {HttpClient} from "@angular/common/http";
   styleUrl: './main-component.component.css'
 })
 export class MainComponentComponent implements OnInit {
-  accountsData: { account: string; transactions: TransactionDto[] }[] = [];
+  accountsData: { [account: string]: TransactionDto[] } = {};
 
   constructor(private http: HttpClient) {
   }
@@ -35,10 +35,10 @@ export class MainComponentComponent implements OnInit {
     accountNames.forEach(accountName => {
       const apiUrl = `${apiUrlPrefix}${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
       this.http.get<TransactionDto[]>(apiUrl).subscribe((data: TransactionDto[]) => {
-        this.accountsData = [...this.accountsData, {
-          account: accountName,
-          transactions: data
-        }]
+        this.accountsData = {
+          ...this.accountsData,
+          [accountName]: data
+        };
       });
     });
   }

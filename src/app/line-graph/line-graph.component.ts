@@ -10,11 +10,11 @@ import {TransactionDto} from "../../models/transaction.dto";
 })
 export class LineGraphComponent implements OnChanges {
   public chart: any;
-  @Input() accountsData: { account: string; transactions: TransactionDto[] }[] = [];
+  @Input() accountsData: { [key: string]: TransactionDto[] } = {};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['accountsData'] && this.accountsData) {
-      console.log("changed in graph: " + JSON.stringify(changes['accountsData']));
+      console.log("changed in graph: " + JSON.stringify(this.accountsData));
       this.renderChart();
     }
   }
@@ -30,7 +30,7 @@ export class LineGraphComponent implements OnChanges {
   private getLabels(): string[] {
     const labelsSet = new Set<string>();
     Object.values(this.accountsData).forEach(transactions => {
-      transactions.transactions.forEach(transaction => {
+      transactions.forEach(transaction => {
         labelsSet.add(transaction.completedDate.substring(0, 10));
       });
     });
@@ -39,11 +39,10 @@ export class LineGraphComponent implements OnChanges {
 
   private processDataForChart(): any[] {
     const datasets: any[] = [];
-    let i = 0;
-    Object.values(this.accountsData).forEach(transactions => {
-      const dataPoints = transactions.transactions.map(transaction => transaction.cumulativeAmount)
+    Object.keys(this.accountsData).forEach(accountName => {
+      const dataPoints = this.accountsData[accountName].map(transaction => transaction.cumulativeAmount);
       datasets.push({
-        label: transactions.account,
+        label: accountName,
         data: dataPoints
       });
     });
