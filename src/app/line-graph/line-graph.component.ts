@@ -1,12 +1,6 @@
-import {Component, OnInit} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import Chart from 'chart.js/auto';
-
-interface TransactionDto {
-  account: string;
-  completedDate: string;
-  cumulativeAmount: number;
-}
+import {TransactionDto} from "../../models/transaction.dto";
 
 @Component({
   selector: 'app-line-graph',
@@ -14,46 +8,49 @@ interface TransactionDto {
   standalone: true,
   styleUrls: ['./line-graph.component.css']
 })
-export class LineGraphComponent implements OnInit {
+export class LineGraphComponent implements OnChanges {
   public chart: any;
-  public transactions: TransactionDto[] = [];
+  @Input() accountsData: { account: string; transactions: TransactionDto[] }[] = [];
 
-  constructor(private http: HttpClient) {
-  }
-
-  ngOnInit(): void {
-    this.getDataAndRenderChart();
-  }
-
-  getDataAndRenderChart() {
-    const fromTimestamp = '2024-03-01 00:00:00.000';
-    const toTimestamp = '2024-03-29 23:59:59.999';
-    const accountName = 'Revolut_Current'; // Add accountName here
-    const apiUrl = `http://localhost:8080/api/transactions/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
-
-    this.http.get<TransactionDto[]>(apiUrl).subscribe((data) => {
-      console.log("Data received:", data);
-      this.transactions = data;
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['accountsData'] && this.accountsData) {
+      console.log("changed in graph: " + JSON.stringify(changes['accountsData']));
       this.renderChart();
-    });
+    }
   }
 
-  renderChart() {
-    const labels = this.transactions.map(transaction => transaction.completedDate);
+  public renderChart() {
+    const labels = this.getLabels();
     const datasets = this.processDataForChart();
     console.log("Labels:", labels);
+    console.log("Datasets:", datasets);
     this.updateChart(labels, datasets);
   }
 
-  processDataForChart(): any[] {
-    const datasets = [{
-      label: 'Cumulative Amount',
-      data: this.transactions.map(transaction => transaction.cumulativeAmount)
-    }];
+  private getLabels(): string[] {
+    const labelsSet = new Set<string>();
+    Object.values(this.accountsData).forEach(transactions => {
+      transactions.transactions.forEach(transaction => {
+        labelsSet.add(transaction.completedDate.substring(0, 10));
+      });
+    });
+    return Array.from(labelsSet);
+  }
+
+  private processDataForChart(): any[] {
+    const datasets: any[] = [];
+    let i = 0;
+    Object.values(this.accountsData).forEach(transactions => {
+      const dataPoints = transactions.transactions.map(transaction => transaction.cumulativeAmount)
+      datasets.push({
+        label: transactions.account,
+        data: dataPoints
+      });
+    });
     return datasets;
   }
 
-  updateChart(labels: string[], datasets: any[]) {
+  private updateChart(labels: string[], datasets: any[]) {
     console.log("updateChart labels:", labels);
     if (!this.chart) {
       this.chart = new Chart("MyChart", {
