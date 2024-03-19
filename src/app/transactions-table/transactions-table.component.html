@@ -7,13 +7,13 @@
   </tr>
   </thead>
   <tbody>
-  <ng-container *ngFor="let row of accountsData">
-    <ng-container *ngFor="let transaction of row.transactions">
+  <ng-container *ngFor="let accountName of Object.keys(accountsData)">
+    <ng-container *ngFor="let transaction of accountsData[accountName]">
       <tr>
         <td>{{ transaction.completedDate }}</td>
         <td>{{ transaction.description }}</td>
         <td *ngFor="let column of columns">
-          <ng-container *ngIf="row.account === column">{{ transaction.amount }}</ng-container>
+          <ng-container *ngIf="accountName === column">{{ transaction.amount }}</ng-container>
         </td>
       </tr>
     </ng-container>
