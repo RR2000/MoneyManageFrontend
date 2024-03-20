@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { TransactionDto } from "../../models/transaction.dto";
 import {NgForOf, NgIf} from "@angular/common";
+import {GraphPointsDto} from "../../models/graph-points.dto";
 
 @Component({
   selector: 'app-transactions-table',
