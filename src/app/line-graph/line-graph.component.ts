@@ -14,7 +14,7 @@ export class LineGraphComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['graphPoints'] && this.graphPoints && Object.keys(this.graphPoints).length > 0) {
-      console.log(JSON.stringify(this.graphPoints.xlabels));
+      console.log(JSON.stringify(this.graphPoints.data["Revolut_Current"]));
       this.renderChart();
     }
   }

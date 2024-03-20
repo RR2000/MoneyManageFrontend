@@ -1,6 +1,6 @@
 export interface TransactionDto {
   account: string;
-  completedDate: string;
+  datetime: string;
   description: string;
   cumulativeAmount: number;
   amount: number;

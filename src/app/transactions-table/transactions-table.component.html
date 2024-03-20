@@ -7,16 +7,18 @@
   </tr>
   </thead>
   <tbody>
-  <ng-container *ngFor="let accountName of Object.keys(accountsData)">
-    <ng-container *ngFor="let transaction of accountsData[accountName]">
-      <tr>
-        <td>{{ transaction.completedDate }}</td>
-        <td>{{ transaction.description }}</td>
-        <td *ngFor="let column of columns">
-          <ng-container *ngIf="accountName === column">{{ transaction.amount }}</ng-container>
-        </td>
-      </tr>
-    </ng-container>
+  <!-- Iterate over each transaction, ordered by datetime -->
+  <ng-container *ngFor="let transaction of sortedTransactions">
+    <tr>
+      <td>{{ transaction.datetime }}</td>
+      <td>{{ transaction.description }}</td>
+      <!-- For each column, check if the transaction belongs to that column -->
+      <td *ngFor="let column of columns">
+        <ng-container *ngIf="accountsData[column].includes(transaction)">
+          {{ transaction.amount }}
+        </ng-container>
+      </td>
+    </tr>
   </ng-container>
   </tbody>
 </table>
