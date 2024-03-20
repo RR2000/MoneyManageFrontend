@@ -1,6 +1,6 @@
-import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import Chart from 'chart.js/auto';
-import {TransactionDto} from "../../models/transaction.dto";
+import {GraphPointsDto} from "../../models/graph-points.dto";
 
 @Component({
   selector: 'app-line-graph',
@@ -10,52 +10,47 @@ import {TransactionDto} from "../../models/transaction.dto";
 })
 export class LineGraphComponent implements OnChanges {
   public chart: any;
-  @Input() accountsData: { [key: string]: TransactionDto[] } = {};
+  @Input() graphPoints: GraphPointsDto = <GraphPointsDto>{};
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['accountsData'] && this.accountsData) {
-      console.log("changed in graph: " + JSON.stringify(this.accountsData));
+    if (changes['graphPoints'] && this.graphPoints && Object.keys(this.graphPoints).length > 0) {
+      console.log(JSON.stringify(this.graphPoints.xlabels));
       this.renderChart();
     }
   }
 
   public renderChart() {
-    const labels = this.getLabels();
+    const labels = this.graphPoints.xlabels;
     const datasets = this.processDataForChart();
-    console.log("Labels:", labels);
-    console.log("Datasets:", datasets);
+
     this.updateChart(labels, datasets);
   }
 
-  private getLabels(): string[] {
-    const labelsSet = new Set<string>();
-    Object.values(this.accountsData).forEach(transactions => {
-      transactions.forEach(transaction => {
-        labelsSet.add(transaction.completedDate.substring(0, 10));
-      });
-    });
-    return Array.from(labelsSet);
-  }
-
   private processDataForChart(): any[] {
-    const datasets: any[] = [];
-    Object.keys(this.accountsData).forEach(accountName => {
-      const dataPoints = this.accountsData[accountName].map(transaction => transaction.cumulativeAmount);
+    const datasets = [];
+
+    for (const lineName of this.graphPoints.lineNames) {
+      const dataPoints = [];
+
+      for (const label of this.graphPoints.xlabels) {
+        dataPoints.push(this.graphPoints.data[lineName][label] || null);
+      }
+
       datasets.push({
-        label: accountName,
+        label: lineName,
         data: dataPoints
       });
-    });
+    }
+
     return datasets;
   }
 
   private updateChart(labels: string[], datasets: any[]) {
-    console.log("updateChart labels:", labels);
     if (!this.chart) {
       this.chart = new Chart("MyChart", {
         type: 'line',
-        data: {labels, datasets},
-        options: {aspectRatio: 2.5}
+        data: { labels, datasets },
+        options: { aspectRatio: 2.5 }
       });
     } else {
       this.chart.data.labels = labels;
