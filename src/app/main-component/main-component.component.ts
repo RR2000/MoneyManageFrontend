@@ -1,10 +1,11 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {LineGraphComponent} from "../line-graph/line-graph.component";
-import {NgIf} from "@angular/common";
+import {CommonModule, NgIf} from "@angular/common";
 import {TransactionsTableComponent} from "../transactions-table/transactions-table.component";
 import {TransactionDto} from "../../models/transaction.dto";
 import {HttpClient} from "@angular/common/http";
 import {GraphPointsDto} from "../../models/graph-points.dto";
+import {MatTableModule} from "@angular/material/table";
 
 @Component({
   selector: 'app-main-component',
@@ -12,7 +13,9 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
   imports: [
     LineGraphComponent,
     NgIf,
-    TransactionsTableComponent
+    TransactionsTableComponent,
+    MatTableModule,
+    CommonModule
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.css'
