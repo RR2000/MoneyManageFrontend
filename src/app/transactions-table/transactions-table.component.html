@@ -1,24 +1,30 @@
-<table>
-  <thead>
-  <tr>
-    <th>Date</th>
-    <th>Description</th>
-    <th *ngFor="let column of columns">{{ column }}</th>
-  </tr>
-  </thead>
-  <tbody>
-  <!-- Iterate over each transaction, ordered by datetime -->
-  <ng-container *ngFor="let transaction of sortedTransactions">
-    <tr>
-      <td>{{ transaction.datetime }}</td>
-      <td>{{ transaction.description }}</td>
-      <!-- For each column, check if the transaction belongs to that column -->
-      <td *ngFor="let column of columns">
-        <ng-container *ngIf="accountsData[column].includes(transaction)">
-          {{ transaction.amount }}
-        </ng-container>
-      </td>
-    </tr>
+<table mat-table [dataSource]="sortedTransactions" class="mat-elevation-z8">
+
+  <!-- Date Column -->
+  <ng-container matColumnDef="datetime">
+    <th mat-header-cell *matHeaderCellDef>Date</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.datetime }}</td>
   </ng-container>
-  </tbody>
+
+  <!-- Description Column -->
+  <ng-container matColumnDef="description">
+    <th mat-header-cell *matHeaderCellDef>Description</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.description }}</td>
+  </ng-container>
+
+  <!-- Dynamically Generated Columns -->
+  <ng-container *ngFor="let column of columns" [matColumnDef]="column">
+    <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+    <td mat-cell *matCellDef="let transaction">
+      <ng-container *ngIf="accountsData[column].includes(transaction)">
+        {{ transaction.amount }}
+      </ng-container>
+    </td>
+  </ng-container>
+
+  <!-- Header row -->
+  <tr mat-header-row *matHeaderRowDef="getHeaderColumns()"></tr>
+
+  <!-- Data rows -->
+  <tr mat-row *matRowDef="let row; columns: getHeaderColumns();"></tr>
 </table>
