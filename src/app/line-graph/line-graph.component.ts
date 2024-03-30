@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import Chart from 'chart.js/auto';
 import {GraphPointsDto} from "../../models/graph-points.dto";
 
@@ -24,6 +24,7 @@ export class LineGraphComponent implements OnChanges {
     const datasets = this.processDataForChart();
 
     this.updateChart(labels, datasets);
+
   }
 
   private processDataForChart(): any[] {
@@ -49,8 +50,8 @@ export class LineGraphComponent implements OnChanges {
     if (!this.chart) {
       this.chart = new Chart("MyChart", {
         type: 'line',
-        data: { labels, datasets },
-        options: { aspectRatio: 2.5 }
+        data: {labels, datasets},
+        options: {aspectRatio: 2.5}
       });
     } else {
       this.chart.data.labels = labels;
