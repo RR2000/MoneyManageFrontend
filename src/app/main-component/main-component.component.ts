@@ -34,23 +34,24 @@ export class MainComponentComponent implements OnInit {
   getDataAndRenderComponents() {
     const fromTimestamp = '2024-02-01 00:00:00.000';
     const toTimestamp = '2024-03-20 23:59:59.999';
-    const accountNames = ['Revolut_Current', 'Revolut_Savings', 'Revolut_Pocket']; // Define all account names
     const apiUrlPrefix = 'http://localhost:8080/api/banks/transactions/';
-    const newApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
+    const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
+    const accountsListApi = `${apiUrlPrefix}accounts`;
 
-    this.http.get<GraphPointsDto>(newApi).subscribe((data: GraphPointsDto) => {
+    this.http.get<GraphPointsDto>(graphDataApi).subscribe((data: GraphPointsDto) => {
       this.graphPoints = data;
     });
 
-
-    accountNames.forEach(accountName => {
-      const apiUrl = `${apiUrlPrefix}table/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
-      this.http.get<TransactionDto[]>(apiUrl).subscribe((data: TransactionDto[]) => {
-        this.accountsData = {
-          ...this.accountsData,
-          [accountName]: data
-        };
+    this.http.get<string[]>(accountsListApi).subscribe((accountNames: string[]) => {
+      accountNames.forEach(accountName => {
+        const accountTableApi = `${apiUrlPrefix}table/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
+        this.http.get<TransactionDto[]>(accountTableApi).subscribe((data: TransactionDto[]) => {
+          this.accountsData = {
+            ...this.accountsData,
+            [accountName]: data
+          };
+        });
       });
-    });
+    })
   }
 }
