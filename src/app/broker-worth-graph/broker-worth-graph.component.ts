@@ -3,18 +3,17 @@ import Chart from 'chart.js/auto';
 import {GraphPointsDto} from "../../models/graph-points.dto";
 
 @Component({
-  selector: 'app-line-graph',
-  templateUrl: './line-graph.component.html',
+  selector: 'broker-worth-graph',
+  templateUrl: './broker-worth-graph.component.html',
   standalone: true,
-  styleUrls: ['./line-graph.component.css']
+  styleUrls: ['./broker-worth-graph.component.css']
 })
-export class LineGraphComponent implements OnChanges {
+export class LineGraph2Component implements OnChanges {
   public chart: any;
   @Input() graphPoints: GraphPointsDto = <GraphPointsDto>{};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['graphPoints'] && this.graphPoints && Object.keys(this.graphPoints).length > 0) {
-      console.log(JSON.stringify(this.graphPoints.data["Revolut_Current"]));
       this.renderChart();
     }
   }
@@ -22,7 +21,7 @@ export class LineGraphComponent implements OnChanges {
   public renderChart() {
     const labels = this.graphPoints.xlabels;
     const datasets = this.processDataForChart();
-
+    console.log(labels)
     this.updateChart(labels, datasets);
 
   }
@@ -48,7 +47,7 @@ export class LineGraphComponent implements OnChanges {
 
   private updateChart(labels: string[], datasets: any[]) {
     if (!this.chart) {
-      this.chart = new Chart("MyChart", {
+      this.chart = new Chart("MyChart2", {
         type: 'line',
         data: {labels, datasets},
         options: {aspectRatio: 2.5}

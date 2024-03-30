@@ -1,3 +1,21 @@
-<app-line-graph [graphPoints]="graphPoints"></app-line-graph>
-<app-transactions-table [accountsData]="accountsData"></app-transactions-table>
+<mat-tab-group>
+  <!-- First tab -->
+  <mat-tab label="Tab 0">
+    <ng-template matTabContent>
+      <app-transactions-table [accountsData]="accountsData"></app-transactions-table>
+    </ng-template>
+  </mat-tab>
 
+  <mat-tab label="Tab 1">
+    <ng-template matTabContent>
+      <app-line-graph [graphPoints]="graphPoints"></app-line-graph>
+    </ng-template>
+  </mat-tab>
+
+  <!-- Second tab -->
+  <mat-tab label="Tab 2">
+    <ng-template matTabContent>
+      <broker-worth-graph [graphPoints]="brokerGraph"></broker-worth-graph>
+    </ng-template>
+  </mat-tab>
+</mat-tab-group>
