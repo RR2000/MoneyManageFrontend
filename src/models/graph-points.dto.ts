@@ -1,5 +1,5 @@
 export interface GraphPointsDto {
-  xlabels: string[];
-  lineNames: string[];
-  data: { [key: string]: { [key: string]: number[] } };
+  graphData: { [key: string]: { [key: string]: number[] } };
+  uniqueLabels: string[];
+  uniqueGraphNames: string[];
 }
