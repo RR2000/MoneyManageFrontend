@@ -14,13 +14,13 @@ export class LineGraphComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['graphPoints'] && this.graphPoints && Object.keys(this.graphPoints).length > 0) {
-      console.log(JSON.stringify(this.graphPoints.data["Revolut_Current"]));
+      console.log(JSON.stringify(this.graphPoints.graphData["Revolut_Current"]));
       this.renderChart();
     }
   }
 
   public renderChart() {
-    const labels = this.graphPoints.xlabels;
+    const labels = this.graphPoints.uniqueLabels;
     const datasets = this.processDataForChart();
 
     this.updateChart(labels, datasets);
@@ -30,11 +30,11 @@ export class LineGraphComponent implements OnChanges {
   private processDataForChart(): any[] {
     const datasets = [];
 
-    for (const lineName of this.graphPoints.lineNames) {
+    for (const lineName of this.graphPoints.uniqueGraphNames) {
       const dataPoints = [];
 
-      for (const label of this.graphPoints.xlabels) {
-        dataPoints.push(this.graphPoints.data[lineName][label] || null);
+      for (const label of this.graphPoints.uniqueLabels) {
+        dataPoints.push(this.graphPoints.graphData[lineName][label] || null);
       }
 
       datasets.push({

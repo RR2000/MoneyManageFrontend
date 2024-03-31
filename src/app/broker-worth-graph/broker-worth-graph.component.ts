@@ -19,7 +19,7 @@ export class LineGraph2Component implements OnChanges {
   }
 
   public renderChart() {
-    const labels = this.graphPoints.xlabels;
+    const labels = this.graphPoints.uniqueLabels;
     const datasets = this.processDataForChart();
     console.log(labels)
     this.updateChart(labels, datasets);
@@ -29,11 +29,11 @@ export class LineGraph2Component implements OnChanges {
   private processDataForChart(): any[] {
     const datasets = [];
 
-    for (const lineName of this.graphPoints.lineNames) {
+    for (const lineName of this.graphPoints.uniqueGraphNames) {
       const dataPoints = [];
 
-      for (const label of this.graphPoints.xlabels) {
-        dataPoints.push(this.graphPoints.data[lineName][label] || null);
+      for (const label of this.graphPoints.uniqueLabels) {
+        dataPoints.push(this.graphPoints.graphData[lineName][label] || null);
       }
 
       datasets.push({
