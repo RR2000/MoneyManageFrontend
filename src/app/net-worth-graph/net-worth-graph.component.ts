@@ -3,12 +3,12 @@ import Chart from 'chart.js/auto';
 import {GraphPointsDto} from "../../models/graph-points.dto";
 
 @Component({
-  selector: 'broker-worth-graph',
-  templateUrl: './broker-worth-graph.component.html',
+  selector: 'net-worth-graph',
+  templateUrl: './net-worth-graph.component.html',
   standalone: true,
-  styleUrls: ['./broker-worth-graph.component.css']
+  styleUrls: ['./net-worth-graph.component.css']
 })
-export class LineGraph2Component implements OnChanges {
+export class LineGraph3Component implements OnChanges {
   public chart: any;
   @Input() graphPoints: GraphPointsDto = <GraphPointsDto>{};
 
@@ -53,7 +53,7 @@ export class LineGraph2Component implements OnChanges {
     }));
 
     if (!this.chart) {
-      this.chart = new Chart("MyChart2", {
+      this.chart = new Chart("NetWorthGraph", {
         type: 'line',
         data: {labels, datasets: updatedDatasets}, // Use updated datasets here
         options: {aspectRatio: 2.5}

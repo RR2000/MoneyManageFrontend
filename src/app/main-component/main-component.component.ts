@@ -8,6 +8,7 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
 import {MatTableModule} from "@angular/material/table";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
 import {LineGraph2Component} from "../broker-worth-graph/broker-worth-graph.component";
+import {LineGraph3Component} from "../net-worth-graph/net-worth-graph.component";
 
 @Component({
   selector: 'app-main-component',
@@ -21,7 +22,9 @@ import {LineGraph2Component} from "../broker-worth-graph/broker-worth-graph.comp
     MatTab,
     MatTabGroup,
     LineGraph2Component,
-    MatTabContent
+    MatTabContent,
+    LineGraph2Component,
+    LineGraph3Component
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.css'
@@ -30,6 +33,7 @@ export class MainComponentComponent implements OnInit {
   accountsData: { [account: string]: TransactionDto[] } = {};
   graphPoints: GraphPointsDto = <GraphPointsDto>{};
   brokerGraph: GraphPointsDto = <GraphPointsDto>{};
+  netWorthGraph: GraphPointsDto = <GraphPointsDto>{};
 
   constructor(private http: HttpClient) {
   }
@@ -44,6 +48,7 @@ export class MainComponentComponent implements OnInit {
     const apiUrlPrefix = 'http://localhost:8080/api/banks/transactions/';
     const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
     const brokerGraph: string = "http://localhost:8080/api/brokers/transactions/worth/graph";
+    const netWorth: string = "http://localhost:8080/api/brokers/transactions/netWorth/graph";
     const accountsListApi = `${apiUrlPrefix}accounts`;
 
     this.http.get<GraphPointsDto>(graphDataApi).subscribe((data: GraphPointsDto) => {
@@ -52,6 +57,10 @@ export class MainComponentComponent implements OnInit {
 
     this.http.get<GraphPointsDto>(brokerGraph).subscribe((data: GraphPointsDto) => {
       this.brokerGraph = data;
+    });
+
+    this.http.get<GraphPointsDto>(netWorth).subscribe((data: GraphPointsDto) => {
+      this.netWorthGraph = data;
     });
 
     this.http.get<string[]>(accountsListApi).subscribe((accountNames: string[]) => {
