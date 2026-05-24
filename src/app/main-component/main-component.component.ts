@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {LineGraphComponent} from "../line-graph/line-graph.component";
 import {CommonModule, NgIf} from "@angular/common";
 import {TransactionsTableComponent} from "../transactions-table/transactions-table.component";
@@ -8,7 +8,10 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
 import {MatTableModule} from "@angular/material/table";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
 import {LineGraph2Component} from "../broker-worth-graph/broker-worth-graph.component";
+import {interval, Subscription} from "rxjs";
 import {environment} from "../../environments/environment";
+
+const BROKER_GRAPH_REFRESH_MS = 5 * 60 * 1000;
 
 @Component({
   selector: 'app-main-component',
@@ -27,16 +30,34 @@ import {environment} from "../../environments/environment";
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.css'
 })
-export class MainComponentComponent implements OnInit {
+export class MainComponentComponent implements OnInit, OnDestroy {
   accountsData: { [account: string]: TransactionDto[] } = {};
   graphPoints: GraphPointsDto = <GraphPointsDto>{};
   brokerGraph: GraphPointsDto = <GraphPointsDto>{};
+
+  private brokerRefreshSubscription?: Subscription;
 
   constructor(private http: HttpClient) {
   }
 
   ngOnInit(): void {
     this.getDataAndRenderComponents();
+    this.brokerRefreshSubscription = interval(BROKER_GRAPH_REFRESH_MS).subscribe(() => {
+      this.refreshBrokerGraph();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.brokerRefreshSubscription?.unsubscribe();
+  }
+
+  refreshBrokerGraph() {
+    this.http.get<GraphPointsDto>(`${environment.apiBaseUrl}/api/brokers/transactions/worth/graph`).subscribe({
+      next: (data: GraphPointsDto) => {
+        this.brokerGraph = data;
+      },
+      error: (err) => console.error('Failed to refresh broker graph', err)
+    });
   }
 
   private pad(value: number): string {
@@ -60,7 +81,6 @@ export class MainComponentComponent implements OnInit {
     const toTimestamp = this.endOfDay(today);
     const apiUrlPrefix = `${environment.apiBaseUrl}/api/banks/transactions/`;
     const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
-    const brokerGraph: string = `${environment.apiBaseUrl}/api/brokers/transactions/worth/graph`;
     const accountsListApi = `${apiUrlPrefix}accounts`;
 
     this.http.get<GraphPointsDto>(graphDataApi).subscribe({
@@ -70,12 +90,7 @@ export class MainComponentComponent implements OnInit {
       error: (err) => console.error('Failed to load bank graph data', err)
     });
 
-    this.http.get<GraphPointsDto>(brokerGraph).subscribe({
-      next: (data: GraphPointsDto) => {
-        this.brokerGraph = data;
-      },
-      error: (err) => console.error('Failed to load broker graph data', err)
-    });
+    this.refreshBrokerGraph();
 
     this.http.get<string[]>(accountsListApi).subscribe({
       next: (accountNames: string[]) => {
