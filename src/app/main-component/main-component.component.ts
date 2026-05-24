@@ -8,6 +8,7 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
 import {MatTableModule} from "@angular/material/table";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
 import {LineGraph2Component} from "../broker-worth-graph/broker-worth-graph.component";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-main-component',
@@ -57,9 +58,9 @@ export class MainComponentComponent implements OnInit {
 
     const fromTimestamp = this.startOfDay(from);
     const toTimestamp = this.endOfDay(today);
-    const apiUrlPrefix = 'http://localhost:8080/api/banks/transactions/';
+    const apiUrlPrefix = `${environment.apiBaseUrl}/api/banks/transactions/`;
     const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
-    const brokerGraph: string = "http://localhost:8080/api/brokers/transactions/worth/graph";
+    const brokerGraph: string = `${environment.apiBaseUrl}/api/brokers/transactions/worth/graph`;
     const accountsListApi = `${apiUrlPrefix}accounts`;
 
     this.http.get<GraphPointsDto>(graphDataApi).subscribe({
