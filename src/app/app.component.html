@@ -1,5 +1,7 @@
-<nav style="padding: 8px 16px; background: #311b92; display: flex; gap: 16px; align-items: center;">
-  <a routerLink="/" style="color: white; text-decoration: none; font-weight: bold;">Dashboard</a>
+<div class="app-toolbar" *ngIf="isLoggedIn()">
+  <span class="app-title">MoneyManage</span>
+  <a routerLink="/" style="color: white; text-decoration: none;">Dashboard</a>
   <a routerLink="/setup" style="color: white; text-decoration: none;">Setup</a>
-</nav>
+  <button (click)="logout()">Logout</button>
+</div>
 <router-outlet></router-outlet>
