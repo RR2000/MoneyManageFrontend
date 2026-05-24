@@ -1,0 +1,86 @@
+<div class="setup-container">
+  <h2>Setup iniziale</h2>
+
+  <mat-stepper orientation="vertical" linear="false">
+
+    <mat-step label="Carica transazioni bancarie">
+      <div class="step-content">
+        <mat-form-field>
+          <mat-label>Banca</mat-label>
+          <mat-select [(ngModel)]="bankName">
+            <mat-option value="Revolut">Revolut</mat-option>
+            <mat-option value="Degiro">Degiro</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="file-row">
+          <label>File CSV</label>
+          <input type="file" accept=".csv" (change)="onBankFileChange($event)"/>
+        </div>
+
+        <div class="actions">
+          <button mat-raised-button color="primary" (click)="uploadBankCsv()" [disabled]="!bankFile || bankUploadLoading">
+            {{ bankUploadLoading ? 'Caricamento...' : 'Upload' }}
+          </button>
+          <button mat-button matStepperNext>Avanti</button>
+        </div>
+
+        <p *ngIf="bankUploadResult" class="result">{{ bankUploadResult }}</p>
+      </div>
+    </mat-step>
+
+    <mat-step label="Carica transazioni broker (Degiro)">
+      <div class="step-content">
+        <div class="file-row">
+          <label>File CSV</label>
+          <input type="file" accept=".csv" (change)="onBrokerFileChange($event)"/>
+        </div>
+
+        <div class="actions">
+          <button mat-button matStepperPrevious>Indietro</button>
+          <button mat-raised-button color="primary" (click)="uploadBrokerCsv()" [disabled]="!brokerFile || brokerUploadLoading">
+            {{ brokerUploadLoading ? 'Caricamento...' : 'Upload' }}
+          </button>
+          <button mat-button matStepperNext>Avanti</button>
+        </div>
+
+        <p *ngIf="brokerUploadResult" class="result">{{ brokerUploadResult }}</p>
+      </div>
+    </mat-step>
+
+    <mat-step label="Imposta saldi attuali">
+      <div class="step-content">
+        <p>Inserisci il saldo attuale per ogni conto per calcolare i valori cumulativi storici.</p>
+
+        <button mat-stroked-button (click)="loadAccounts()" style="margin-bottom: 16px">
+          Carica conti
+        </button>
+
+        <div *ngFor="let account of accounts" class="account-row">
+          <mat-form-field>
+            <mat-label>{{ account }}</mat-label>
+            <input matInput type="number" [(ngModel)]="accountBalances[account]" placeholder="Saldo attuale (€)"/>
+          </mat-form-field>
+          <span *ngIf="cumulativeResults[account]" class="result">{{ cumulativeResults[account] }}</span>
+        </div>
+
+        <div class="actions">
+          <button mat-button matStepperPrevious>Indietro</button>
+          <button mat-raised-button color="primary" (click)="computeAll()" [disabled]="accounts.length === 0 || cumulativeLoading">
+            {{ cumulativeLoading ? 'Elaborazione...' : 'Calcola' }}
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <mat-step label="Completato">
+      <div class="step-content">
+        <p>Setup completato. Puoi ora visualizzare il dashboard.</p>
+        <div class="actions">
+          <button mat-raised-button color="primary" routerLink="/">Vai al Dashboard</button>
+        </div>
+      </div>
+    </mat-step>
+
+  </mat-stepper>
+</div>
