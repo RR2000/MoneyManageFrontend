@@ -9,6 +9,7 @@ import {MatTableModule} from "@angular/material/table";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
 import {LineGraph2Component} from "../broker-worth-graph/broker-worth-graph.component";
 import {RealEstateComponent} from "../real-estate/real-estate.component";
+import {MonteCarloComponent} from "../monte-carlo/monte-carlo.component";
 import {environment} from "../../environments/environment";
 
 @Component({
@@ -24,7 +25,8 @@ import {environment} from "../../environments/environment";
     MatTabGroup,
     LineGraph2Component,
     MatTabContent,
-    RealEstateComponent
+    RealEstateComponent,
+    MonteCarloComponent
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.css'
