@@ -1,0 +1,29 @@
+<div class="mc-container">
+  <h3>Simulazione Monte Carlo — Proiezione portafoglio</h3>
+
+  <div class="controls">
+    <mat-form-field>
+      <mat-label>Anni di proiezione</mat-label>
+      <input matInput type="number" [(ngModel)]="years" min="1" max="50"/>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Numero simulazioni</mat-label>
+      <input matInput type="number" [(ngModel)]="simulations" min="100" max="50000" step="1000"/>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="run()" [disabled]="loading">
+      {{ loading ? 'Elaborazione...' : 'Esegui simulazione' }}
+    </button>
+  </div>
+
+  <p *ngIf="error" class="error">{{ error }}</p>
+
+  <p class="legend-note">
+    <strong>P50</strong> = mediana &nbsp;|&nbsp;
+    <strong>P5–P95</strong> = range di confidenza &nbsp;|&nbsp;
+    Basato sui rendimenti mensili storici del portafoglio
+  </p>
+
+  <canvas id="MonteCarloChart"></canvas>
+</div>
