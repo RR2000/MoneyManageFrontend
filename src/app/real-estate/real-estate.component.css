@@ -1,0 +1,39 @@
+.re-container {
+  padding: 16px;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+table {
+  width: 100%;
+}
+
+.empty {
+  text-align: center;
+  padding: 32px;
+  color: #888;
+}
+
+.form-panel {
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 4px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
