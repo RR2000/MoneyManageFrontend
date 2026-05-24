@@ -1,0 +1,35 @@
+.setup-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.file-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.result {
+  color: green;
+  font-size: 0.9em;
+}
