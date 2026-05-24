@@ -1,0 +1,21 @@
+.mc-container {
+  padding: 16px;
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #f44336;
+}
+
+.legend-note {
+  font-size: 0.85em;
+  color: #555;
+  margin-bottom: 8px;
+}
