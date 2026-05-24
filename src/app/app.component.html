@@ -1,2 +1,5 @@
-<app-main-component></app-main-component>
+<div class="app-toolbar" *ngIf="isLoggedIn()">
+  <span class="app-title">MoneyManage</span>
+  <button (click)="logout()">Logout</button>
+</div>
 <router-outlet></router-outlet>

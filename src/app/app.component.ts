@@ -1,27 +1,28 @@
 import {Component} from '@angular/core';
-import {LineGraphComponent} from "./line-graph/line-graph.component";
-import {TransactionsTableComponent} from "./transactions-table/transactions-table.component";
-import {RouterOutlet} from "@angular/router";
-import {CommonModule, NgIf} from "@angular/common";
-import {MainComponentComponent} from "./main-component/main-component.component";
-import {MatTableModule} from "@angular/material/table";
+import {Router, RouterOutlet} from '@angular/router';
+import {NgIf} from '@angular/common';
+import {AuthService} from './auth/auth.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   standalone: true,
   imports: [
-    LineGraphComponent,
-    TransactionsTableComponent,
     RouterOutlet,
-    NgIf,
-    MainComponentComponent,
-    CommonModule,
-    MatTableModule // Import MatTableModule
-
+    NgIf
   ],
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  constructor(private auth: AuthService, private router: Router) {
+  }
 
+  isLoggedIn(): boolean {
+    return this.auth.isLoggedIn();
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
 }
