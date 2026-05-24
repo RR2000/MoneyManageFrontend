@@ -1,0 +1,13 @@
+<div class="login-container">
+  <h2>MoneyManage</h2>
+  <form (ngSubmit)="login()">
+    <input name="username" placeholder="Username" [(ngModel)]="username" required autocomplete="username">
+    <input name="password" type="password" placeholder="Password" [(ngModel)]="password" required
+           autocomplete="current-password">
+    <div class="error" *ngIf="error">{{ error }}</div>
+    <div class="actions">
+      <button type="submit">Login</button>
+      <button type="button" (click)="register()">Registrati</button>
+    </div>
+  </form>
+</div>
