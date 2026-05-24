@@ -1,5 +1,7 @@
 <div class="app-toolbar" *ngIf="isLoggedIn()">
   <span class="app-title">MoneyManage</span>
+  <a routerLink="/" style="color: white; text-decoration: none;">Dashboard</a>
+  <a routerLink="/setup" style="color: white; text-decoration: none;">Setup</a>
   <button (click)="logout()">Logout</button>
 </div>
 <router-outlet></router-outlet>
