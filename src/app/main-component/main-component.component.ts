@@ -38,32 +38,60 @@ export class MainComponentComponent implements OnInit {
     this.getDataAndRenderComponents();
   }
 
+  private pad(value: number): string {
+    return value.toString().padStart(2, '0');
+  }
+
+  private startOfDay(date: Date): string {
+    return `${date.getFullYear()}-${this.pad(date.getMonth() + 1)}-${this.pad(date.getDate())} 00:00:00.000`;
+  }
+
+  private endOfDay(date: Date): string {
+    return `${date.getFullYear()}-${this.pad(date.getMonth() + 1)}-${this.pad(date.getDate())} 23:59:59.999`;
+  }
+
   getDataAndRenderComponents() {
-    const fromTimestamp = '2024-02-01 00:00:00.000';
-    const toTimestamp = '2024-03-20 23:59:59.999';
+    const today = new Date();
+    const from = new Date(today);
+    from.setMonth(from.getMonth() - 6);
+
+    const fromTimestamp = this.startOfDay(from);
+    const toTimestamp = this.endOfDay(today);
     const apiUrlPrefix = 'http://localhost:8080/api/banks/transactions/';
     const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
     const brokerGraph: string = "http://localhost:8080/api/brokers/transactions/worth/graph";
     const accountsListApi = `${apiUrlPrefix}accounts`;
 
-    this.http.get<GraphPointsDto>(graphDataApi).subscribe((data: GraphPointsDto) => {
-      this.graphPoints = data;
+    this.http.get<GraphPointsDto>(graphDataApi).subscribe({
+      next: (data: GraphPointsDto) => {
+        this.graphPoints = data;
+      },
+      error: (err) => console.error('Failed to load bank graph data', err)
     });
 
-    this.http.get<GraphPointsDto>(brokerGraph).subscribe((data: GraphPointsDto) => {
-      this.brokerGraph = data;
+    this.http.get<GraphPointsDto>(brokerGraph).subscribe({
+      next: (data: GraphPointsDto) => {
+        this.brokerGraph = data;
+      },
+      error: (err) => console.error('Failed to load broker graph data', err)
     });
 
-    this.http.get<string[]>(accountsListApi).subscribe((accountNames: string[]) => {
-      accountNames.forEach(accountName => {
-        const accountTableApi = `${apiUrlPrefix}table/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
-        this.http.get<TransactionDto[]>(accountTableApi).subscribe((data: TransactionDto[]) => {
-          this.accountsData = {
-            ...this.accountsData,
-            [accountName]: data
-          };
+    this.http.get<string[]>(accountsListApi).subscribe({
+      next: (accountNames: string[]) => {
+        accountNames.forEach(accountName => {
+          const accountTableApi = `${apiUrlPrefix}table/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
+          this.http.get<TransactionDto[]>(accountTableApi).subscribe({
+            next: (data: TransactionDto[]) => {
+              this.accountsData = {
+                ...this.accountsData,
+                [accountName]: data
+              };
+            },
+            error: (err) => console.error(`Failed to load transactions for ${accountName}`, err)
+          });
         });
-      });
-    })
+      },
+      error: (err) => console.error('Failed to load account list', err)
+    });
   }
 }
