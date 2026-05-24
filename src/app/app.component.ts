@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {Router, RouterOutlet} from '@angular/router';
+import {Router, RouterLink, RouterOutlet} from '@angular/router';
 import {NgIf} from '@angular/common';
 import {AuthService} from './auth/auth.service';
 
@@ -9,6 +9,7 @@ import {AuthService} from './auth/auth.service';
   standalone: true,
   imports: [
     RouterOutlet,
+    RouterLink,
     NgIf
   ],
   styleUrls: ['./app.component.css']
