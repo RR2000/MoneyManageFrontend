@@ -9,7 +9,7 @@
 
     <mat-form-field>
       <mat-label>Numero simulazioni</mat-label>
-      <input matInput type="number" [(ngModel)]="simulations" min="100" max="50000" step="1000"/>
+      <input matInput type="number" [(ngModel)]="simulations" min="100" max="20000" step="1000"/>
     </mat-form-field>
 
     <button mat-raised-button color="primary" (click)="run()" [disabled]="loading()">
