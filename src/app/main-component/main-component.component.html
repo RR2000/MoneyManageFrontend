@@ -1,35 +1,38 @@
-<mat-tab-group>
-  <!-- First tab -->
-  <mat-tab label="Tab 0">
-    <ng-template matTabContent>
-      <app-transactions-table [accountsData]="accountsData"></app-transactions-table>
-    </ng-template>
-  </mat-tab>
-
-  <mat-tab label="Tab 1">
-    <ng-template matTabContent>
-      <app-line-graph [graphPoints]="graphPoints"></app-line-graph>
-    </ng-template>
-  </mat-tab>
-
-  <!-- Second tab -->
-  <mat-tab label="Tab 2">
-    <ng-template matTabContent>
-      <broker-worth-graph [graphPoints]="brokerGraph"></broker-worth-graph>
-    </ng-template>
-  </mat-tab>
-
-  <!-- Real Estate tab -->
-  <mat-tab label="Immobili">
-    <ng-template matTabContent>
-      <app-real-estate></app-real-estate>
-    </ng-template>
-  </mat-tab>
-
-  <!-- Monte Carlo tab -->
-  <mat-tab label="Monte Carlo">
-    <ng-template matTabContent>
-      <app-monte-carlo></app-monte-carlo>
-    </ng-template>
-  </mat-tab>
-</mat-tab-group>
+<div class="page">
+  @if (loaded() && accountNames().length === 0) {
+    <div class="empty">
+      <p>Nessun movimento ancora. <a routerLink="/setup">Importa i file della banca</a> per vedere saldi e grafici,
+        oppure prova con dati inventati.</p>
+      <button type="button" (click)="loadSampleData()" [disabled]="sampleLoading()">
+        {{ sampleLoading() ? 'Caricamento...' : 'Carica dati di esempio' }}
+      </button>
+    </div>
+  }
+  <mat-tab-group>
+    <mat-tab label="Saldi">
+      <ng-template matTabContent>
+        <app-line-graph [graphPoints]="graphPoints()" emptyText="Nessun saldo: importa i movimenti e imposta il saldo di oggi."></app-line-graph>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Movimenti">
+      <ng-template matTabContent>
+        <app-transactions-table [accountsData]="accountsData()"></app-transactions-table>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Investimenti">
+      <ng-template matTabContent>
+        <app-line-graph [graphPoints]="brokerGraph()" emptyText="Nessun investimento: importa le transazioni del broker."></app-line-graph>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Immobili">
+      <ng-template matTabContent>
+        <app-real-estate></app-real-estate>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Monte Carlo">
+      <ng-template matTabContent>
+        <app-monte-carlo></app-monte-carlo>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</div>

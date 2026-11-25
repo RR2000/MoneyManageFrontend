@@ -1,13 +1,33 @@
-<div class="login-container">
-  <h2>MoneyManage</h2>
-  <form (ngSubmit)="login()">
-    <input name="username" placeholder="Username" [(ngModel)]="username" required autocomplete="username">
-    <input name="password" type="password" placeholder="Password" [(ngModel)]="password" required
-           autocomplete="current-password">
-    <div class="error" *ngIf="error">{{ error }}</div>
-    <div class="actions">
-      <button type="submit">Login</button>
-      <button type="button" (click)="register()">Registrati</button>
-    </div>
+<main class="login-container">
+  <h1>MoneyManage</h1>
+  <p class="intro">Conti, investimenti, immobili e una proiezione Monte Carlo del portafoglio.</p>
+  <form (ngSubmit)="submit()">
+    <h2>{{ mode === 'login' ? 'Accedi' : 'Crea un account' }}</h2>
+    <label>Username
+      <input name="username" [(ngModel)]="username" required autocomplete="username">
+    </label>
+    <label>Password
+      <input name="password" type="password" [(ngModel)]="password" required
+             [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'">
+    </label>
+    @if (mode === 'register') {
+      <p class="hint">Username da 3 a 32 caratteri, password di almeno 8. Ogni account vede solo i suoi dati.</p>
+      <label class="check">
+        <input name="sampleData" type="checkbox" [(ngModel)]="sampleData">
+        Inizia con dati di esempio (inventati)
+      </label>
+    }
+    @if (error()) {
+      <div class="error" role="alert">{{ error() }}</div>
+    }
+    <button type="submit" class="primary" [disabled]="busy() || !username || !password">
+      {{ busy() ? 'Attendere...' : (mode === 'login' ? 'Accedi' : 'Registrati') }}
+    </button>
+    @if (githubUrl()) {
+      <a class="github" [href]="githubUrl()">Accedi con GitHub</a>
+    }
+    <button type="button" class="link" (click)="switchMode()">
+      {{ mode === 'login' ? 'Non hai un account? Registrati' : 'Hai gia\' un account? Accedi' }}
+    </button>
   </form>
-</div>
+</main>

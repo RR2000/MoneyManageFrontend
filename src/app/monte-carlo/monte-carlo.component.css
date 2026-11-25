@@ -10,6 +10,8 @@
   margin-bottom: 16px;
 }
 
+.chart-box { position: relative; height: 55vh; min-height: 280px; max-height: 480px; }
+
 .error {
   color: #f44336;
 }

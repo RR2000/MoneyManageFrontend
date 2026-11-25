@@ -1,0 +1,18 @@
+.app-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 16px;
+  background: #1f3b5a;
+  color: #fff;
+}
+.app-title { font-size: 1.15rem; font-weight: 600; }
+nav { display: flex; align-items: center; gap: 12px; }
+nav a { color: #fff; text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
+nav a.active { border-bottom-color: #fff; }
+nav button {
+  background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .7);
+  border-radius: 4px; padding: 4px 10px; cursor: pointer; font: inherit;
+}

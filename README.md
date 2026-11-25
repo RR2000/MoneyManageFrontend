@@ -1,6 +1,35 @@
-# MoneyManageFrontend
+# MoneyManage - web app
 
-## Configuration
-You need the backend first, it's in the other repo.
-Once backend is okay, it should work.
-Use Node.js 20.x.x please
+Personal finance dashboard: balances of the bank accounts over time, the movements, the worth of the
+investments, real estate, and a Monte Carlo projection of the portfolio.
+This is the web app (Angular); the REST API is in
+[MoneyManageBackend](https://github.com/RR2000/MoneyManageBackend).
+
+Demo: https://money.raoulrondinella.dev - register with any username; tick "dati di esempio" to start with a
+made-up year of movements, or start empty and import the export files of your bank (Revolut, Degiro,
+Unicredit, Intesa Sanpaolo). Every account sees only its own data.
+
+## Stack
+
+Angular 22 with Angular Material and Chart.js, unit tests with Vitest. In production nginx serves the app
+and forwards `/api` to the backend (same origin, no CORS).
+
+## Run
+
+```bash
+npm ci
+npm test            # unit tests
+npm start           # http://localhost:4200, /api goes to a backend on http://localhost:8080 (proxy.conf.json)
+```
+
+A backend for development: in MoneyManageBackend, `mvn spring-boot:test-run` (embedded PostgreSQL).
+Or everything with Docker: `docker compose up --build`, then http://127.0.0.1:8083.
+
+## Image
+
+The CI publishes `ghcr.io/rr2000/moneymanage-frontend:main` (and `:sha-<commit>`) at every push on `main`:
+nginx with the built app, forwarding `/api/` to the service `api` on port 8080.
+
+## License
+
+GPL-3.0, see [LICENSE](LICENSE).

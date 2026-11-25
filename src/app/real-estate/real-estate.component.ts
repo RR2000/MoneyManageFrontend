@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -8,11 +8,9 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
 import {RealEstateDto} from '../../models/real-estate.dto';
-import {environment} from '../../environments/environment';
 
 @Component({
   selector: 'app-real-estate',
-  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -26,15 +24,15 @@ import {environment} from '../../environments/environment';
   styleUrl: './real-estate.component.css'
 })
 export class RealEstateComponent implements OnInit {
-  properties: RealEstateDto[] = [];
-  totalWorth: number = 0;
+  properties = signal<RealEstateDto[]>([]);
+  totalWorth = signal(0);
   displayedColumns = ['name', 'address', 'purchaseDate', 'purchasePrice', 'currentEstimatedValue', 'monthlyRent', 'monthlyExpenses', 'currency', 'actions'];
 
   showForm = false;
   editingId: number | null = null;
   form: RealEstateDto = this.emptyForm();
 
-  private api = `${environment.apiBaseUrl}/api/realestate`;
+  private api = `/api/realestate`;
 
   constructor(private http: HttpClient) {}
 
@@ -43,8 +41,8 @@ export class RealEstateComponent implements OnInit {
   }
 
   load() {
-    this.http.get<RealEstateDto[]>(this.api).subscribe(data => this.properties = data);
-    this.http.get<number>(`${this.api}/worth`).subscribe(w => this.totalWorth = w);
+    this.http.get<RealEstateDto[]>(this.api).subscribe(data => this.properties.set(data));
+    this.http.get<number>(`${this.api}/worth`).subscribe(w => this.totalWorth.set(w));
   }
 
   openCreate() {

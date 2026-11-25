@@ -1,5 +1,6 @@
 <div class="setup-container">
-  <h2>Setup iniziale</h2>
+  <h2>Importa i tuoi dati</h2>
+  <p>I file restano nel tuo account: nessun altro utente li vede.</p>
 
   <mat-stepper orientation="vertical" linear="false">
 
@@ -8,43 +9,45 @@
         <mat-form-field>
           <mat-label>Banca</mat-label>
           <mat-select [(ngModel)]="bankName">
-            <mat-option value="Revolut">Revolut</mat-option>
-            <mat-option value="Degiro">Degiro</mat-option>
+            <mat-option value="Revolut">Revolut (CSV)</mat-option>
+            <mat-option value="Degiro">Degiro, conto liquidita' (CSV)</mat-option>
+            <mat-option value="Unicredit">Unicredit (CSV)</mat-option>
+            <mat-option value="Sanpaolo">Intesa Sanpaolo (XLSX)</mat-option>
           </mat-select>
         </mat-form-field>
 
         <div class="file-row">
-          <label>File CSV</label>
-          <input type="file" accept=".csv" (change)="onBankFileChange($event)"/>
+          <label for="bankFile">File esportato dalla banca</label>
+          <input id="bankFile" type="file" accept=".csv,.xlsx" (change)="onBankFileChange($event)"/>
         </div>
 
         <div class="actions">
-          <button mat-raised-button color="primary" (click)="uploadBankCsv()" [disabled]="!bankFile || bankUploadLoading">
-            {{ bankUploadLoading ? 'Caricamento...' : 'Upload' }}
+          <button mat-raised-button color="primary" (click)="uploadBankCsv()" [disabled]="!bankFile || bankUploadLoading()">
+            {{ bankUploadLoading() ? 'Caricamento...' : 'Upload' }}
           </button>
           <button mat-button matStepperNext>Avanti</button>
         </div>
 
-        <p *ngIf="bankUploadResult" class="result">{{ bankUploadResult }}</p>
+        <p *ngIf="bankUploadResult()" class="result">{{ bankUploadResult() }}</p>
       </div>
     </mat-step>
 
     <mat-step label="Carica transazioni broker (Degiro)">
       <div class="step-content">
         <div class="file-row">
-          <label>File CSV</label>
-          <input type="file" accept=".csv" (change)="onBrokerFileChange($event)"/>
+          <label for="brokerFile">File CSV delle transazioni</label>
+          <input id="brokerFile" type="file" accept=".csv" (change)="onBrokerFileChange($event)"/>
         </div>
 
         <div class="actions">
           <button mat-button matStepperPrevious>Indietro</button>
-          <button mat-raised-button color="primary" (click)="uploadBrokerCsv()" [disabled]="!brokerFile || brokerUploadLoading">
-            {{ brokerUploadLoading ? 'Caricamento...' : 'Upload' }}
+          <button mat-raised-button color="primary" (click)="uploadBrokerCsv()" [disabled]="!brokerFile || brokerUploadLoading()">
+            {{ brokerUploadLoading() ? 'Caricamento...' : 'Upload' }}
           </button>
           <button mat-button matStepperNext>Avanti</button>
         </div>
 
-        <p *ngIf="brokerUploadResult" class="result">{{ brokerUploadResult }}</p>
+        <p *ngIf="brokerUploadResult()" class="result">{{ brokerUploadResult() }}</p>
       </div>
     </mat-step>
 
@@ -56,18 +59,18 @@
           Carica conti
         </button>
 
-        <div *ngFor="let account of accounts" class="account-row">
+        <div *ngFor="let account of accounts()" class="account-row">
           <mat-form-field>
             <mat-label>{{ account }}</mat-label>
             <input matInput type="number" [(ngModel)]="accountBalances[account]" placeholder="Saldo attuale (€)"/>
           </mat-form-field>
-          <span *ngIf="cumulativeResults[account]" class="result">{{ cumulativeResults[account] }}</span>
+          <span *ngIf="cumulativeResults()[account]" class="result">{{ cumulativeResults()[account] }}</span>
         </div>
 
         <div class="actions">
           <button mat-button matStepperPrevious>Indietro</button>
-          <button mat-raised-button color="primary" (click)="computeAll()" [disabled]="accounts.length === 0 || cumulativeLoading">
-            {{ cumulativeLoading ? 'Elaborazione...' : 'Calcola' }}
+          <button mat-raised-button color="primary" (click)="computeAll()" [disabled]="accounts().length === 0 || cumulativeLoading()">
+            {{ cumulativeLoading() ? 'Elaborazione...' : 'Calcola' }}
           </button>
         </div>
       </div>

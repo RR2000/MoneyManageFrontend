@@ -1,0 +1,30 @@
+# Everything locally with one command: docker compose up --build, then http://127.0.0.1:8083
+# (web app built from this repo, backend image from ghcr.io, an empty PostgreSQL)
+services:
+  web:
+    build: .
+    ports:
+      - 127.0.0.1:8083:80
+    depends_on:
+      - api
+
+  api:
+    image: ghcr.io/rr2000/moneymanage-backend:main
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/money
+      DB_USER: money
+      DB_PASSWORD: money-local
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: money
+      POSTGRES_USER: money
+      POSTGRES_PASSWORD: money-local
+    volumes:
+      - money-db:/var/lib/postgresql
+
+volumes:
+  money-db:

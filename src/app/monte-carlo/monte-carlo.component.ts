@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -7,7 +7,6 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import Chart from 'chart.js/auto';
 import {GraphPointsDto} from '../../models/graph-points.dto';
-import {environment} from '../../environments/environment';
 
 const PERCENTILE_COLORS: { [key: string]: string } = {
   'P5':  'rgba(244, 67, 54, 0.8)',
@@ -19,7 +18,6 @@ const PERCENTILE_COLORS: { [key: string]: string } = {
 
 @Component({
   selector: 'app-monte-carlo',
-  standalone: true,
   imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
   templateUrl: './monte-carlo.component.html',
   styleUrl: './monte-carlo.component.css'
@@ -27,25 +25,29 @@ const PERCENTILE_COLORS: { [key: string]: string } = {
 export class MonteCarloComponent {
   years = 10;
   simulations = 5000;
-  loading = false;
-  error = '';
+  loading = signal(false);
+  error = signal('');
 
   private chart: any;
-  private api = `${environment.apiBaseUrl}/api/montecarlo`;
+  private api = `/api/montecarlo`;
 
   constructor(private http: HttpClient) {}
 
   run() {
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
     this.http.get<GraphPointsDto>(`${this.api}?years=${this.years}&simulations=${this.simulations}`).subscribe({
       next: (data) => {
-        this.loading = false;
+        this.loading.set(false);
+        if (!data.uniqueGraphNames?.length) {
+          this.error.set('Servono almeno due mesi di investimenti per la simulazione.');
+          return;
+        }
         this.renderChart(data);
       },
       error: (err) => {
-        this.loading = false;
-        this.error = `Errore: ${err.message}`;
+        this.loading.set(false);
+        this.error.set(`Errore: ${err.error?.message ?? err.message}`);
       }
     });
   }
@@ -67,7 +69,9 @@ export class MonteCarloComponent {
         type: 'line',
         data: {labels, datasets},
         options: {
-          aspectRatio: 2.5,
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
           plugins: {legend: {display: true}},
           scales: {y: {title: {display: true, text: 'Valore portafoglio (€)'}}}
         }

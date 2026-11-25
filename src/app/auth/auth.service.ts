@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, tap} from 'rxjs';
-import {environment} from '../../environments/environment';
 
 interface AuthResponse {
   token: string;
@@ -15,12 +14,12 @@ export class AuthService {
   }
 
   login(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiBaseUrl}/api/auth/login`, {username, password})
+    return this.http.post<AuthResponse>(`/api/auth/login`, {username, password})
       .pipe(tap(res => this.storeToken(res.token)));
   }
 
-  register(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiBaseUrl}/api/auth/register`, {username, password})
+  register(username: string, password: string, sampleData: boolean): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`/api/auth/register`, {username, password, sampleData})
       .pipe(tap(res => this.storeToken(res.token)));
   }
 
@@ -34,6 +33,11 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  /** Token obtained elsewhere (the redirect back from "Accedi con GitHub"). */
+  acceptToken(token: string): void {
+    this.storeToken(token);
   }
 
   private storeToken(token: string): void {
