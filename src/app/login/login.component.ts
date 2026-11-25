@@ -1,37 +1,70 @@
-import {Component} from '@angular/core';
+import {Component, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {NgIf} from '@angular/common';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Router} from '@angular/router';
 import {AuthService} from '../auth/auth.service';
 
+interface Providers {
+  github: boolean;
+  githubUrl?: string;
+}
+
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [FormsModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  mode: 'login' | 'register' = 'login';
   username = '';
   password = '';
-  error = '';
+  sampleData = true;
+  error = signal('');
+  busy = signal(false);
+  githubUrl = signal('');
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService, private router: Router, private http: HttpClient) {
   }
 
-  login(): void {
-    this.error = '';
-    this.auth.login(this.username, this.password).subscribe({
-      next: () => this.router.navigate(['/']),
-      error: () => this.error = 'Login fallito: credenziali non valide'
+  ngOnInit(): void {
+    // back from "Accedi con GitHub": the backend puts the token (or the error) in the fragment
+    const hash = window.location.hash;
+    if (hash.startsWith('#token=')) {
+      this.auth.acceptToken(decodeURIComponent(hash.substring('#token='.length)));
+      history.replaceState(null, '', '/login');
+      this.router.navigate(['/']);
+      return;
+    }
+    if (hash === '#github-error') {
+      history.replaceState(null, '', '/login');
+      this.error.set('Accesso con GitHub non riuscito: serve un account GitHub con un\'email verificata.');
+    }
+    this.http.get<Providers>('/api/auth/providers').subscribe({
+      next: p => this.githubUrl.set(p.github && p.githubUrl ? p.githubUrl : ''),
+      error: () => this.githubUrl.set('')
     });
   }
 
-  register(): void {
-    this.error = '';
-    this.auth.register(this.username, this.password).subscribe({
+  submit(): void {
+    this.error.set('');
+    this.busy.set(true);
+    const call = this.mode === 'login'
+      ? this.auth.login(this.username, this.password)
+      : this.auth.register(this.username, this.password, this.sampleData);
+    call.subscribe({
       next: () => this.router.navigate(['/']),
-      error: () => this.error = 'Registrazione fallita'
+      error: (err: HttpErrorResponse) => {
+        this.busy.set(false);
+        this.error.set(this.mode === 'login'
+          ? 'Accesso non riuscito: username o password errati'
+          : `Registrazione non riuscita: ${err.error?.message ?? err.statusText}`);
+      }
     });
+  }
+
+  switchMode(): void {
+    this.mode = this.mode === 'login' ? 'register' : 'login';
+    this.error.set('');
   }
 }

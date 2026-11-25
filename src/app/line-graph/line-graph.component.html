@@ -1,3 +1,6 @@
-<div class="chart-container">
-  <canvas  id="MyChart" >{{ chart }}</canvas>
+@if (!hasData()) {
+  <p class="empty">{{ emptyText }}</p>
+}
+<div class="chart-container" [class.hidden]="!hasData()">
+  <canvas #canvas></canvas>
 </div>

@@ -1,19 +1,11 @@
-/* Target mat-table specifically */
-
-.mat-elevation-z8{
-  margin-top: 50px;
+table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 12px; font-size: .9rem; }
+th, td { border-bottom: 1px solid #e3e6ea; padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: #eef1f5; position: sticky; top: 0; }
+.num { text-align: right; white-space: nowrap; }
+.date { white-space: nowrap; }
+.neg { color: #b3261e; }
+.empty { color: #4a5260; padding: 16px 0; }
+@media (max-width: 480px) {
+  table { font-size: .8rem; }
+  th, td { padding: 4px; }
 }
-
-/* Target header cells within mat-table */
-.mat-header-cell, .mat-cell {
-  border: 1px solid #ddd;
-  padding: 1vw;
-  text-align: right;
-}
-
-/* Target header cells specifically */
-.mat-header-cell {
-  background-color: #f2f2f2;
-}
-
-

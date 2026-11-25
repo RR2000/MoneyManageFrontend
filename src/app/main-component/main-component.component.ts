@@ -1,32 +1,25 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {LineGraphComponent} from "../line-graph/line-graph.component";
-import {CommonModule, NgIf} from "@angular/common";
+import {RouterLink} from "@angular/router";
 import {TransactionsTableComponent} from "../transactions-table/transactions-table.component";
 import {TransactionDto} from "../../models/transaction.dto";
 import {HttpClient} from "@angular/common/http";
 import {GraphPointsDto} from "../../models/graph-points.dto";
-import {MatTableModule} from "@angular/material/table";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
-import {LineGraph2Component} from "../broker-worth-graph/broker-worth-graph.component";
 import {RealEstateComponent} from "../real-estate/real-estate.component";
 import {MonteCarloComponent} from "../monte-carlo/monte-carlo.component";
 import {interval, Subscription} from "rxjs";
-import {environment} from "../../environments/environment";
 
 const BROKER_GRAPH_REFRESH_MS = 5 * 60 * 1000;
 
 @Component({
   selector: 'app-main-component',
-  standalone: true,
   imports: [
     LineGraphComponent,
-    NgIf,
     TransactionsTableComponent,
-    MatTableModule,
-    CommonModule,
+    RouterLink,
     MatTab,
     MatTabGroup,
-    LineGraph2Component,
     MatTabContent,
     RealEstateComponent,
     MonteCarloComponent
@@ -35,9 +28,12 @@ const BROKER_GRAPH_REFRESH_MS = 5 * 60 * 1000;
   styleUrl: './main-component.component.css'
 })
 export class MainComponentComponent implements OnInit, OnDestroy {
-  accountsData: { [account: string]: TransactionDto[] } = {};
-  graphPoints: GraphPointsDto = <GraphPointsDto>{};
-  brokerGraph: GraphPointsDto = <GraphPointsDto>{};
+  accountsData = signal<{ [account: string]: TransactionDto[] }>({});
+  graphPoints = signal(<GraphPointsDto>{});
+  brokerGraph = signal(<GraphPointsDto>{});
+  accountNames = signal<string[]>([]);
+  loaded = signal(false);
+  sampleLoading = signal(false);
 
   private brokerRefreshSubscription?: Subscription;
 
@@ -56,11 +52,25 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   }
 
   refreshBrokerGraph() {
-    this.http.get<GraphPointsDto>(`${environment.apiBaseUrl}/api/brokers/transactions/worth/graph`).subscribe({
+    this.http.get<GraphPointsDto>(`/api/brokers/transactions/worth/graph`).subscribe({
       next: (data: GraphPointsDto) => {
-        this.brokerGraph = data;
+        this.brokerGraph.set(data);
       },
       error: (err) => console.error('Failed to refresh broker graph', err)
+    });
+  }
+
+  loadSampleData() {
+    this.sampleLoading.set(true);
+    this.http.post('/api/sample-data', null).subscribe({
+      next: () => {
+        this.sampleLoading.set(false);
+        this.getDataAndRenderComponents();
+      },
+      error: (err) => {
+        this.sampleLoading.set(false);
+        console.error('Failed to load sample data', err);
+      }
     });
   }
 
@@ -83,13 +93,13 @@ export class MainComponentComponent implements OnInit, OnDestroy {
 
     const fromTimestamp = this.startOfDay(from);
     const toTimestamp = this.endOfDay(today);
-    const apiUrlPrefix = `${environment.apiBaseUrl}/api/banks/transactions/`;
+    const apiUrlPrefix = `/api/banks/transactions/`;
     const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
     const accountsListApi = `${apiUrlPrefix}accounts`;
 
     this.http.get<GraphPointsDto>(graphDataApi).subscribe({
       next: (data: GraphPointsDto) => {
-        this.graphPoints = data;
+        this.graphPoints.set(data);
       },
       error: (err) => console.error('Failed to load bank graph data', err)
     });
@@ -98,14 +108,13 @@ export class MainComponentComponent implements OnInit, OnDestroy {
 
     this.http.get<string[]>(accountsListApi).subscribe({
       next: (accountNames: string[]) => {
+        this.accountNames.set(accountNames);
+        this.loaded.set(true);
         accountNames.forEach(accountName => {
-          const accountTableApi = `${apiUrlPrefix}table/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${accountName}`;
+          const accountTableApi = `${apiUrlPrefix}table/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}?accountName=${encodeURIComponent(accountName)}`;
           this.http.get<TransactionDto[]>(accountTableApi).subscribe({
             next: (data: TransactionDto[]) => {
-              this.accountsData = {
-                ...this.accountsData,
-                [accountName]: data
-              };
+              this.accountsData.update(all => ({...all, [accountName]: data}));
             },
             error: (err) => console.error(`Failed to load transactions for ${accountName}`, err)
           });

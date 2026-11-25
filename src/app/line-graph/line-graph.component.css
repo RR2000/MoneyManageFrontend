@@ -1,0 +1,3 @@
+.chart-container { position: relative; height: 60vh; min-height: 280px; max-height: 520px; padding-top: 12px; }
+.chart-container.hidden { display: none; }
+.empty { color: #4a5260; padding: 16px 0; }
