@@ -110,7 +110,9 @@ export class SetupWizardComponent {
         if (remaining === 0) this.cumulativeLoading.set(false);
         return;
       }
-      this.http.get(`/api/banks/transactions/accounts/${encodeURIComponent(account)}/computeCumulativeAmount/${balance}`).subscribe({
+      // the amount in the body, not in the URL: URLs end up in the access logs
+      this.http.post(`/api/banks/transactions/accounts/${encodeURIComponent(account)}/balance`,
+        {amountToday: Number(String(balance).replace(',', '.'))}).subscribe({
         next: () => {
           this.cumulativeResults.update(r => ({...r, [account]: 'OK'}));
           remaining--;

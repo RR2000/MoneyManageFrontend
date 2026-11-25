@@ -56,6 +56,10 @@ export class LoginComponent implements OnInit {
       next: () => this.router.navigate(['/']),
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
+        if (err.status === 429) {
+          this.error.set('Troppi tentativi: riprova tra qualche minuto.');
+          return;
+        }
         this.error.set(this.mode === 'login'
           ? 'Accesso non riuscito: username o password errati'
           : `Registrazione non riuscita: ${err.error?.message ?? err.statusText}`);
