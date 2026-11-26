@@ -76,6 +76,15 @@ describe('InstrumentsComponent', () => {
     expect(page.busy()).toBe(false);
   });
 
+  it('flags a quote in an unknown currency', () => {
+    const fixture = TestBed.createComponent(InstrumentsComponent);
+    fixture.detectChanges();
+    http.expectOne('/api/instruments').flush({alphaVantage: true, alphaVantageLeftToday: 3,
+      instruments: [{...iwda, symbol: 'SWDA.LON', quoteCurrency: null, currencyWarning: true}]});
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.warning')?.textContent).toContain('valuta sconosciuta');
+  });
+
   it('a failed list says so, with "Riprova"', () => {
     const fixture = TestBed.createComponent(InstrumentsComponent);
     fixture.detectChanges();
