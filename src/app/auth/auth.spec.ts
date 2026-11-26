@@ -2,7 +2,7 @@ import {TestBed} from '@angular/core/testing';
 import {HttpClient, provideHttpClient, withInterceptors} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {provideRouter, Router} from '@angular/router';
-import {AuthService} from './auth.service';
+import {AuthService, tokenFromFragment} from './auth.service';
 import {authInterceptor} from './auth.interceptor';
 
 describe('auth', () => {
@@ -33,6 +33,35 @@ describe('auth', () => {
 
     TestBed.inject(HttpClient).get('/api/realestate').subscribe();
     expect(http.expectOne('/api/realestate').request.headers.get('Authorization')).toBe('Bearer abc');
+  });
+
+  it('sends the optional email at registration only when given', () => {
+    auth.register('demo', 'password123', false, 'demo@example.com').subscribe();
+    const reg = http.expectOne('/api/auth/register');
+    expect(reg.request.body).toEqual({username: 'demo', password: 'password123', sampleData: false, email: 'demo@example.com'});
+    reg.flush({token: 'abc'});
+  });
+
+  it('asks for a reset link and sets the new password with the token, in the body', () => {
+    auth.forgotPassword('demo@example.com').subscribe();
+    const forgot = http.expectOne('/api/auth/password/forgot');
+    expect(forgot.request.method).toBe('POST');
+    expect(forgot.request.body).toEqual({email: 'demo@example.com'});
+    forgot.flush(null, {status: 202, statusText: 'Accepted'});
+
+    auth.resetPassword('tok', 'new-password').subscribe();
+    const reset = http.expectOne('/api/auth/password/reset');
+    expect(reset.request.body).toEqual({token: 'tok', password: 'new-password'});
+    reset.flush(null, {status: 204, statusText: 'No Content'});
+
+    auth.confirmEmail('tok2').subscribe();
+    expect(http.expectOne('/api/auth/email/confirm').request.body).toEqual({token: 'tok2'});
+  });
+
+  it('reads the token of an email link from the fragment', () => {
+    expect(tokenFromFragment('#token=abc_-123')).toBe('abc_-123');
+    expect(tokenFromFragment('#other')).toBe('');
+    expect(tokenFromFragment('')).toBe('');
   });
 
   it('logs out and goes to the login page on a 401', () => {
