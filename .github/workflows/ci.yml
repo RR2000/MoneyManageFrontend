@@ -1,7 +1,8 @@
 name: CI
 
 # PR and main: unit tests and production build.
-# main: image on GitHub Container Registry, ghcr.io/rr2000/moneymanage-frontend:sha-<commit> and :main.
+# main: image on GitHub Container Registry, :sha-<commit> and :main, under two names during the rename:
+# ghcr.io/rr2000/money-manage-app (new, like the repo) and ghcr.io/rr2000/moneymanage-frontend (old).
 on:
   push:
     branches: [main]
@@ -51,7 +52,9 @@ jobs:
           tags: |
             ghcr.io/rr2000/moneymanage-frontend:${{ steps.tag.outputs.tag }}
             ghcr.io/rr2000/moneymanage-frontend:main
+            ghcr.io/rr2000/money-manage-app:${{ steps.tag.outputs.tag }}
+            ghcr.io/rr2000/money-manage-app:main
           labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.source=https://github.com/RR2000/money-manage-app
           cache-from: type=gha
           cache-to: type=gha,mode=max

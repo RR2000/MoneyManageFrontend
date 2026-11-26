@@ -3,7 +3,7 @@
 Personal finance dashboard: balances of the bank accounts over time, the movements, the worth of the
 investments, real estate, and a Monte Carlo projection of the portfolio.
 This is the web app (Angular); the REST API is in
-[MoneyManageBackend](https://github.com/RR2000/MoneyManageBackend).
+[money-manage-backend](https://github.com/RR2000/money-manage-backend).
 
 Demo: https://money.raoulrondinella.dev - register with any username; tick "dati di esempio" to start with a
 made-up year of movements, or start empty and import the export files of your bank (Revolut, Degiro,
@@ -27,12 +27,13 @@ npm test            # unit tests
 npm start           # http://localhost:4200, /api goes to a backend on http://localhost:8080 (proxy.conf.json)
 ```
 
-A backend for development: in MoneyManageBackend, `mvn spring-boot:test-run` (embedded PostgreSQL).
+A backend for development: in money-manage-backend, `mvn spring-boot:test-run` (embedded PostgreSQL).
 Or everything with Docker: `docker compose up --build`, then http://127.0.0.1:8083.
 
 ## Image
 
-The CI publishes `ghcr.io/rr2000/moneymanage-frontend:main` (and `:sha-<commit>`) at every push on `main`:
+The CI publishes `ghcr.io/rr2000/money-manage-app:main` (and `:sha-<commit>`) at every push on `main`
+(during the rename the same tags also go under the old name `ghcr.io/rr2000/moneymanage-frontend`):
 nginx with the built app, forwarding `/api/` to the service `api` on port 8080.
 
 ## License
