@@ -9,6 +9,11 @@ Demo: https://money.raoulrondinella.dev - register with any username; tick "dati
 made-up year of movements, or start empty and import the export files of your bank (Revolut, Degiro,
 Unicredit, Intesa Sanpaolo). Every account sees only its own data.
 
+"Password dimenticata?" on the login page (and the optional email at registration, and the Account page) appear only
+when the backend can send email (`passwordReset` in `GET /api/auth/providers`). The links in the emails open
+`/reset-password#token=...` and `/verify-email#token=...`: the token stays in the fragment, so it never reaches a
+server log, and the page removes it from the address bar.
+
 ## Stack
 
 Angular 22 with Angular Material and Chart.js, unit tests with Vitest. In production nginx serves the app

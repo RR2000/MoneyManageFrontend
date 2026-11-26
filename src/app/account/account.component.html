@@ -1,0 +1,32 @@
+<main class="login-container">
+  <h1>Account</h1>
+  @if (account(); as a) {
+    <form (ngSubmit)="submit()">
+      <p><strong>Username:</strong> {{ a.username }}</p>
+      @if (a.email) {
+        <p><strong>Email:</strong> {{ a.email }}</p>
+      }
+      @if (a.emailLinks) {
+        <h2>{{ a.email ? 'Cambia email' : 'Aggiungi un\'email' }}</h2>
+        <p class="hint">Serve per reimpostare la password se la dimentichi. Ti mandiamo un link per confermarla: finche'
+          non lo apri l'account non cambia. L'email serve anche ad "Accedi con GitHub" per ritrovare l'account.</p>
+        <label>Email
+          <input name="email" type="email" [(ngModel)]="email" required autocomplete="email">
+        </label>
+        @if (sentTo()) {
+          <p role="status">Ti abbiamo mandato un link a {{ sentTo() }}: aprilo entro 24 ore per confermare.</p>
+        }
+        @if (error()) {
+          <div class="error" role="alert">{{ error() }}</div>
+        }
+        <button type="submit" class="primary" [disabled]="busy() || !email">
+          {{ busy() ? 'Attendere...' : 'Mandami il link di conferma' }}
+        </button>
+      }
+    </form>
+  } @else if (error()) {
+    <div class="error" role="alert">{{ error() }}</div>
+  } @else {
+    <p role="status">Attendere...</p>
+  }
+</main>

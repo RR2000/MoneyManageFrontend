@@ -1,0 +1,26 @@
+<main class="login-container">
+  <h1>MoneyManage</h1>
+  <div class="panel">
+    <h2>Conferma dell'email</h2>
+    @switch (state()) {
+      @case ('busy') {
+        <p role="status">Attendere...</p>
+      }
+      @case ('done') {
+        <p role="status">Email confermata: se dimentichi la password, puoi reimpostarla da "Password dimenticata?"
+          nella pagina di accesso.</p>
+      }
+      @case ('broken') {
+        <div class="error" role="alert">Il link non e' valido o e' scaduto (vale 24 ore, una volta sola). Puoi
+          chiederne uno nuovo dalla pagina Account.</div>
+      }
+      @case ('taken') {
+        <div class="error" role="alert">Questa email e' gia' di un altro account.</div>
+      }
+      @default {
+        <div class="error" role="alert">Conferma non riuscita, riprova piu' tardi.</div>
+      }
+    }
+    <a class="back" [routerLink]="loggedIn() ? '/account' : '/login'">{{ loggedIn() ? 'Vai all\'account' : 'Vai all\'accesso' }}</a>
+  </div>
+</main>

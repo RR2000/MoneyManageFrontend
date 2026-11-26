@@ -5,7 +5,7 @@
 }
 h1 { margin: 0 0 4px; font-size: 1.8rem; color: #1f3b5a; }
 .intro { margin: 0 0 20px; color: #4a5260; }
-form {
+form, .panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -28,3 +28,5 @@ a.github {
 }
 button.link { background: none; border: none; color: #1f5fa8; text-decoration: underline; }
 .error { font-size: .9rem; }
+a.back, a.forgot { color: #1f5fa8; text-align: center; }
+p { margin: 0; }

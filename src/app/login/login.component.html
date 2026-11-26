@@ -12,6 +12,12 @@
     </label>
     @if (mode === 'register') {
       <p class="hint">Username da 3 a 32 caratteri, password di almeno 8. Ogni account vede solo i suoi dati.</p>
+      @if (passwordReset()) {
+        <label>Email (facoltativa)
+          <input name="email" type="email" [(ngModel)]="email" autocomplete="email">
+        </label>
+        <p class="hint">Per reimpostare la password se la dimentichi: ti mandiamo un link per confermarla.</p>
+      }
       <label class="check">
         <input name="sampleData" type="checkbox" [(ngModel)]="sampleData">
         Inizia con dati di esempio (inventati)
@@ -23,6 +29,9 @@
     <button type="submit" class="primary" [disabled]="busy() || !username || !password">
       {{ busy() ? 'Attendere...' : (mode === 'login' ? 'Accedi' : 'Registrati') }}
     </button>
+    @if (mode === 'login' && passwordReset()) {
+      <a class="forgot" routerLink="/forgot-password">Password dimenticata?</a>
+    }
     @if (githubUrl()) {
       <a class="github" [href]="githubUrl()">Accedi con GitHub</a>
     }
