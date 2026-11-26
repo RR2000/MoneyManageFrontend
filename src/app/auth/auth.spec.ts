@@ -52,10 +52,18 @@ describe('auth', () => {
     auth.resetPassword('tok', 'new-password').subscribe();
     const reset = http.expectOne('/api/auth/password/reset');
     expect(reset.request.body).toEqual({token: 'tok', password: 'new-password'});
-    reset.flush(null, {status: 204, statusText: 'No Content'});
+    reset.flush({username: 'demo'});
 
     auth.confirmEmail('tok2').subscribe();
     expect(http.expectOne('/api/auth/email/confirm').request.body).toEqual({token: 'tok2'});
+  });
+
+  it('logs in with a username or an email, without the spaces around it', () => {
+    auth.login('  Demo@Example.com ', 'password123').subscribe();
+    const login = http.expectOne('/api/auth/login');
+    expect(login.request.body).toEqual({username: 'Demo@Example.com', password: 'password123'});
+    login.flush({token: 'abc'});
+    expect(auth.getToken()).toBe('abc');
   });
 
   it('reads the token of an email link from the fragment', () => {

@@ -3,8 +3,9 @@
   <p class="intro">Conti, investimenti, immobili e una proiezione Monte Carlo del portafoglio.</p>
   <form (ngSubmit)="submit()">
     <h2>{{ mode === 'login' ? 'Accedi' : 'Crea un account' }}</h2>
-    <label>Username
-      <input name="username" [(ngModel)]="username" required autocomplete="username">
+    <label>{{ mode === 'login' ? 'Username o email' : 'Username' }}
+      <input name="username" [(ngModel)]="username" required autocomplete="username"
+             autocapitalize="none" autocorrect="off" spellcheck="false">
     </label>
     <label>Password
       <input name="password" type="password" [(ngModel)]="password" required

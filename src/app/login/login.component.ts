@@ -62,8 +62,13 @@ export class LoginComponent implements OnInit {
           this.error.set('Troppi tentativi: riprova tra qualche minuto.');
           return;
         }
+        if (err.status === 0 || err.status >= 500) {
+          // not a wrong password: the server is down or unreachable
+          this.error.set('Server non raggiungibile, riprova tra poco.');
+          return;
+        }
         this.error.set(this.mode === 'login'
-          ? 'Accesso non riuscito: username o password errati'
+          ? 'Accesso non riuscito: username (o email) o password errati'
           : `Registrazione non riuscita: ${err.error?.message ?? err.statusText}`);
       }
     });

@@ -19,6 +19,8 @@ export class ResetPasswordComponent implements OnInit {
   busy = signal(false);
   error = signal('');
   linkBroken = signal(false);
+  /** the username to log in with, from the answer */
+  username = signal('');
 
   constructor(private auth: AuthService) {
   }
@@ -42,8 +44,9 @@ export class ResetPasswordComponent implements OnInit {
     }
     this.busy.set(true);
     this.auth.resetPassword(this.token, this.password).subscribe({
-      next: () => {
+      next: res => {
         this.busy.set(false);
+        this.username.set(res?.username ?? '');
         this.done.set(true);
       },
       error: (err: HttpErrorResponse) => {
