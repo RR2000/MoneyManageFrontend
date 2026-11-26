@@ -1,8 +1,11 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnDestroy, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewChild} from '@angular/core';
 import Chart from 'chart.js/auto';
 import {GraphPointsDto} from "../../models/graph-points.dto";
 
-/** Line chart of a GraphPointsDto: one line per graph name, one point per label. */
+/**
+ * Line chart of a GraphPointsDto: one line per graph name, one point per label. While the data is on its way it says
+ * so; if the call failed it says that too, with a button to try again (never an empty chart that looks like no data).
+ */
 @Component({
   selector: 'app-line-graph',
   templateUrl: './line-graph.component.html',
@@ -11,12 +14,16 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
 export class LineGraphComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() graphPoints: GraphPointsDto = <GraphPointsDto>{};
   @Input() emptyText = 'Nessun dato da mostrare.';
+  @Input() loading = false;
+  /** the call failed: shown instead of the chart, with "Riprova" */
+  @Input() error = '';
+  @Output() retry = new EventEmitter<void>();
   @ViewChild('canvas') canvas?: ElementRef<HTMLCanvasElement>;
 
   private chart?: Chart;
 
   hasData(): boolean {
-    return (this.graphPoints?.uniqueGraphNames?.length ?? 0) > 0 && (this.graphPoints?.uniqueLabels?.length ?? 0) > 0;
+    return !this.loading && !this.error && (this.graphPoints?.uniqueGraphNames?.length ?? 0) > 0 && (this.graphPoints?.uniqueLabels?.length ?? 0) > 0;
   }
 
   ngAfterViewInit(): void {

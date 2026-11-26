@@ -1,3 +1,6 @@
 .empty p { margin: 0 0 8px; }
 .empty button { padding: 6px 12px; font: inherit; cursor: pointer; }
 .empty { background: #fff; border: 1px solid #d9dde3; border-radius: 6px; padding: 12px 16px; }
+.error { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0 0 12px; padding: 10px 14px;
+  border: 1px solid #b3261e; border-radius: 6px; color: #8c1d18; background: #fdecea; }
+.error button { padding: 4px 12px; font: inherit; cursor: pointer; }
