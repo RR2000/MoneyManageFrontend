@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "MoneyManageFrontend": {
+    "money-manage-app": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "src",
@@ -39,8 +39,8 @@
           "builder": "@angular/build:dev-server",
           "options": {"proxyConfig": "proxy.conf.json"},
           "configurations": {
-            "production": {"buildTarget": "MoneyManageFrontend:build:production"},
-            "development": {"buildTarget": "MoneyManageFrontend:build:development"}
+            "production": {"buildTarget": "money-manage-app:build:production"},
+            "development": {"buildTarget": "money-manage-app:build:development"}
           },
           "defaultConfiguration": "development"
         },
