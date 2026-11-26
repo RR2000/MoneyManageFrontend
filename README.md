@@ -1,4 +1,4 @@
-# MoneyManage - web app
+# Money Manage - web app
 
 Personal finance dashboard: balances of the bank accounts over time, the movements, the worth of the
 investments, real estate, and a Monte Carlo projection of the portfolio.

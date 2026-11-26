@@ -9,7 +9,7 @@ services:
       - api
 
   api:
-    image: ghcr.io/rr2000/moneymanage-backend:main
+    image: ghcr.io/rr2000/money-manage-backend:main
     environment:
       DB_URL: jdbc:postgresql://postgres:5432/money
       DB_USER: money
