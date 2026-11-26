@@ -32,6 +32,7 @@
         <app-line-graph [graphPoints]="brokerGraph()" [loading]="brokerGraphLoading()" [error]="brokerGraphError()"
                         (retry)="refreshBrokerGraph()"
                         emptyText="Nessun investimento: importa le transazioni del broker."></app-line-graph>
+        <app-instruments (changed)="refreshBrokerGraph()"></app-instruments>
       </ng-template>
     </mat-tab>
     <mat-tab label="Immobili">
