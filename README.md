@@ -32,8 +32,7 @@ Or everything with Docker: `docker compose up --build`, then http://127.0.0.1:80
 
 ## Image
 
-The CI publishes `ghcr.io/rr2000/money-manage-app:main` (and `:sha-<commit>`) at every push on `main`
-(during the rename the same tags also go under the old name `ghcr.io/rr2000/moneymanage-frontend`):
+The CI publishes `ghcr.io/rr2000/money-manage-app:main` (and `:sha-<commit>`) at every push on `main`:
 nginx with the built app, forwarding `/api/` to the service `api` on port 8080.
 
 ## License
