@@ -35,7 +35,7 @@
               }
             </div>
             @if (i.currencyWarning) {
-              <p class="warning" role="note">Attenzione: il simbolo quota in {{ i.quoteCurrency }}, l'investimento e' in
+              <p class="warning" role="note">Attenzione: il simbolo quota in {{ i.quoteCurrency ?? 'una valuta sconosciuta (forse pence)' }}, l'investimento e' in
                 {{ i.investmentCurrency }}. I valori non vengono convertiti: meglio una quotazione in {{ i.investmentCurrency }}.</p>
             }
             @if (editing() === i.isin) {
@@ -60,7 +60,7 @@
                     {{ p.lastPrice | number: '1.2-4' }} {{ p.currency ?? '(valuta sconosciuta)' }} del {{ p.lastDate }},
                     {{ p.weeks }} settimane.</p>
                   @if (p.currencyWarning) {
-                    <p class="warning" role="note">Quota in {{ p.currency }}, non in {{ i.investmentCurrency }}.</p>
+                    <p class="warning" role="note">Quota in {{ p.currency ?? 'una valuta sconosciuta (forse pence)' }}, non in {{ i.investmentCurrency }}.</p>
                   }
                 }
               </div>

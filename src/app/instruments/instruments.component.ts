@@ -36,7 +36,7 @@ export interface SymbolPreview {
 }
 
 const SOURCES: { [key: string]: string } = {
-  alphavantage: 'Alpha Vantage', yahoo: 'Yahoo', csv: 'file CSV', nessuna: 'nessun prezzo'
+  alphavantage: 'Alpha Vantage', yahoo: 'Yahoo', csv: 'file CSV', esempio: 'dati di esempio', nessuna: 'nessun prezzo'
 };
 
 /**
