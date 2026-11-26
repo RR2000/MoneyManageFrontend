@@ -8,6 +8,7 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
 import {RealEstateComponent} from "../real-estate/real-estate.component";
 import {MonteCarloComponent} from "../monte-carlo/monte-carlo.component";
+import {InstrumentsComponent} from "../instruments/instruments.component";
 import {interval, Subscription, timeout} from "rxjs";
 
 const BROKER_GRAPH_REFRESH_MS = 5 * 60 * 1000;
@@ -25,7 +26,8 @@ const FAILED = 'Non sono riuscito a caricare i dati.';
     MatTabGroup,
     MatTabContent,
     RealEstateComponent,
-    MonteCarloComponent
+    MonteCarloComponent,
+    InstrumentsComponent
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.css'
