@@ -8,9 +8,12 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
 import {RealEstateComponent} from "../real-estate/real-estate.component";
 import {MonteCarloComponent} from "../monte-carlo/monte-carlo.component";
-import {interval, Subscription} from "rxjs";
+import {interval, Subscription, timeout} from "rxjs";
 
 const BROKER_GRAPH_REFRESH_MS = 5 * 60 * 1000;
+/** no call keeps the page waiting longer than this: then it says so, with "Riprova" */
+export const CALL_TIMEOUT_MS = 30 * 1000;
+const FAILED = 'Non sono riuscito a caricare i dati.';
 
 @Component({
   selector: 'app-main-component',
@@ -34,6 +37,11 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   accountNames = signal<string[]>([]);
   loaded = signal(false);
   sampleLoading = signal(false);
+  bankGraphLoading = signal(true);
+  bankGraphError = signal('');
+  brokerGraphLoading = signal(true);
+  brokerGraphError = signal('');
+  accountsError = signal('');
 
   private brokerRefreshSubscription?: Subscription;
 
@@ -43,7 +51,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.getDataAndRenderComponents();
     this.brokerRefreshSubscription = interval(BROKER_GRAPH_REFRESH_MS).subscribe(() => {
-      this.refreshBrokerGraph();
+      this.refreshBrokerGraph(true);
     });
   }
 
@@ -51,12 +59,25 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     this.brokerRefreshSubscription?.unsubscribe();
   }
 
-  refreshBrokerGraph() {
-    this.http.get<GraphPointsDto>(`/api/brokers/transactions/worth/graph`).subscribe({
+  /** `quiet`: the periodic refresh, which keeps the chart on screen instead of showing "Caricamento...". */
+  refreshBrokerGraph(quiet = false) {
+    if (!quiet) {
+      this.brokerGraphLoading.set(true);
+    }
+    this.http.get<GraphPointsDto>(`/api/brokers/transactions/worth/graph`).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
       next: (data: GraphPointsDto) => {
         this.brokerGraph.set(data);
+        this.brokerGraphError.set('');
+        this.brokerGraphLoading.set(false);
       },
-      error: (err) => console.error('Failed to refresh broker graph', err)
+      error: (err) => {
+        console.error('Failed to refresh broker graph', err);
+        this.brokerGraphLoading.set(false);
+        // a failed background refresh leaves the chart that is already there
+        if (!quiet || !this.brokerGraph().uniqueGraphNames?.length) {
+          this.brokerGraphError.set(FAILED);
+        }
+      }
     });
   }
 
@@ -97,16 +118,25 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     const graphDataApi = `${apiUrlPrefix}graph/${encodeURIComponent(fromTimestamp)}/${encodeURIComponent(toTimestamp)}`;
     const accountsListApi = `${apiUrlPrefix}accounts`;
 
-    this.http.get<GraphPointsDto>(graphDataApi).subscribe({
+    this.bankGraphLoading.set(true);
+    this.bankGraphError.set('');
+    this.http.get<GraphPointsDto>(graphDataApi).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
       next: (data: GraphPointsDto) => {
         this.graphPoints.set(data);
+        this.bankGraphLoading.set(false);
       },
-      error: (err) => console.error('Failed to load bank graph data', err)
+      error: (err) => {
+        console.error('Failed to load bank graph data', err);
+        this.bankGraphLoading.set(false);
+        this.bankGraphError.set(FAILED);
+      }
     });
 
+    this.brokerGraphError.set('');
     this.refreshBrokerGraph();
 
-    this.http.get<string[]>(accountsListApi).subscribe({
+    this.accountsError.set('');
+    this.http.get<string[]>(accountsListApi).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
       next: (accountNames: string[]) => {
         this.accountNames.set(accountNames);
         this.loaded.set(true);
@@ -120,7 +150,10 @@ export class MainComponentComponent implements OnInit, OnDestroy {
           });
         });
       },
-      error: (err) => console.error('Failed to load account list', err)
+      error: (err) => {
+        console.error('Failed to load account list', err);
+        this.accountsError.set(FAILED);
+      }
     });
   }
 }
