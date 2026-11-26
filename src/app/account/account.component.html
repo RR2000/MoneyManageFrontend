@@ -6,6 +6,12 @@
       @if (a.email) {
         <p><strong>Email:</strong> {{ a.email }}</p>
       }
+      <p class="hint">Per accedere con la password scrivi lo username{{ a.email ? ' oppure l'email' : '' }}.
+        @if (a.emailLinks && a.email) {
+          Se non hai mai scelto una password (account nato da "Accedi con GitHub") o l'hai dimenticata, usa
+          "Password dimenticata?" nella pagina di accesso.
+        }
+      </p>
       @if (a.emailLinks) {
         <h2>{{ a.email ? 'Cambia email' : 'Aggiungi un\'email' }}</h2>
         <p class="hint">Serve per reimpostare la password se la dimentichi. Ti mandiamo un link per confermarla: finche'

@@ -34,8 +34,9 @@ export class AuthService {
   constructor(private http: HttpClient) {
   }
 
+  /** `username`: the username (any case) or the account's confirmed email. */
   login(username: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`/api/auth/login`, {username, password})
+    return this.http.post<AuthResponse>(`/api/auth/login`, {username: username.trim(), password})
       .pipe(tap(res => this.storeToken(res.token)));
   }
 
@@ -51,9 +52,9 @@ export class AuthService {
     return this.http.post<void>(`/api/auth/password/forgot`, {email});
   }
 
-  /** New password with the token of the link in the email (single use, 30 minutes). */
-  resetPassword(token: string, password: string): Observable<void> {
-    return this.http.post<void>(`/api/auth/password/reset`, {token, password});
+  /** New password with the token of the link in the email (single use, 30 minutes); answers the username to log in with. */
+  resetPassword(token: string, password: string): Observable<{ username: string }> {
+    return this.http.post<{ username: string }>(`/api/auth/password/reset`, {token, password});
   }
 
   /** Confirms the account's email with the token of the link in the email. */
