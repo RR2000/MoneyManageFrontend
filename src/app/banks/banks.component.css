@@ -47,3 +47,9 @@ select, input { font: inherit; padding: 6px 8px; width: 100%; max-width: 100%; m
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
 .account-name { font-weight: 600; overflow-wrap: anywhere; }
+.history { margin-top: 6px; }
+.confirm { align-items: flex-start; }
+.confirm-title { margin: 0 0 6px; font-weight: 600; overflow-wrap: anywhere; }
+.summary { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.summary .icon { display: inline-block; width: 1.2em; text-align: center; }
+.sources { list-style: none; margin: 4px 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }

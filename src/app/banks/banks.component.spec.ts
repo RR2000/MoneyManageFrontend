@@ -266,4 +266,111 @@ describe('BanksComponent', () => {
     expect(el.querySelector('.link')).toBeNull();
     expect(el.textContent).toContain('No bank linked yet.');
   });
+
+  function historyLink(): BankLink {
+    return link({accounts: [{id: 11, name: 'Conto di prova', iban: 'IT **** 0000', currency: 'EUR',
+      moneyAccount: 'Conto finto', balance: {amount: 1234.5, currency: 'EUR', type: 'CLBD', date: '2026-05-31'},
+      bankFrom: '2026-03-01', firstDate: '2025-01-10', extraRows: 7, olderRows: 40}]});
+  }
+
+  const preview = {token: 'tok-finto', bankFrom: '2026-03-01', deleted: 7, added: 3, matched: 50, otherCurrency: 0,
+    older: 40, currency: 'EUR', todayBefore: 1234.5, todayAfter: 1234.5, startBefore: 900, startAfter: 880.25};
+
+  it('says how far back the bank\'s history goes, and what is left from files', () => {
+    const {el} = open([historyLink()]);
+    expect(el.textContent).toContain('History from the bank since 1 Mar 2026.');
+    expect(el.textContent).toContain('Oldest movement of the account: 10 Jan 2025.');
+    expect(el.textContent).toContain('7 rows from a file or typed in since 1 Mar 2026 are not movements of the bank');
+  });
+
+  it('"Replace with the bank\'s data" shows a preview, then replaces only after "Yes"', () => {
+    const {fixture, el} = open([historyLink()]);
+    buttons(el, 'Replace with the bank\'s data')[0].click();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Reading the history...');
+    expect(el.textContent).toContain('Nothing changes yet.');
+    http.expectOne('/api/banking/accounts/11/replace/preview').flush(preview);
+    fixture.detectChanges();
+    const summary = el.querySelector('.confirm')?.textContent ?? '';
+    expect(summary).toContain('Replace the movements of Conto finto with the bank\'s, from 1 Mar 2026 on');
+    expect(summary).toContain('7 rows from a file or typed in are deleted');
+    expect(summary).toContain('3 movements of the bank are added');
+    expect(summary).toContain('50 rows from a file are movements of the bank and stay');
+    expect(summary).toContain('40 rows before 1 Mar 2026 stay');
+    expect(summary).toContain('Balance today: €1,234.50 before, €1,234.50 after');
+    expect(summary).toContain('Balance the day before 1 Mar 2026: €900.00 before, €880.25 after');
+
+    // cancel: nothing sent
+    buttons(el, 'Cancel')[0].click();
+    fixture.detectChanges();
+    http.expectNone('/api/banking/accounts/11/replace');
+    expect(el.querySelector('.confirm')).toBeNull();
+
+    buttons(el, 'Replace with the bank\'s data')[0].click();
+    http.expectOne('/api/banking/accounts/11/replace/preview').flush(preview);
+    fixture.detectChanges();
+    buttons(el, 'Yes, replace')[0].click();
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Replacing...');
+    const replace = http.expectOne('/api/banking/accounts/11/replace');
+    expect(replace.request.body).toEqual({token: 'tok-finto'});
+    replace.flush({...preview, token: null});
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Done: 7 rows deleted, 3 movements added, balances computed again.');
+    http.expectOne('/api/banking/links').flush([historyLink()]);
+  });
+
+  it('an old preview says so, in words', () => {
+    const {fixture, el} = open([historyLink()]);
+    buttons(el, 'Replace with the bank\'s data')[0].click();
+    http.expectOne('/api/banking/accounts/11/replace/preview').flush(preview);
+    fixture.detectChanges();
+    buttons(el, 'Yes, replace')[0].click();
+    http.expectOne('/api/banking/accounts/11/replace').flush({status: 409, error: 'Conflict', message: 'PREVIEW_EXPIRED'},
+      {status: 409, statusText: 'Conflict'});
+    fixture.detectChanges();
+    expect(el.querySelector('[role=alert]')?.textContent).toContain('The preview is too old or the data changed');
+  });
+
+  it('the older rows are deleted apart, with their own confirmation', () => {
+    const {fixture, el} = open([historyLink()]);
+    buttons(el, 'Delete also the 40 older rows (before 1 Mar 2026)...')[0].click();
+    fixture.detectChanges();
+    expect(el.querySelector('.confirm')?.textContent)
+      .toContain('Delete from Conto finto the 40 rows from a file or typed in before 1 Mar 2026?');
+    buttons(el, 'Yes, delete them')[0].click();
+    const del = http.expectOne('/api/banking/accounts/11/delete-older');
+    expect(del.request.body).toEqual({before: '2026-03-01'});
+    del.flush({deleted: 40});
+    fixture.detectChanges();
+    expect(el.textContent).toContain('40 older rows deleted.');
+    http.expectOne('/api/banking/links').flush([historyLink()]);
+  });
+
+  it('without an active consent the replacement waits for a reconnect', () => {
+    const {el} = open([{...historyLink(), status: 'EXPIRED'}]);
+    expect(buttons(el, 'Replace with the bank\'s data')[0].disabled).toBe(true);
+    expect(el.textContent).toContain('It needs an active consent');
+  });
+
+  it('"Reconnect and import the whole history" asks the consent with fullHistory', () => {
+    const {el} = open();
+    expect(el.textContent).toContain('Revolut gives the whole history only in the first 5 minutes');
+    buttons(el, 'Reconnect and import the whole history')[0].click();
+    const start = http.expectOne('/api/banking/links');
+    expect(start.request.body).toEqual({aspsp: 'Banca Finta', country: 'IT', fullHistory: true});
+    start.flush({url: 'https://bank.example.com/consent'});
+    expect(redirect).toHaveBeenCalledWith('https://bank.example.com/consent');
+  });
+
+  it('an account not imported yet of a consent older than 5 minutes: the history may be short', () => {
+    const fresh = link({createdAt: new Date(NOW - 2 * 60 * 1000).toISOString(),
+      accounts: [{id: 11, iban: null, currency: 'EUR', balance: null, moneyAccount: null}]});
+    const late = link({id: 2, aspsp: 'Altra Banca', createdAt: new Date(NOW - 10 * 60 * 1000).toISOString(),
+      accounts: [{id: 12, iban: null, currency: 'EUR', balance: null, moneyAccount: null}]});
+    const {el} = open([fresh, late]);
+    const items = el.querySelectorAll('.link');
+    expect(items[0].textContent).not.toContain('only the last 90 days');
+    expect(items[1].textContent).toContain('some banks (Revolut) now give only the last 90 days');
+  });
 });

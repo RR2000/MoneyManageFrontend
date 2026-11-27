@@ -8,6 +8,7 @@ import {ResetPasswordComponent} from './reset-password/reset-password.component'
 import {VerifyEmailComponent} from './verify-email/verify-email.component';
 import {AccountComponent} from './account/account.component';
 import {BanksComponent} from './banks/banks.component';
+import {MoneyAccountsComponent} from './money-accounts/money-accounts.component';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
@@ -20,5 +21,7 @@ export const routes: Routes = [
   {path: 'setup', component: SetupWizardComponent, canActivate: [authGuard]},
   // open banking; the backend sends the browser back here with ?result=ok|error
   {path: 'banks', component: BanksComponent, canActivate: [authGuard]},
+  // the money accounts: where their rows come from, delete one
+  {path: 'accounts', component: MoneyAccountsComponent, canActivate: [authGuard]},
   {path: '**', redirectTo: ''}
 ];

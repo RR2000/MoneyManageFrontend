@@ -1,0 +1,80 @@
+<main class="page banks">
+  <h1>{{ 'accounts.title' | t }}</h1>
+  <p class="hint">{{ 'accounts.intro' | t }}</p>
+
+  @if (deleted()) {
+    <div class="banner banner-ok" role="status">
+      <span class="icon" aria-hidden="true">&#10003;</span><span class="grow">{{ deleted() }}</span>
+      <button type="button" (click)="deleted.set('')">{{ 'banks.dismiss' | t }}</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'accounts.loading' | t }}</p>
+  } @else if (loadError()) {
+    <div class="banner banner-error" role="alert">
+      <span class="grow">{{ 'accounts.loadError' | t }}</span>
+      <button type="button" (click)="load()">{{ 'banks.retry' | t }}</button>
+    </div>
+  } @else if (accounts(); as list) {
+    @if (list.length === 0) {
+      <p class="empty">{{ 'accounts.none' | t }}</p>
+    }
+    <ul class="links">
+      @for (account of list; track account.name) {
+        <li class="link">
+          <div class="head">
+            <h2>{{ account.name }}</h2>
+            @if (account.linked) {
+              <span class="status status-ACTIVE"><span aria-hidden="true">{{ icons.linked }}</span>
+                {{ 'accounts.linked' | t }}</span>
+            }
+          </div>
+          <p class="fact">{{ rowsText(account.rows) }}, {{ period(account) }}</p>
+          <ul class="sources">
+            @if (account.fileRows) {
+              <li><span aria-hidden="true">{{ icons.FILE }} </span>{{ 'accounts.source.FILE' | t: {count: account.fileRows} }}</li>
+            }
+            @if (account.manualRows) {
+              <li><span aria-hidden="true">{{ icons.MANUAL }} </span>{{ 'accounts.source.MANUAL' | t: {count: account.manualRows} }}</li>
+            }
+            @if (account.bankRows) {
+              <li><span aria-hidden="true">{{ icons.BANK }} </span>{{ 'accounts.source.BANK' | t: {count: account.bankRows} }}</li>
+            }
+          </ul>
+
+          @if (account.linked) {
+            <p class="muted">{{ 'accounts.linked.hint' | t }} <a routerLink="/banks">{{ 'accounts.toBanks' | t }}</a></p>
+          } @else if (confirming() === account.name) {
+            <form class="banner banner-warning confirm" role="alert" (ngSubmit)="delete(account)">
+              <div class="grow">
+                <p class="confirm-title">{{ 'accounts.delete.what' | t: {rows: rowsText(account.rows), period: period(account)} }}</p>
+                <label>{{ 'accounts.delete.type' | t: {name: account.name} }}
+                  <input name="typed" [(ngModel)]="typed" autocomplete="off" autocapitalize="off" spellcheck="false"
+                         [disabled]="deleting()">
+                </label>
+              </div>
+              <div class="buttons">
+                <button type="submit" class="danger" [disabled]="typed !== account.name || deleting()">
+                  @if (deleting()) {
+                    <span class="spinner" aria-hidden="true"></span>{{ 'accounts.delete.working' | t }}
+                  } @else {
+                    {{ 'accounts.delete.yes' | t }}
+                  }
+                </button>
+                <button type="button" (click)="cancel()" [disabled]="deleting()">{{ 'banks.replace.cancel' | t }}</button>
+              </div>
+            </form>
+            @if (deleteError()) {
+              <p class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ deleteError() }}</p>
+            }
+          } @else {
+            <div class="buttons">
+              <button type="button" (click)="ask(account)" [disabled]="deleting()">{{ 'accounts.delete' | t }}</button>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+</main>
