@@ -1,15 +1,24 @@
-import {Component} from '@angular/core';
-import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+import {Component, inject} from '@angular/core';
+import {NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
+import {filter} from 'rxjs';
 import {AuthService} from './auth/auth.service';
+import {BankingService} from './banks/banking.service';
+import {TPipe} from './i18n/t.pipe';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TPipe],
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  private banking = inject(BankingService);
+  /** "Banks" only when the server has the feature for this user (no 404) */
+  readonly banksAvailable = this.banking.available;
+
   constructor(private auth: AuthService, private router: Router) {
+    // after every navigation, so a login (or another user) is checked too; once per login
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => this.banking.checkAvailability());
   }
 
   isLoggedIn(): boolean {

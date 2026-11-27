@@ -1,0 +1,118 @@
+import {computed, Injectable, signal} from '@angular/core';
+import {en, MessageKey} from './messages.en';
+import {it} from './messages.it';
+
+export type Lang = 'en' | 'it';
+export const LANGS: readonly Lang[] = ['en', 'it'];
+
+const MESSAGES: Record<Lang, Record<MessageKey, string>> = {en, it};
+const STORAGE_KEY = 'lang';
+/** locales for numbers and dates: British English (day/month/year, like the rest of Europe) and Italian */
+const LOCALES: Record<Lang, string> = {en: 'en-GB', it: 'it-IT'};
+
+/** The language chosen on this browser, or null; localStorage may be missing or throw (private window, blocked). */
+export function storedLang(): Lang | null {
+  try {
+    const value = localStorage.getItem(STORAGE_KEY);
+    return value === 'en' || value === 'it' ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function storeLang(lang: Lang): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, lang);
+  } catch {
+    // the choice lasts for this visit only
+  }
+}
+
+/**
+ * The texts of the app in English (the default) and Italian, switched at runtime without a second build.
+ * Texts are looked up by key with `t()` (or the `t` pipe in templates); `{name}` in a text is replaced by `params.name`.
+ */
+@Injectable({providedIn: 'root'})
+export class I18nService {
+  readonly lang = signal<Lang>(storedLang() ?? 'en');
+  /** BCP 47 locale of the language, for Intl */
+  readonly locale = computed(() => LOCALES[this.lang()]);
+
+  constructor() {
+    this.applyToDocument();
+  }
+
+  setLang(lang: Lang): void {
+    this.lang.set(lang);
+    storeLang(lang);
+    this.applyToDocument();
+  }
+
+  t(key: MessageKey, params?: Record<string, string | number>): string {
+    let text = MESSAGES[this.lang()][key] ?? en[key] ?? key;
+    if (params) {
+      for (const [name, value] of Object.entries(params)) {
+        text = text.split(`{${name}}`).join(String(value));
+      }
+    }
+    return text;
+  }
+
+  /** `key` only if it is a known text: for codes coming from the server, which may be new */
+  has(key: string): key is MessageKey {
+    return key in en;
+  }
+
+  number(value: number, decimals = 2): string {
+    return new Intl.NumberFormat(this.locale(), {minimumFractionDigits: decimals, maximumFractionDigits: decimals})
+      .format(value);
+  }
+
+  /** an amount with its currency; an unknown currency code is written after the number */
+  money(value: number, currency: string | null | undefined): string {
+    if (currency) {
+      try {
+        return new Intl.NumberFormat(this.locale(), {style: 'currency', currency}).format(value);
+      } catch {
+        return `${this.number(value)} ${currency}`;
+      }
+    }
+    return this.number(value);
+  }
+
+  /** a day, from an ISO date or date-time */
+  date(iso: string | null | undefined): string {
+    const date = parse(iso);
+    return date ? new Intl.DateTimeFormat(this.locale(), {dateStyle: 'medium'}).format(date) : '';
+  }
+
+  /** a day and the time */
+  dateTime(iso: string | null | undefined): string {
+    const date = parse(iso);
+    return date ? new Intl.DateTimeFormat(this.locale(), {dateStyle: 'medium', timeStyle: 'short'}).format(date) : '';
+  }
+
+  /** a country's name in the language, from its ISO code */
+  country(code: string): string {
+    try {
+      return new Intl.DisplayNames([this.locale()], {type: 'region'}).of(code) ?? code;
+    } catch {
+      return code;
+    }
+  }
+
+  private applyToDocument(): void {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = this.lang();
+    }
+  }
+}
+
+function parse(iso: string | null | undefined): Date | null {
+  if (!iso) {
+    return null;
+  }
+  // a bare date is a day, not midnight UTC (which would be the day before west of Greenwich)
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? new Date(`${iso}T00:00:00`) : new Date(iso);
+  return isNaN(date.getTime()) ? null : date;
+}

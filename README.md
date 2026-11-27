@@ -14,6 +14,14 @@ when the backend can send email (`passwordReset` in `GET /api/auth/providers`). 
 `/reset-password#token=...` and `/verify-email#token=...`: the token stays in the fragment, so it never reaches a
 server log, and the page removes it from the address bar.
 
+The "Banks" page (`/banks`, open banking through the backend) links bank accounts so their movements arrive by
+themselves: the consent is given on the bank's site, which comes back to `/banks?result=ok|error`. The menu entry and
+the page exist only when `GET /api/banking/links` does not answer 404 (feature off, or not for this user). Movements
+sent by the bank carry a "bank" label in the table.
+
+Texts: English by default and Italian, switched at runtime (`src/app/i18n`: `messages.en.ts`, `messages.it.ts` with the
+same keys, the compiler checks it; `{{ 'key' | t }}` in templates).
+
 ## Stack
 
 Angular 22 with Angular Material and Chart.js, unit tests with Vitest. In production nginx serves the app

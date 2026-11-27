@@ -7,6 +7,7 @@ import {ForgotPasswordComponent} from './forgot-password/forgot-password.compone
 import {ResetPasswordComponent} from './reset-password/reset-password.component';
 import {VerifyEmailComponent} from './verify-email/verify-email.component';
 import {AccountComponent} from './account/account.component';
+import {BanksComponent} from './banks/banks.component';
 
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
@@ -17,5 +18,7 @@ export const routes: Routes = [
   {path: 'account', component: AccountComponent, canActivate: [authGuard]},
   {path: '', component: MainComponentComponent, canActivate: [authGuard]},
   {path: 'setup', component: SetupWizardComponent, canActivate: [authGuard]},
+  // open banking; the backend sends the browser back here with ?result=ok|error
+  {path: 'banks', component: BanksComponent, canActivate: [authGuard]},
   {path: '**', redirectTo: ''}
 ];

@@ -1,5 +1,6 @@
 import {Component, Input, OnChanges} from '@angular/core';
 import {DecimalPipe} from '@angular/common';
+import {TPipe} from '../i18n/t.pipe';
 import {TransactionDto} from "../../models/transaction.dto";
 
 export interface TransactionRow {
@@ -7,13 +8,15 @@ export interface TransactionRow {
   description: string;
   account: string;
   amount: number;
+  /** sent by the bank (open banking) */
+  fromBank: boolean;
 }
 
 /** Movements of all accounts in one list, newest first, one amount column per account. */
 @Component({
   selector: 'app-transactions-table',
   templateUrl: './transactions-table.component.html',
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, TPipe],
   styleUrls: ['./transactions-table.component.css']
 })
 export class TransactionsTableComponent implements OnChanges {
@@ -28,7 +31,8 @@ export class TransactionsTableComponent implements OnChanges {
         date: String(tx.datetime).substring(0, 10),
         description: tx.description,
         account,
-        amount: tx.amount
+        amount: tx.amount,
+        fromBank: tx.source === 'BANK'
       })))
       .sort((a, b) => b.date.localeCompare(a.date));
   }
