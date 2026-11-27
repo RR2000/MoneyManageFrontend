@@ -3,7 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {ActivatedRoute, Router} from '@angular/router';
 import {timeout} from 'rxjs';
-import {Aspsp, BankAccount, BankingService, BankLink, isNotFound, REDIRECT} from './banking.service';
+import {Aspsp, BankAccount, BankingService, BankLink, errorCode, isNotFound, REDIRECT, SyncResult} from './banking.service';
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
 import {MessageKey} from '../i18n/messages.en';
@@ -16,8 +16,14 @@ export const EXPIRY_WARNING_DAYS = 14;
 /** banks listed before "Show all", so a country with hundreds of banks does not make an endless page */
 export const LIST_LIMIT = 30;
 export const NEW_ACCOUNT = '__new__';
+/** the option "not imported": PUT with null */
+export const NO_ACCOUNT = '__none__';
 const CALL_TIMEOUT_MS = 30 * 1000;
+/** a sync reads every bank: it may take a while */
+const SYNC_TIMEOUT_MS = 120 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+type Id = number | string;
 
 /** the text without accents and case, to match "intesa" with "Intesa Sanpaolo" and "credit" with "Crédit" */
 function folded(text: string): string {
@@ -42,6 +48,7 @@ function capitalized(text: string): string {
 export class BanksComponent implements OnInit {
   readonly countries = COUNTRIES;
   readonly NEW_ACCOUNT = NEW_ACCOUNT;
+  readonly NO_ACCOUNT = NO_ACCOUNT;
   /** next to the words, never instead of them */
   readonly icons = {ok: '✓', warning: '⚠', expired: '⌛'};
   readonly i18n = inject(I18nService);
@@ -70,20 +77,23 @@ export class BanksComponent implements OnInit {
   startError = signal('');
 
   syncing = signal(false);
-  syncMessage = signal<'done' | 'error' | null>(null);
+  syncResult = signal<SyncResult | null>(null);
+  syncError = signal('');
 
   /** account whose money account is being saved */
-  saving = signal('');
-  savedAccount = signal('');
+  saving = signal<Id | null>(null);
+  savedAccount = signal<Id | null>(null);
+  /** account just linked to a money account: its movements are being imported, the list is read again */
+  importing = signal<Id | null>(null);
   accountError = signal<Record<string, string>>({});
   /** value picked in each select while it is saved, so a failure puts the old one back */
   chosen = signal<Record<string, string>>({});
   /** account for which the name of a new money account is being written */
-  newFor = signal('');
+  newFor = signal<Id | null>(null);
   newName = '';
 
-  confirmUnlink = signal('');
-  unlinking = signal('');
+  confirmUnlink = signal<Id | null>(null);
+  unlinking = signal<Id | null>(null);
   linkError = signal<Record<string, string>>({});
 
   filtered = computed(() => {
@@ -92,7 +102,7 @@ export class BanksComponent implements OnInit {
   });
   visibleAspsps = computed(() => this.showAll() ? this.filtered() : this.filtered().slice(0, LIST_LIMIT));
   /** anything that waits for the server and would conflict with another click */
-  busy = computed(() => !!this.redirecting() || this.syncing() || !!this.unlinking());
+  busy = computed(() => !!this.redirecting() || this.syncing() || this.unlinking() !== null);
 
   ngOnInit(): void {
     const result = this.route.snapshot.queryParamMap.get('result');
@@ -116,14 +126,10 @@ export class BanksComponent implements OnInit {
       this.loadError.set(false);
     }
     this.banking.links().pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
-      next: links => {
-        this.links.set(links);
-        this.loading.set(false);
-        this.loadError.set(false);
-        this.chosen.set({});
-      },
+      next: links => this.showLinks(links),
       error: (err: unknown) => {
         this.loading.set(false);
+        this.importing.set(null);
         if (isNotFound(err)) {
           // the feature is off, or not for this user: the page is not there
           this.router.navigate(['/']);
@@ -133,6 +139,14 @@ export class BanksComponent implements OnInit {
         this.chosen.set({});
       }
     });
+  }
+
+  private showLinks(links: BankLink[]): void {
+    this.links.set(links);
+    this.importing.set(null);
+    this.loading.set(false);
+    this.loadError.set(false);
+    this.chosen.set({});
   }
 
   openPicker(): void {
@@ -196,27 +210,38 @@ export class BanksComponent implements OnInit {
 
   sync(): void {
     this.syncing.set(true);
-    this.syncMessage.set(null);
-    this.banking.sync().subscribe({
-      next: () => {
+    this.syncResult.set(null);
+    this.syncError.set('');
+    this.banking.sync().pipe(timeout(SYNC_TIMEOUT_MS)).subscribe({
+      next: result => {
         this.syncing.set(false);
-        this.syncMessage.set('done');
-        this.load(true);
+        this.syncResult.set(result);
+        if (Array.isArray(result?.links)) {
+          this.showLinks(result.links);
+        } else {
+          this.load(true);
+        }
       },
-      error: () => {
+      error: (err: unknown) => {
         this.syncing.set(false);
-        this.syncMessage.set('error');
+        this.syncError.set(this.errorText(err, 'banks.syncError'));
         // the error of each bank is in its link
         this.load(true);
       }
     });
   }
 
+  syncText(result: SyncResult): string {
+    const imported = result.imported === 1 ? this.i18n.t('banks.synced.one')
+      : this.i18n.t('banks.synced', {count: result.imported ?? 0});
+    return result.ambiguous ? `${imported} ${this.i18n.t('banks.ambiguous', {count: result.ambiguous})}` : imported;
+  }
+
   selectValue(account: BankAccount): string {
     if (this.newFor() === account.id) {
       return NEW_ACCOUNT;
     }
-    return this.chosen()[account.id] ?? account.moneyAccount ?? '';
+    return this.chosen()[account.id] ?? account.moneyAccount ?? NO_ACCOUNT;
   }
 
   /** the money accounts to choose from, with the one already linked even if the list did not have it */
@@ -226,15 +251,16 @@ export class BanksComponent implements OnInit {
   }
 
   choose(account: BankAccount, value: string): void {
-    this.savedAccount.set('');
+    this.savedAccount.set(null);
     if (value === NEW_ACCOUNT) {
       this.newFor.set(account.id);
       this.newName = '';
       return;
     }
-    this.newFor.set('');
-    if (value && value !== account.moneyAccount) {
-      this.save(account, value);
+    this.newFor.set(null);
+    const moneyAccount = value === NO_ACCOUNT ? null : value;
+    if (moneyAccount !== (account.moneyAccount ?? null)) {
+      this.save(account, moneyAccount);
     }
   }
 
@@ -246,27 +272,30 @@ export class BanksComponent implements OnInit {
   }
 
   cancelNew(): void {
-    this.newFor.set('');
+    this.newFor.set(null);
     this.newName = '';
   }
 
-  private save(account: BankAccount, moneyAccount: string): void {
+  private save(account: BankAccount, moneyAccount: string | null): void {
     this.saving.set(account.id);
-    this.chosen.update(all => ({...all, [account.id]: moneyAccount}));
+    this.chosen.update(all => ({...all, [account.id]: moneyAccount ?? NO_ACCOUNT}));
     this.accountError.update(all => ({...all, [account.id]: ''}));
-    this.banking.setMoneyAccount(account.id, moneyAccount).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
+    // the server starts the import of the account here: it may take a while
+    this.banking.setMoneyAccount(account.id, moneyAccount).pipe(timeout(SYNC_TIMEOUT_MS)).subscribe({
       next: () => {
-        this.saving.set('');
+        this.saving.set(null);
         this.savedAccount.set(account.id);
-        this.newFor.set('');
+        this.newFor.set(null);
         this.newName = '';
-        if (!this.moneyAccounts().includes(moneyAccount)) {
+        if (moneyAccount && !this.moneyAccounts().includes(moneyAccount)) {
           this.moneyAccounts.update(names => [...names, moneyAccount].sort());
         }
+        // the import of a newly linked account starts now: the balance and the last sync change
+        this.importing.set(account.id);
         this.load(true);
       },
       error: (err: unknown) => {
-        this.saving.set('');
+        this.saving.set(null);
         this.chosen.update(all => {
           const rest = {...all};
           delete rest[account.id];
@@ -282,7 +311,7 @@ export class BanksComponent implements OnInit {
   }
 
   keepLink(): void {
-    this.confirmUnlink.set('');
+    this.confirmUnlink.set(null);
   }
 
   unlink(link: BankLink): void {
@@ -290,12 +319,12 @@ export class BanksComponent implements OnInit {
     this.linkError.update(all => ({...all, [link.id]: ''}));
     this.banking.unlink(link.id).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
       next: () => {
-        this.unlinking.set('');
-        this.confirmUnlink.set('');
+        this.unlinking.set(null);
+        this.confirmUnlink.set(null);
         this.links.update(links => (links ?? []).filter(l => l.id !== link.id));
       },
       error: (err: unknown) => {
-        this.unlinking.set('');
+        this.unlinking.set(null);
         this.linkError.update(all => ({...all, [link.id]: this.errorText(err, 'banks.unlinkError')}));
       }
     });
@@ -310,17 +339,28 @@ export class BanksComponent implements OnInit {
     return isNaN(until) ? null : Math.floor((until - Date.now()) / DAY_MS);
   }
 
-  expired(link: BankLink): boolean {
+  /** the status as it is now: an ACTIVE link past its date is expired, even before the server notices */
+  status(link: BankLink): string {
     const days = this.daysLeft(link);
-    return link.status === 'EXPIRED' || (days !== null && days < 0);
+    return link.status === 'ACTIVE' && days !== null && days < 0 ? 'EXPIRED' : link.status;
+  }
+
+  statusKey(link: BankLink): MessageKey {
+    const key = `banks.status.${this.status(link)}`;
+    return this.i18n.has(key) ? key : 'banks.status.unknown';
+  }
+
+  statusIcon(link: BankLink): string {
+    const status = this.status(link);
+    return status === 'ACTIVE' ? this.icons.ok : status === 'EXPIRED' ? this.icons.expired : this.icons.warning;
   }
 
   expiresText(link: BankLink): string {
     const days = this.daysLeft(link);
-    if (days === null) {
+    if (days === null || this.status(link) === 'REVOKED') {
       return '';
     }
-    if (this.expired(link)) {
+    if (this.status(link) === 'EXPIRED' || days < 0) {
       return this.i18n.t('banks.expiredOn', {date: this.i18n.date(link.validUntil)});
     }
     const when = days === 0 ? this.i18n.t('banks.expiresToday')
@@ -328,10 +368,14 @@ export class BanksComponent implements OnInit {
     return `${when} (${this.i18n.t('banks.validUntil', {date: this.i18n.date(link.validUntil)})})`;
   }
 
-  /** the "reconnect" banner: expired, or expiring within EXPIRY_WARNING_DAYS */
+  /** the "reconnect" banner: expired or withdrawn, or expiring within EXPIRY_WARNING_DAYS */
   warning(link: BankLink): string {
-    if (this.expired(link)) {
+    const status = this.status(link);
+    if (status === 'EXPIRED') {
       return this.i18n.t('banks.expired');
+    }
+    if (status === 'REVOKED') {
+      return this.i18n.t('banks.revoked');
     }
     const days = this.daysLeft(link);
     if (days === null || days > EXPIRY_WARNING_DAYS) {
@@ -352,26 +396,23 @@ export class BanksComponent implements OnInit {
     if (!balance) {
       return this.i18n.t('banks.balance.none');
     }
-    const amount = this.i18n.t('banks.balance', {amount: this.i18n.money(balance.amount, account.currency)});
+    const amount = this.i18n.t('banks.balance',
+      {amount: this.i18n.money(balance.amount, balance.currency ?? account.currency)});
     const typeKey = `banks.balanceType.${balance.type}`;
     const type = this.i18n.has(typeKey) ? this.i18n.t(typeKey) : balance.type;
     const date = this.i18n.date(balance.date);
     return date ? `${amount} ${this.i18n.t('banks.balance.on', {type, date})}` : `${amount} (${type})`;
   }
 
-  statusKey(link: BankLink): MessageKey {
-    return this.expired(link) ? 'banks.status.EXPIRED' : `banks.status.${link.status}`;
-  }
-
-  /** the server's code when it sends one we know, else the generic text of the action */
+  /** the server's code when it sends one, else the generic text of the action */
   private errorText(err: unknown, fallback: MessageKey): string {
-    const code = err instanceof HttpErrorResponse ? err.error?.code : undefined;
-    if (typeof code === 'string' && this.i18n.has(`banks.error.${code}`)) {
+    const code = errorCode(err);
+    if (code && this.i18n.has(`banks.error.${code}`)) {
       return capitalized(this.errorCodeText(code));
     }
     if (err instanceof HttpErrorResponse && err.status === 429) {
-      return capitalized(this.i18n.t('banks.error.RATE_LIMIT'));
+      return this.i18n.t('banks.tooMany');
     }
-    return this.i18n.t(fallback);
+    return code ? `${this.i18n.t(fallback)} (${code})` : this.i18n.t(fallback);
   }
 }

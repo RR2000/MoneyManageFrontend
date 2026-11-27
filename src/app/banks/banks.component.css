@@ -32,7 +32,7 @@ select, input { font: inherit; padding: 6px 8px; width: 100%; max-width: 100%; m
   font-size: .9rem; }
 .status-ACTIVE { color: #14501f; background: #e8f5ea; }
 .status-EXPIRED { color: #5c3d00; background: #fff4e0; }
-.status-ERROR { color: #8c1d18; background: #fdecea; }
+.status-REVOKED, .status-unknown { color: #8c1d18; background: #fdecea; }
 .fact { margin: 6px 0; }
 .accounts { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
 .account { border-top: 1px solid #e3e6ea; padding-top: 8px; min-width: 0; }
@@ -44,3 +44,4 @@ select, input { font: inherit; padding: 6px 8px; width: 100%; max-width: 100%; m
   animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+.account-name { font-weight: 600; overflow-wrap: anywhere; }

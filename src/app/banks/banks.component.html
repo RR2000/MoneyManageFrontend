@@ -24,10 +24,10 @@
         }
       </button>
     }
-    @if (syncMessage() === 'done') {
-      <span class="ok" role="status"><span aria-hidden="true">&#10003; </span>{{ 'banks.synced' | t }}</span>
-    } @else if (syncMessage() === 'error') {
-      <span class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ 'banks.syncError' | t }}</span>
+    @if (syncResult(); as sr) {
+      <span class="ok" role="status"><span aria-hidden="true">&#10003; </span>{{ syncText(sr) }}</span>
+    } @else if (syncError()) {
+      <span class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ syncError() }}</span>
     }
   </div>
 
@@ -111,8 +111,8 @@
         <li class="link">
           <div class="head">
             <h2>{{ link.aspsp }}</h2>
-            <span [class]="'status status-' + (expired(link) ? 'EXPIRED' : link.status)">
-              <span aria-hidden="true">{{ expired(link) ? icons.expired : link.status === 'ACTIVE' ? icons.ok : icons.warning }}</span>
+            <span [class]="'status status-' + status(link)">
+              <span aria-hidden="true">{{ statusIcon(link) }}</span>
               {{ statusKey(link) | t }}
             </span>
             <span class="muted">{{ i18n.country(link.country) }}</span>
@@ -128,11 +128,14 @@
             </div>
           }
           <p class="fact">
-            {{ link.lastSync ? ('banks.lastSync' | t: {when: i18n.dateTime(link.lastSync)}) : ('banks.lastSync.never' | t) }}
+            {{ link.lastSyncAt ? ('banks.lastSync' | t: {when: i18n.dateTime(link.lastSyncAt)}) : ('banks.lastSync.never' | t) }}
           </p>
           @if (link.lastError) {
             <p class="error-text"><span aria-hidden="true">&#9888; </span>
               {{ 'banks.lastError' | t: {text: errorCodeText(link.lastError)} }}</p>
+          }
+          @if (link.lastAmbiguous) {
+            <p class="fact"><span aria-hidden="true">&#9888; </span>{{ 'banks.lastAmbiguous' | t: {count: link.lastAmbiguous} }}</p>
           }
 
           @if (link.accounts.length === 0) {
@@ -141,6 +144,9 @@
           <ul class="accounts">
             @for (account of link.accounts; track account.id) {
               <li class="account">
+                @if (account.name) {
+                  <div class="account-name">{{ account.name }}</div>
+                }
                 <div class="iban">{{ account.iban || ('banks.account.noIban' | t) }}
                   @if (account.currency) {
                     <span class="muted">{{ account.currency }}</span>
@@ -150,9 +156,7 @@
                 <label class="money-account">{{ 'banks.moneyAccount' | t }}
                   <select [name]="'money-' + account.id" [ngModel]="selectValue(account)"
                           (ngModelChange)="choose(account, $event)" [disabled]="saving() === account.id || busy()">
-                    @if (!account.moneyAccount) {
-                      <option value="" disabled>{{ 'banks.moneyAccount.choose' | t }}</option>
-                    }
+                    <option [value]="NO_ACCOUNT">{{ 'banks.moneyAccount.none' | t }}</option>
                     @for (name of options(account); track name) {
                       <option [value]="name">{{ name }}</option>
                     }
@@ -174,6 +178,8 @@
                 }
                 @if (saving() === account.id) {
                   <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.moneyAccount.saving' | t }}</p>
+                } @else if (importing() === account.id) {
+                  <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.moneyAccount.importing' | t }}</p>
                 } @else if (accountError()[account.id]) {
                   <p class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ accountError()[account.id] }}</p>
                 } @else if (savedAccount() === account.id) {

@@ -12,10 +12,11 @@ const DAY = 24 * 60 * 60 * 1000;
 
 function link(overrides: Partial<BankLink> = {}): BankLink {
   return {
-    id: 'l1', aspsp: 'Banca Finta', country: 'IT', status: 'ACTIVE',
-    validUntil: new Date(NOW + 60 * DAY).toISOString(), lastSync: '2026-06-01T06:00:00Z', lastError: null,
-    accounts: [{id: 'a1', iban: 'IT** **** **** 0000', currency: 'EUR', moneyAccount: 'Conto finto',
-      balance: {amount: 1234.5, type: 'CLAV', date: '2026-05-31'}}],
+    id: 1, aspsp: 'Banca Finta', country: 'IT', status: 'ACTIVE',
+    validUntil: new Date(NOW + 60 * DAY).toISOString(), lastSyncAt: '2026-06-01T06:00:00Z', lastError: null,
+    lastAmbiguous: 0,
+    accounts: [{id: 11, name: 'Conto di prova', iban: 'IT **** 0000', currency: 'EUR', moneyAccount: 'Conto finto',
+      balance: {amount: 1234.5, currency: 'EUR', type: 'CLBD', date: '2026-05-31'}}],
     ...overrides
   };
 }
@@ -67,21 +68,25 @@ describe('BanksComponent', () => {
     expect(el.textContent).toContain('Expires in 60 days');
     expect(el.querySelector('.banner-warning')).toBeNull();
     expect(el.textContent).toContain('Last sync: 1 Jun 2026');
-    expect(el.querySelector('.iban')?.textContent).toContain('IT** **** **** 0000');
-    expect(el.textContent).toContain('Balance €1,234.50 (available, 31 May 2026)');
+    expect(el.querySelector('.account-name')?.textContent).toBe('Conto di prova');
+    expect(el.querySelector('.iban')?.textContent).toContain('IT **** 0000');
+    expect(el.textContent).toContain('Balance €1,234.50 (booked, 31 May 2026)');
     expect((el.querySelector('.money-account select') as HTMLSelectElement).value).toBe('Conto finto');
   });
 
   it('warns 14 days before the consent expires, and says the last error in words', () => {
-    const {el} = open([link({validUntil: new Date(NOW + 10 * DAY + 3600_000).toISOString(), lastError: 'ASPSP_UNAVAILABLE'}),
-      link({id: 'l2', aspsp: 'Altra Banca', status: 'ERROR', lastError: 'SOMETHING_NEW', validUntil: null})]);
+    const {el} = open([link({validUntil: new Date(NOW + 10 * DAY + 3600_000).toISOString(), lastError: 'UNREACHABLE',
+      lastAmbiguous: 2}),
+      link({id: 2, aspsp: 'Altra Banca', status: 'REVOKED', lastError: 'SOMETHING_NEW', validUntil: null})]);
     const warnings = el.querySelectorAll('.banner-warning');
-    expect(warnings.length).toBe(1);
+    expect(warnings.length).toBe(2);
     expect(warnings[0].textContent).toContain('The consent expires in 10 days');
     expect(warnings[0].textContent).toContain('Reconnect');
-    expect(el.textContent).toContain('Last error: the bank is not answering right now');
+    expect(warnings[1].textContent).toContain('The consent was withdrawn');
+    expect(el.textContent).toContain('Last error: the bank could not be reached');
+    expect(el.textContent).toContain('2 movements were already there in more than one row');
     expect(el.textContent).toContain('Last error: unexpected error (code SOMETHING_NEW).');
-    expect(el.querySelectorAll('.status')[1].textContent).toContain('Error');
+    expect(el.querySelectorAll('.status')[1].textContent).toContain('Withdrawn');
   });
 
   it('an expired consent says so, also when the status was not updated yet', () => {
@@ -168,26 +173,38 @@ describe('BanksComponent', () => {
     start.flush('', {status: 502, statusText: 'Bad Gateway'});
   });
 
+  it('"Not imported" stops the import of an account', () => {
+    const {page} = open();
+    page.choose(page.links()![0].accounts[0], page.NO_ACCOUNT);
+    const put = http.expectOne('/api/banking/accounts/11');
+    expect(put.request.body).toEqual({moneyAccount: null});
+    put.flush({});
+    http.expectOne('/api/banking/links').flush([]);
+  });
+
   it('links an account to an existing money account, or to a new one', async () => {
-    const {fixture, page, el} = open([link({accounts: [{id: 'a1', iban: null, currency: 'EUR', balance: null, moneyAccount: null}]})]);
+    const {fixture, page, el} = open([link({accounts: [{id: 11, iban: null, currency: 'EUR', balance: null, moneyAccount: null}]})]);
     expect(el.textContent).toContain('not imported until you choose an account');
     const account = page.links()![0].accounts[0];
 
     page.choose(account, 'Risparmi');
     fixture.detectChanges();
     expect(el.querySelector('.account [role=status]')?.textContent).toContain('Saving');
-    const put = http.expectOne('/api/banking/accounts/a1');
+    const put = http.expectOne('/api/banking/accounts/11');
     expect(put.request.body).toEqual({moneyAccount: 'Risparmi'});
-    put.flush('', {status: 500, statusText: 'Server Error'});
+    put.flush({status: 409, error: 'Conflict', message: 'MONEY_ACCOUNT_TAKEN'}, {status: 409, statusText: 'Conflict'});
     fixture.detectChanges();
-    expect(el.querySelector('.account [role=alert]')?.textContent).toContain('Could not save the account');
-    expect(page.selectValue(account)).toBe('');
+    expect(el.querySelector('.account [role=alert]')?.textContent)
+      .toContain('Another account of the same bank already goes to this money account');
+    expect(page.selectValue(account)).toBe(page.NO_ACCOUNT);
 
     page.choose(account, page.NEW_ACCOUNT);
     fixture.detectChanges();
     page.newName = '  Conto nuovo ';
     page.createNew(account);
-    http.expectOne('/api/banking/accounts/a1').flush({});
+    http.expectOne('/api/banking/accounts/11').flush({});
+    fixture.detectChanges();
+    expect(el.querySelector('.account [role=status]')?.textContent).toContain('reading the movements again');
     http.expectOne('/api/banking/links').flush([link({accounts: [{...account, moneyAccount: 'Conto nuovo'}]})]);
     fixture.detectChanges();
     expect(page.moneyAccounts()).toContain('Conto nuovo');
@@ -201,10 +218,11 @@ describe('BanksComponent', () => {
     buttons(el, 'Sync now')[0].click();
     fixture.detectChanges();
     expect(buttons(el, 'Syncing...')[0].disabled).toBe(true);
-    http.expectOne('/api/banking/sync').flush(null);
-    http.expectOne('/api/banking/links').flush([link({lastSync: '2026-06-01T09:59:00Z'})]);
+    http.expectOne('/api/banking/sync').flush({imported: 3, matched: 1, ambiguous: 0,
+      links: [link({lastSyncAt: '2026-06-01T09:59:00Z'})]});
     fixture.detectChanges();
-    expect(el.textContent).toContain('Sync done.');
+    expect(el.textContent).toContain('Sync done: 3 new movements.');
+    expect(el.textContent).toContain('Last sync: 1 Jun 2026');
   });
 
   it('"Unlink" asks first, then removes the link', () => {
@@ -214,14 +232,14 @@ describe('BanksComponent', () => {
     expect(el.querySelector('.banner-warning')?.textContent).toContain('Unlink Banca Finta? The movements already imported stay.');
     buttons(el, 'Keep it')[0].click();
     fixture.detectChanges();
-    http.expectNone('/api/banking/links/l1');
+    http.expectNone('/api/banking/links/1');
 
     buttons(el, 'Unlink')[0].click();
     fixture.detectChanges();
     buttons(el, 'Yes, unlink')[0].click();
     fixture.detectChanges();
     expect(el.textContent).toContain('Unlinking...');
-    const del = http.expectOne('/api/banking/links/l1');
+    const del = http.expectOne('/api/banking/links/1');
     expect(del.request.method).toBe('DELETE');
     del.flush(null);
     fixture.detectChanges();
