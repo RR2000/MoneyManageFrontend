@@ -166,7 +166,7 @@ export class BanksComponent implements OnInit {
     this.banking.aspsps(country).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
       next: list => {
         if (country === this.country()) {
-          this.aspsps.set([...list].sort((a, b) => a.name.localeCompare(b.name)));
+          this.aspsps.set([...list].sort((a, b) => a.name.localeCompare(b.name, undefined, {numeric: true})));
           this.aspspsLoading.set(false);
         }
       },
