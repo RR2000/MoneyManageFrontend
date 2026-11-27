@@ -1,12 +1,12 @@
 @if (loading) {
-  <p class="empty" role="status">Caricamento...</p>
+  <p class="empty" role="status">{{ 'common.loading' | t }}</p>
 } @else if (error) {
   <div class="error" role="alert">
     <span>{{ error }}</span>
-    <button type="button" (click)="retry.emit()">Riprova</button>
+    <button type="button" (click)="retry.emit()">{{ 'common.retry' | t }}</button>
   </div>
 } @else if (!hasData()) {
-  <p class="empty">{{ emptyText }}</p>
+  <p class="empty">{{ emptyText || ('common.noData' | t) }}</p>
 }
 <div class="chart-container" [class.hidden]="!hasData()">
   <canvas #canvas></canvas>

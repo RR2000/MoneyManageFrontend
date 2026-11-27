@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, effect, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -7,6 +7,8 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import Chart from 'chart.js/auto';
 import {GraphPointsDto} from '../../models/graph-points.dto';
+import {I18nService} from '../i18n/i18n.service';
+import {TPipe} from '../i18n/t.pipe';
 
 const PERCENTILE_COLORS: { [key: string]: string } = {
   'P5':  'rgba(244, 67, 54, 0.8)',
@@ -18,7 +20,7 @@ const PERCENTILE_COLORS: { [key: string]: string } = {
 
 @Component({
   selector: 'app-monte-carlo',
-  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, TPipe],
   templateUrl: './monte-carlo.component.html',
   styleUrl: './monte-carlo.component.css'
 })
@@ -31,7 +33,18 @@ export class MonteCarloComponent {
   private chart: any;
   private api = `/api/montecarlo`;
 
-  constructor(private http: HttpClient) {}
+  private i18n = inject(I18nService);
+
+  constructor(private http: HttpClient) {
+    // the axis title follows the language
+    effect(() => {
+      const title = this.i18n.t('monteCarlo.axis');
+      if (this.chart) {
+        this.chart.options.scales.y.title.text = title;
+        this.chart.update();
+      }
+    });
+  }
 
   run() {
     this.loading.set(true);
@@ -40,14 +53,14 @@ export class MonteCarloComponent {
       next: (data) => {
         this.loading.set(false);
         if (!data.uniqueGraphNames?.length) {
-          this.error.set('Servono almeno due mesi di investimenti per la simulazione.');
+          this.error.set(this.i18n.t('monteCarlo.tooShort'));
           return;
         }
         this.renderChart(data);
       },
       error: (err) => {
         this.loading.set(false);
-        this.error.set(`Errore: ${err.error?.message ?? err.message}`);
+        this.error.set(this.i18n.t('common.error', {message: err.error?.message ?? err.message}));
       }
     });
   }
@@ -73,7 +86,7 @@ export class MonteCarloComponent {
           maintainAspectRatio: false,
           animation: false,
           plugins: {legend: {display: true}},
-          scales: {y: {title: {display: true, text: 'Valore portafoglio (€)'}}}
+          scales: {y: {title: {display: true, text: this.i18n.t('monteCarlo.axis')}}}
         }
       });
     } else {

@@ -37,6 +37,11 @@ export class I18nService {
   readonly lang = signal<Lang>(storedLang() ?? 'en');
   /** BCP 47 locale of the language, for Intl */
   readonly locale = computed(() => LOCALES[this.lang()]);
+  /**
+   * First visit from a browser in Italian: the app stays in English (the default) and offers Italian once; either
+   * answer is remembered.
+   */
+  readonly suggestItalian = signal(storedLang() === null && browserLang().startsWith('it'));
 
   constructor() {
     this.applyToDocument();
@@ -44,8 +49,14 @@ export class I18nService {
 
   setLang(lang: Lang): void {
     this.lang.set(lang);
+    this.suggestItalian.set(false);
     storeLang(lang);
     this.applyToDocument();
+  }
+
+  /** the other language, for the switch */
+  other(): Lang {
+    return this.lang() === 'en' ? 'it' : 'en';
   }
 
   t(key: MessageKey, params?: Record<string, string | number>): string {
@@ -63,8 +74,8 @@ export class I18nService {
     return key in en;
   }
 
-  number(value: number, decimals = 2): string {
-    return new Intl.NumberFormat(this.locale(), {minimumFractionDigits: decimals, maximumFractionDigits: decimals})
+  number(value: number, decimals = 2, maxDecimals = decimals): string {
+    return new Intl.NumberFormat(this.locale(), {minimumFractionDigits: decimals, maximumFractionDigits: maxDecimals})
       .format(value);
   }
 
@@ -84,6 +95,12 @@ export class I18nService {
   date(iso: string | null | undefined): string {
     const date = parse(iso);
     return date ? new Intl.DateTimeFormat(this.locale(), {dateStyle: 'medium'}).format(date) : '';
+  }
+
+  /** a day in digits (31/01/2026), for tables */
+  shortDate(iso: string | null | undefined): string {
+    const date = parse(iso);
+    return date ? new Intl.DateTimeFormat(this.locale(), {dateStyle: 'short'}).format(date) : '';
   }
 
   /** a day and the time */
@@ -106,6 +123,10 @@ export class I18nService {
       document.documentElement.lang = this.lang();
     }
   }
+}
+
+function browserLang(): string {
+  return typeof navigator !== 'undefined' ? (navigator.language ?? '').toLowerCase() : '';
 }
 
 function parse(iso: string | null | undefined): Date | null {

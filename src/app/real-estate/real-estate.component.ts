@@ -1,4 +1,4 @@
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, inject, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient} from '@angular/common/http';
@@ -8,6 +8,9 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
 import {MatIconModule} from '@angular/material/icon';
 import {RealEstateDto} from '../../models/real-estate.dto';
+import {I18nService} from '../i18n/i18n.service';
+import {TPipe} from '../i18n/t.pipe';
+import {NumPipe} from '../i18n/num.pipe';
 
 @Component({
   selector: 'app-real-estate',
@@ -18,12 +21,15 @@ import {RealEstateDto} from '../../models/real-estate.dto';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule
+    MatIconModule,
+    TPipe,
+    NumPipe
   ],
   templateUrl: './real-estate.component.html',
   styleUrl: './real-estate.component.css'
 })
 export class RealEstateComponent implements OnInit {
+  readonly i18n = inject(I18nService);
   properties = signal<RealEstateDto[]>([]);
   totalWorth = signal(0);
   displayedColumns = ['name', 'address', 'purchaseDate', 'purchasePrice', 'currentEstimatedValue', 'monthlyRent', 'monthlyExpenses', 'currency', 'actions'];

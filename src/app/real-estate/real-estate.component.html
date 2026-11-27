@@ -1,48 +1,48 @@
 <div class="re-container">
   <div class="header-row">
-    <h3>Immobili — Valore totale: {{ totalWorth() | number:'1.2-2' }} €</h3>
-    <button mat-raised-button color="primary" (click)="openCreate()">+ Aggiungi</button>
+    <h3>{{ 'realEstate.title' | t: {total: i18n.money(totalWorth(), 'EUR')} }}</h3>
+    <button mat-raised-button color="primary" (click)="openCreate()">{{ 'realEstate.add' | t }}</button>
   </div>
 
   <div class="table-scroll">
   <table mat-table [dataSource]="properties()" class="mat-elevation-z2">
     <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.name' | t }}</th>
       <td mat-cell *matCellDef="let p">{{ p.name }}</td>
     </ng-container>
     <ng-container matColumnDef="address">
-      <th mat-header-cell *matHeaderCellDef>Indirizzo</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.address' | t }}</th>
       <td mat-cell *matCellDef="let p">{{ p.address }}</td>
     </ng-container>
     <ng-container matColumnDef="purchaseDate">
-      <th mat-header-cell *matHeaderCellDef>Data acquisto</th>
-      <td mat-cell *matCellDef="let p">{{ p.purchaseDate }}</td>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.purchaseDate' | t }}</th>
+      <td mat-cell *matCellDef="let p">{{ i18n.shortDate(p.purchaseDate) || p.purchaseDate }}</td>
     </ng-container>
     <ng-container matColumnDef="purchasePrice">
-      <th mat-header-cell *matHeaderCellDef>Prezzo acquisto</th>
-      <td mat-cell *matCellDef="let p">{{ p.purchasePrice | number:'1.2-2' }}</td>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.purchasePrice' | t }}</th>
+      <td mat-cell *matCellDef="let p">{{ p.purchasePrice | num }}</td>
     </ng-container>
     <ng-container matColumnDef="currentEstimatedValue">
-      <th mat-header-cell *matHeaderCellDef>Valore stimato</th>
-      <td mat-cell *matCellDef="let p">{{ p.currentEstimatedValue | number:'1.2-2' }}</td>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.value' | t }}</th>
+      <td mat-cell *matCellDef="let p">{{ p.currentEstimatedValue | num }}</td>
     </ng-container>
     <ng-container matColumnDef="monthlyRent">
-      <th mat-header-cell *matHeaderCellDef>Affitto/mese</th>
-      <td mat-cell *matCellDef="let p">{{ p.monthlyRent | number:'1.2-2' }}</td>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.rent' | t }}</th>
+      <td mat-cell *matCellDef="let p">{{ p.monthlyRent | num }}</td>
     </ng-container>
     <ng-container matColumnDef="monthlyExpenses">
-      <th mat-header-cell *matHeaderCellDef>Spese/mese</th>
-      <td mat-cell *matCellDef="let p">{{ p.monthlyExpenses | number:'1.2-2' }}</td>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.expenses' | t }}</th>
+      <td mat-cell *matCellDef="let p">{{ p.monthlyExpenses | num }}</td>
     </ng-container>
     <ng-container matColumnDef="currency">
-      <th mat-header-cell *matHeaderCellDef>Valuta</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'realEstate.currency' | t }}</th>
       <td mat-cell *matCellDef="let p">{{ p.currency }}</td>
     </ng-container>
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let p">
-        <button mat-icon-button (click)="openEdit(p)" title="Modifica" aria-label="Modifica">✏️</button>
-        <button mat-icon-button (click)="delete(p.id)" title="Elimina" aria-label="Elimina">🗑️</button>
+        <button mat-icon-button (click)="openEdit(p)" [title]="'realEstate.edit' | t" [attr.aria-label]="'realEstate.edit' | t">✏️</button>
+        <button mat-icon-button (click)="delete(p.id)" [title]="'realEstate.delete' | t" [attr.aria-label]="'realEstate.delete' | t">🗑️</button>
       </td>
     </ng-container>
 
@@ -51,23 +51,23 @@
   </table>
   </div>
 
-  <div *ngIf="properties().length === 0" class="empty">Nessun immobile registrato.</div>
+  <div *ngIf="properties().length === 0" class="empty">{{ 'realEstate.none' | t }}</div>
 
   <div *ngIf="showForm" class="form-panel mat-elevation-z4">
-    <h4>{{ editingId ? 'Modifica immobile' : 'Nuovo immobile' }}</h4>
+    <h4>{{ (editingId ? 'realEstate.editTitle' : 'realEstate.newTitle') | t }}</h4>
     <div class="form-grid">
-      <mat-form-field><mat-label>Nome</mat-label><input matInput [(ngModel)]="form.name"/></mat-form-field>
-      <mat-form-field><mat-label>Indirizzo</mat-label><input matInput [(ngModel)]="form.address"/></mat-form-field>
-      <mat-form-field><mat-label>Data acquisto (yyyy-MM-dd)</mat-label><input matInput [(ngModel)]="form.purchaseDate"/></mat-form-field>
-      <mat-form-field><mat-label>Prezzo acquisto</mat-label><input matInput type="number" [(ngModel)]="form.purchasePrice"/></mat-form-field>
-      <mat-form-field><mat-label>Valore stimato attuale</mat-label><input matInput type="number" [(ngModel)]="form.currentEstimatedValue"/></mat-form-field>
-      <mat-form-field><mat-label>Affitto mensile</mat-label><input matInput type="number" [(ngModel)]="form.monthlyRent"/></mat-form-field>
-      <mat-form-field><mat-label>Spese mensili</mat-label><input matInput type="number" [(ngModel)]="form.monthlyExpenses"/></mat-form-field>
-      <mat-form-field><mat-label>Valuta</mat-label><input matInput [(ngModel)]="form.currency"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.name' | t }}</mat-label><input matInput [(ngModel)]="form.name"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.address' | t }}</mat-label><input matInput [(ngModel)]="form.address"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.purchaseDate.format' | t }}</mat-label><input matInput [(ngModel)]="form.purchaseDate"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.purchasePrice' | t }}</mat-label><input matInput type="number" [(ngModel)]="form.purchasePrice"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.value.current' | t }}</mat-label><input matInput type="number" [(ngModel)]="form.currentEstimatedValue"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.rent.monthly' | t }}</mat-label><input matInput type="number" [(ngModel)]="form.monthlyRent"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.expenses.monthly' | t }}</mat-label><input matInput type="number" [(ngModel)]="form.monthlyExpenses"/></mat-form-field>
+      <mat-form-field><mat-label>{{ 'realEstate.currency' | t }}</mat-label><input matInput [(ngModel)]="form.currency"/></mat-form-field>
     </div>
     <div class="form-actions">
-      <button mat-button (click)="cancel()">Annulla</button>
-      <button mat-raised-button color="primary" (click)="save()">Salva</button>
+      <button mat-button (click)="cancel()">{{ 'common.cancel' | t }}</button>
+      <button mat-raised-button color="primary" (click)="save()">{{ 'common.save' | t }}</button>
     </div>
   </div>
 </div>

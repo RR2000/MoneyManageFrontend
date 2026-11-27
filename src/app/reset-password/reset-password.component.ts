@@ -1,17 +1,20 @@
-import {Component, OnInit, signal} from '@angular/core';
+import {Component, inject, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
 import {RouterLink} from '@angular/router';
 import {AuthService, tokenFromFragment} from '../auth/auth.service';
+import {I18nService} from '../i18n/i18n.service';
+import {TPipe} from '../i18n/t.pipe';
 
 /** The page of the link in the "forgot password" email: /reset-password#token=... */
 @Component({
   selector: 'app-reset-password',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, TPipe],
   templateUrl: './reset-password.component.html',
   styleUrls: ['../login/login.component.css']
 })
 export class ResetPasswordComponent implements OnInit {
+  private i18n = inject(I18nService);
   password = '';
   confirm = '';
   token = '';
@@ -35,11 +38,11 @@ export class ResetPasswordComponent implements OnInit {
   submit(): void {
     this.error.set('');
     if (this.password.length < 8) {
-      this.error.set('La password deve avere almeno 8 caratteri.');
+      this.error.set(this.i18n.t('reset.tooShort'));
       return;
     }
     if (this.password !== this.confirm) {
-      this.error.set('Le due password non coincidono.');
+      this.error.set(this.i18n.t('reset.mismatch'));
       return;
     }
     this.busy.set(true);
@@ -55,9 +58,9 @@ export class ResetPasswordComponent implements OnInit {
         if (err.status === 400 && message.includes('link')) {
           this.linkBroken.set(true);
         } else if (err.status === 400) {
-          this.error.set('Password non valida: almeno 8 caratteri, al massimo 72 byte.');
+          this.error.set(this.i18n.t('reset.invalid'));
         } else {
-          this.error.set('Richiesta non riuscita, riprova.');
+          this.error.set(this.i18n.t('common.failed'));
         }
       }
     });

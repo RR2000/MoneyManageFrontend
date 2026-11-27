@@ -16,3 +16,10 @@ nav button {
   background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .7);
   border-radius: 4px; padding: 4px 10px; cursor: pointer; font: inherit;
 }
+.lang-bar { display: flex; justify-content: flex-end; padding: 8px 16px 0; }
+.lang-bar button { background: #fff; color: #1f3b5a; border: 1px solid #1f3b5a; border-radius: 4px; padding: 4px 10px;
+  cursor: pointer; font: inherit; }
+.lang-suggest { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 16px;
+  background: #e8eef6; color: #1c1f24; border-bottom: 1px solid #b8c4d3; }
+.lang-suggest-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.lang-suggest button { padding: 4px 10px; font: inherit; cursor: pointer; }

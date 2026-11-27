@@ -1,7 +1,10 @@
-import {Component, EventEmitter, OnInit, Output, signal} from '@angular/core';
+import {Component, EventEmitter, inject, OnInit, Output, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {DecimalPipe} from '@angular/common';
+import {I18nService} from '../i18n/i18n.service';
+import {TPipe} from '../i18n/t.pipe';
+import {NumPipe} from '../i18n/num.pipe';
+import {MessageKey} from '../i18n/messages.en';
 
 /** One investment: where its prices come from (GET /api/instruments). */
 export interface Instrument {
@@ -35,9 +38,8 @@ export interface SymbolPreview {
   weeks: number;
 }
 
-const SOURCES: { [key: string]: string } = {
-  alphavantage: 'Alpha Vantage', yahoo: 'Yahoo', csv: 'file CSV', esempio: 'dati di esempio', nessuna: 'nessun prezzo'
-};
+/** the sources the backend names (in Italian: esempio, nessuna) */
+const SOURCES = ['alphavantage', 'yahoo', 'csv', 'esempio', 'nessuna'];
 
 /**
  * The investments page: for every ISIN its prices' source, symbol and currency (flagged when it is not the one of the
@@ -45,17 +47,19 @@ const SOURCES: { [key: string]: string } = {
  */
 @Component({
   selector: 'app-instruments',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, TPipe, NumPipe],
   templateUrl: './instruments.component.html',
   styleUrl: './instruments.component.css'
 })
 export class InstrumentsComponent implements OnInit {
   /** the prices changed: the graph should be read again */
   @Output() changed = new EventEmitter<void>();
+  readonly i18n = inject(I18nService);
 
   answer = signal<InstrumentsAnswer | null>(null);
   loading = signal(true);
-  error = signal('');
+  /** key of the text of the error, '' if none */
+  error = signal<MessageKey | ''>('');
   /** ISIN being edited, with its symbol and preview */
   editing = signal('');
   symbol = '';
@@ -72,7 +76,7 @@ export class InstrumentsComponent implements OnInit {
   }
 
   source(i: Instrument): string {
-    return SOURCES[i.source] ?? i.source;
+    return SOURCES.includes(i.source) ? this.i18n.t(`instruments.source.${i.source}` as MessageKey) : i.source;
   }
 
   load(): void {
@@ -85,7 +89,7 @@ export class InstrumentsComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Non sono riuscito a caricare gli investimenti.');
+        this.error.set('instruments.loadFailed');
       }
     });
   }
@@ -125,7 +129,7 @@ export class InstrumentsComponent implements OnInit {
         this.cancel();
         this.message.set({
           isin, error: false,
-          text: updated.symbol ? `Simbolo ${updated.symbol} salvato.` : 'Si torna al simbolo trovato in automatico.'
+          text: updated.symbol ? this.i18n.t('instruments.saved', {symbol: updated.symbol}) : this.i18n.t('instruments.backToAuto')
         });
         this.changed.emit();
       },
@@ -146,7 +150,7 @@ export class InstrumentsComponent implements OnInit {
         next: r => {
           this.busy.set(false);
           input.value = '';
-          this.message.set({isin, text: `${r.imported} prezzi importati.`, error: false});
+          this.message.set({isin, text: this.i18n.t('instruments.imported', {count: r.imported}), error: false});
           this.load();
           this.changed.emit();
         },
@@ -167,8 +171,9 @@ export class InstrumentsComponent implements OnInit {
 
   private failed(isin: string, err: HttpErrorResponse): void {
     this.busy.set(false);
-    const text = err.status === 0 ? 'Server non raggiungibile, riprova.'
-      : (err.error?.message as string | undefined) ?? 'Richiesta non riuscita, riprova.';
+    // the server's reason (no prices for this symbol...) is shown as it comes
+    const text = err.status === 0 ? this.i18n.t('common.unreachable')
+      : (err.error?.message as string | undefined) ?? this.i18n.t('common.failed');
     this.message.set({isin, text, error: true});
   }
 }

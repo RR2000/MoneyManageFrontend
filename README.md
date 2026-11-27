@@ -5,22 +5,26 @@ investments, real estate, and a Monte Carlo projection of the portfolio.
 This is the web app (Angular); the REST API is in
 [money-manage-backend](https://github.com/RR2000/money-manage-backend).
 
-Demo: https://money.raoulrondinella.dev - register with any username; tick "dati di esempio" to start with a
+Demo: https://money.raoulrondinella.dev - register with any username; tick "Start with sample data" to start with a
 made-up year of movements, or start empty and import the export files of your bank (Revolut, Degiro,
 Unicredit, Intesa Sanpaolo). Every account sees only its own data.
 
-"Password dimenticata?" on the login page (and the optional email at registration, and the Account page) appear only
+"Forgot your password?" on the login page (and the optional email at registration, and the Account page) appear only
 when the backend can send email (`passwordReset` in `GET /api/auth/providers`). The links in the emails open
 `/reset-password#token=...` and `/verify-email#token=...`: the token stays in the fragment, so it never reaches a
 server log, and the page removes it from the address bar.
 
 The "Banks" page (`/banks`, open banking through the backend) links bank accounts so their movements arrive by
 themselves: the consent is given on the bank's site, which comes back to `/banks?result=ok|error`. The menu entry and
-the page exist only when `GET /api/banking/links` does not answer 404 (feature off, or not for this user). Movements
+the page exist only when `GET /api/account` says `banking: true` (without the flag: when `GET /api/banking/links` does
+not answer 404; off, or not for this user, it is 404). Movements
 sent by the bank carry a "bank" label in the table.
 
-Texts: English by default and Italian, switched at runtime (`src/app/i18n`: `messages.en.ts`, `messages.it.ts` with the
-same keys, the compiler checks it; `{{ 'key' | t }}` in templates).
+Languages: English by default, and Italian. The switch is in the menu (and on the login pages) and on the Account page;
+the choice is remembered in the browser. A browser in Italian is offered Italian once, on the first visit. Numbers and
+dates follow the language. Texts in `src/app/i18n`: `messages.en.ts` and `messages.it.ts` with the same keys (the
+compiler checks it), `{{ 'key' | t }}` and `{{ amount | num }}` in templates, one build for both languages. Messages
+written by the server (e.g. why a file was refused) are shown as they come.
 
 ## Stack
 

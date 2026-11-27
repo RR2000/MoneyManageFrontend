@@ -10,7 +10,8 @@ import {MessageKey} from './messages.en';
 export class TPipe implements PipeTransform {
   private i18n = inject(I18nService);
 
-  transform(key: MessageKey, params?: Record<string, string | number>): string {
-    return this.i18n.t(key, params);
+  /** an empty key (no message yet) is an empty text */
+  transform(key: MessageKey | '' | null | undefined, params?: Record<string, string | number>): string {
+    return key ? this.i18n.t(key, params) : '';
   }
 }

@@ -1,15 +1,31 @@
+@if (i18n.suggestItalian()) {
+  <div class="lang-suggest" role="region" lang="it" aria-label="Lingua">
+    <span>{{ 'lang.suggest' | t }}</span>
+    <span class="lang-suggest-buttons">
+      <button type="button" (click)="i18n.setLang('it')">{{ 'lang.suggest.yes' | t }}</button>
+      <button type="button" lang="en" (click)="i18n.setLang('en')">{{ 'lang.suggest.no' | t }}</button>
+    </span>
+  </div>
+}
 @if (isLoggedIn()) {
   <header class="app-toolbar">
     <span class="app-title">Money Manage</span>
     <nav>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Dashboard</a>
-      <a routerLink="/setup" routerLinkActive="active">Importa</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ 'nav.dashboard' | t }}</a>
+      <a routerLink="/setup" routerLinkActive="active">{{ 'nav.import' | t }}</a>
       @if (banksAvailable()) {
         <a routerLink="/banks" routerLinkActive="active">{{ 'nav.banks' | t }}</a>
       }
-      <a routerLink="/account" routerLinkActive="active">Account</a>
-      <button type="button" (click)="logout()">Esci</button>
+      <a routerLink="/account" routerLinkActive="active">{{ 'nav.account' | t }}</a>
+      <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
+              (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
+      <button type="button" (click)="logout()">{{ 'nav.logout' | t }}</button>
     </nav>
   </header>
+} @else {
+  <div class="lang-bar">
+    <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
+            (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
+  </div>
 }
 <router-outlet></router-outlet>
