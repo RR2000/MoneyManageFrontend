@@ -151,6 +151,26 @@ describe('BanksComponent', () => {
     expect(redirect).toHaveBeenCalledWith('https://bank.example.com/consent?x=1');
   });
 
+  it('a logo that does not load becomes the initial of the bank', () => {
+    const {fixture, page, el} = open([]);
+    page.openPicker();
+    http.expectOne(r => r.url === '/api/banking/aspsps')
+      .flush([{name: 'Banca Uno', country: 'IT', logo: 'https://logo.example.com/uno.png'},
+        {name: 'élan Finto', country: 'IT', logo: 'https://logo.example.com/elan.png'}]);
+    fixture.detectChanges();
+    const logos = el.querySelectorAll<HTMLImageElement>('.aspsps img');
+    expect([...logos].map(img => img.alt)).toEqual(['Banca Uno', 'élan Finto']);
+    expect(el.querySelector('.logo-fallback')).toBeNull();
+
+    logos[1].dispatchEvent(new Event('error'));
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.aspsps img').length).toBe(1);
+    const fallback = el.querySelector('.aspsps .logo-fallback');
+    expect(fallback?.textContent?.trim()).toBe('É');
+    expect(fallback?.getAttribute('role')).toBe('img');
+    expect(fallback?.getAttribute('aria-label')).toBe('élan Finto');
+  });
+
   it('a long list shows the first banks and "Show all"', () => {
     const {fixture, page, el} = open([]);
     page.openPicker();

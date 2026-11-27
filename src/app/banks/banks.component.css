@@ -27,6 +27,8 @@ select, input { font: inherit; padding: 6px 8px; width: 100%; max-width: 100%; m
 .aspsps button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: #fff;
   border: 1px solid #8a919c; border-radius: 4px; overflow-wrap: anywhere; }
 .aspsps img { flex: none; object-fit: contain; }
+.logo-fallback { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px;
+  height: 24px; border-radius: 50%; background: #e3e6ea; color: #1f2933; font-weight: 700; font-size: .8rem; }
 .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
 .status { display: inline-flex; gap: 4px; padding: 2px 8px; border-radius: 12px; border: 1px solid; font-weight: 600;
   font-size: .9rem; }

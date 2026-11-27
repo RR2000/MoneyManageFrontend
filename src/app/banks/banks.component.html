@@ -69,8 +69,10 @@
             @for (a of visibleAspsps(); track a.name) {
               <li>
                 <button type="button" (click)="start(a.name, a.country)" [disabled]="busy()">
-                  @if (a.logo) {
-                    <img [src]="a.logo" alt="" width="24" height="24" loading="lazy">
+                  @if (a.logo && !brokenLogos().has(a.logo)) {
+                    <img [src]="a.logo" [alt]="a.name" width="24" height="24" loading="lazy" (error)="logoFailed(a.logo)">
+                  } @else if (a.logo) {
+                    <span class="logo-fallback" role="img" [attr.aria-label]="a.name">{{ initial(a.name) }}</span>
                   }
                   <span class="grow">{{ a.name }}</span>
                   @if (redirecting() === a.name) {
