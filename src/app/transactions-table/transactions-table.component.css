@@ -4,6 +4,10 @@ th { background: #eef1f5; position: sticky; top: 0; }
 .num { text-align: right; white-space: nowrap; }
 .date { white-space: nowrap; }
 .neg { color: #b3261e; }
+/* the movements sent by the bank: a small label with an icon, not only a colour */
+.from-bank { display: inline-block; margin-left: 6px; padding: 0 6px; border: 1px solid #8a919c; border-radius: 8px;
+  color: #2b313b; font-size: .75rem; white-space: nowrap; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .empty { color: #4a5260; padding: 16px 0; }
 @media (max-width: 480px) {
   table { font-size: .8rem; }
