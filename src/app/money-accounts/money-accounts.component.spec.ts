@@ -54,6 +54,7 @@ describe('MoneyAccountsComponent', () => {
     const {fixture, el} = open();
     buttons(el, 'Delete account...')[0].click();
     fixture.detectChanges();
+    await fixture.whenStable();
     expect(el.querySelector('.confirm')?.textContent)
       .toContain('120 movements (from 2 Jan 2024 to 31 Oct 2026) and their daily balances disappear');
     const yes = () => buttons(el, 'Delete for good')[0];
@@ -84,11 +85,15 @@ describe('MoneyAccountsComponent', () => {
     const {fixture, el} = open([account()]);
     buttons(el, 'Delete account...')[0].click();
     fixture.detectChanges();
+    // ngModel writes its first value asynchronously: type after it
+    await fixture.whenStable();
     const input = el.querySelector('.confirm input') as HTMLInputElement;
     input.value = 'Conto vecchio';
     input.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
+    expect(buttons(el, 'Delete for good')[0].disabled).toBe(false);
     buttons(el, 'Delete for good')[0].click();
     http.expectOne('/api/money-accounts/delete').flush({status: 409, error: 'Conflict', message: 'ACCOUNT_LINKED'},
       {status: 409, statusText: 'Conflict'});
