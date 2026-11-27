@@ -7,6 +7,7 @@ import {Aspsp, BankAccount, BankingService, BankLink, errorCode, isNotFound, RED
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
 import {MessageKey} from '../i18n/messages.en';
+import {BankHistoryComponent} from './bank-history.component';
 
 /** countries the open banking provider covers; Italy first */
 export const COUNTRIES = ['IT', 'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS',
@@ -22,6 +23,8 @@ const CALL_TIMEOUT_MS = 30 * 1000;
 /** a sync reads every bank: it may take a while */
 const SYNC_TIMEOUT_MS = 120 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** Revolut gives the whole history only this long after the consent, then 90 days */
+export const FULL_HISTORY_WINDOW_MS = 5 * 60 * 1000;
 
 type Id = number | string;
 
@@ -41,7 +44,7 @@ function capitalized(text: string): string {
  */
 @Component({
   selector: 'app-banks',
-  imports: [FormsModule, TPipe],
+  imports: [FormsModule, TPipe, BankHistoryComponent],
   templateUrl: './banks.component.html',
   styleUrl: './banks.component.css'
 })
@@ -74,6 +77,8 @@ export class BanksComponent implements OnInit {
   aspspsError = signal(false);
   /** name of the bank whose page is being opened: everything waits */
   redirecting = signal('');
+  /** the link being reconnected to import the whole history */
+  redirectingFull = signal<Id | null>(null);
   startError = signal('');
 
   syncing = signal(false);
@@ -204,19 +209,37 @@ export class BanksComponent implements OnInit {
     return ([...name.trim()][0] ?? '?').toUpperCase();
   }
 
-  /** Link a bank, or the same bank again ("Reconnect"): the browser goes to the bank's page. */
-  start(aspsp: string, country: string): void {
+  /**
+   * Link a bank, or the same bank again ("Reconnect"): the browser goes to the bank's page. `fullHistory` ("Reconnect
+   * and import the whole history"): right after the consent the accounts already linked to a money account are
+   * imported again with all the history the bank gives.
+   */
+  start(aspsp: string, country: string, fullHistory = false, linkId: Id | null = null): void {
     this.redirecting.set(aspsp);
+    this.redirectingFull.set(fullHistory ? linkId : null);
     this.startError.set('');
     this.linkError.set({});
-    this.banking.startLink(aspsp, country).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
+    this.banking.startLink(aspsp, country, fullHistory).pipe(timeout(CALL_TIMEOUT_MS)).subscribe({
       // `redirecting` stays on: the page is about to be left
       next: answer => this.redirect(answer.url),
       error: (err: unknown) => {
         this.redirecting.set('');
+        this.redirectingFull.set(null);
         this.startError.set(this.errorText(err, 'banks.startError'));
       }
     });
+  }
+
+  /**
+   * An account not imported yet of a consent given more than 5 minutes ago: some banks (Revolut) now give only the
+   * last 90 days, the whole history needs "Reconnect and import the whole history".
+   */
+  lateForHistory(link: BankLink, account: BankAccount): boolean {
+    if (account.moneyAccount || !link.createdAt) {
+      return false;
+    }
+    const created = new Date(link.createdAt).getTime();
+    return !isNaN(created) && Date.now() - created > FULL_HISTORY_WINDOW_MS;
   }
 
   sync(): void {

@@ -16,6 +16,7 @@
       @if (banksAvailable()) {
         <a routerLink="/banks" routerLinkActive="active">{{ 'nav.banks' | t }}</a>
       }
+      <a routerLink="/accounts" routerLinkActive="active">{{ 'nav.moneyAccounts' | t }}</a>
       <a routerLink="/account" routerLinkActive="active">{{ 'nav.account' | t }}</a>
       <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
               (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>

@@ -31,6 +31,14 @@ export interface BankAccount {
   balance: BankBalance | null;
   /** the money account its movements go to, null: not imported */
   moneyAccount: string | null;
+  /** oldest movement of the money account the bank knows: how far back the bank's history goes */
+  bankFrom?: string | null;
+  /** oldest movement of the money account */
+  firstDate?: string | null;
+  /** rows from a file or typed in since bankFrom that are not movements of the bank */
+  extraRows?: number;
+  /** rows from a file or typed in before bankFrom */
+  olderRows?: number;
 }
 
 export type LinkStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED';
@@ -42,6 +50,8 @@ export interface BankLink {
   country: string;
   status: LinkStatus;
   validUntil: string | null;
+  /** when the consent was given */
+  createdAt?: string | null;
   lastSyncAt: string | null;
   /** code of the last error, null if the last sync went well */
   lastError: string | null;
@@ -56,6 +66,25 @@ export interface SyncResult {
   matched: number;
   ambiguous: number;
   links: BankLink[];
+}
+
+/**
+ * "Replace with the bank's data": a preview (with the token to confirm it) or the result (token null). From bankFrom
+ * on, the money account has only the bank's movements. Balances in the account's currency, null: no movement then.
+ */
+export interface ReplaceResult {
+  token: string | null;
+  bankFrom: string;
+  deleted: number;
+  added: number;
+  matched: number;
+  otherCurrency: number;
+  older: number;
+  currency: string | null;
+  todayBefore: number | null;
+  todayAfter: number | null;
+  startBefore: number | null;
+  startAfter: number | null;
 }
 
 /** Where the browser goes to give the consent: a function, so tests do not leave the page. */
@@ -118,9 +147,29 @@ export class BankingService {
     return this.http.get<Aspsp[]>('/api/banking/aspsps', {params: {country}});
   }
 
-  /** Starts a consent: the answer is the bank's page, where the browser goes. */
-  startLink(aspsp: string, country: string): Observable<{ url: string }> {
-    return this.http.post<{ url: string }>('/api/banking/links', {aspsp, country});
+  /**
+   * Starts a consent: the answer is the bank's page, where the browser goes. `fullHistory`: right after the consent the
+   * accounts already linked to a money account are imported again with the whole history the bank gives.
+   */
+  startLink(aspsp: string, country: string, fullHistory = false): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>('/api/banking/links',
+      fullHistory ? {aspsp, country, fullHistory: true} : {aspsp, country});
+  }
+
+  /** Reads the bank and says what "replace with the bank's data" would change; changes nothing. */
+  replacePreview(accountId: number | string): Observable<ReplaceResult> {
+    return this.http.post<ReplaceResult>(`/api/banking/accounts/${encodeURIComponent(accountId)}/replace/preview`, null);
+  }
+
+  /** Does the replacement of the preview whose token this is. */
+  replace(accountId: number | string, token: string): Observable<ReplaceResult> {
+    return this.http.post<ReplaceResult>(`/api/banking/accounts/${encodeURIComponent(accountId)}/replace`, {token});
+  }
+
+  /** Deletes the rows from a file or typed in before `before`, the first day of the bank's history shown. */
+  deleteOlder(accountId: number | string, before: string): Observable<{ deleted: number }> {
+    return this.http.post<{ deleted: number }>(`/api/banking/accounts/${encodeURIComponent(accountId)}/delete-older`,
+      {before});
   }
 
   /**
