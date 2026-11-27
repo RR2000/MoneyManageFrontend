@@ -95,6 +95,8 @@ export class BanksComponent implements OnInit {
   confirmUnlink = signal<Id | null>(null);
   unlinking = signal<Id | null>(null);
   linkError = signal<Record<string, string>>({});
+  /** logos the browser could not load: the bank's initial instead of a broken image */
+  brokenLogos = signal<ReadonlySet<string>>(new Set());
 
   filtered = computed(() => {
     const words = folded(this.filter().trim());
@@ -191,6 +193,15 @@ export class BanksComponent implements OnInit {
         }
       }
     });
+  }
+
+  logoFailed(logo: string): void {
+    this.brokenLogos.update(broken => new Set(broken).add(logo));
+  }
+
+  /** first letter of the bank's name, for the placeholder of a logo that does not load */
+  initial(name: string): string {
+    return ([...name.trim()][0] ?? '?').toUpperCase();
   }
 
   /** Link a bank, or the same bank again ("Reconnect"): the browser goes to the bank's page. */
