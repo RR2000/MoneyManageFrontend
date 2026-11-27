@@ -4,6 +4,7 @@ import {filter} from 'rxjs';
 import {AuthService} from './auth/auth.service';
 import {BankingService} from './banks/banking.service';
 import {TPipe} from './i18n/t.pipe';
+import {I18nService} from './i18n/i18n.service';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ import {TPipe} from './i18n/t.pipe';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  readonly i18n = inject(I18nService);
   private banking = inject(BankingService);
   /** "Banks" only when the server has the feature for this user (no 404) */
   readonly banksAvailable = this.banking.available;

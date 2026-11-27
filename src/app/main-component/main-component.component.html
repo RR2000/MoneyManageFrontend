@@ -1,46 +1,46 @@
 <div class="page">
   @if (accountsError()) {
     <div class="error" role="alert">
-      <span>{{ accountsError() }}</span>
-      <button type="button" (click)="getDataAndRenderComponents()">Riprova</button>
+      <span>{{ accountsError() | t }}</span>
+      <button type="button" (click)="getDataAndRenderComponents()">{{ 'common.retry' | t }}</button>
     </div>
   }
   @if (loaded() && accountNames().length === 0) {
     <div class="empty">
-      <p>Nessun movimento ancora. <a routerLink="/setup">Importa i file della banca</a> per vedere saldi e grafici,
-        oppure prova con dati inventati.</p>
+      <p>{{ 'dashboard.empty' | t }} <a routerLink="/setup">{{ 'dashboard.emptyImport' | t }}</a>
+        {{ 'dashboard.emptyRest' | t }}</p>
       <button type="button" (click)="loadSampleData()" [disabled]="sampleLoading()">
-        {{ sampleLoading() ? 'Caricamento...' : 'Carica dati di esempio' }}
+        {{ (sampleLoading() ? 'common.loading' : 'dashboard.sample') | t }}
       </button>
     </div>
   }
   <mat-tab-group>
-    <mat-tab label="Saldi">
+    <mat-tab [label]="'dashboard.tab.balances' | t">
       <ng-template matTabContent>
-        <app-line-graph [graphPoints]="graphPoints()" [loading]="bankGraphLoading()" [error]="bankGraphError()"
+        <app-line-graph [graphPoints]="graphPoints()" [loading]="bankGraphLoading()" [error]="bankGraphError() | t"
                         (retry)="getDataAndRenderComponents()"
-                        emptyText="Nessun saldo: importa i movimenti e imposta il saldo di oggi."></app-line-graph>
+                        [emptyText]="'dashboard.noBalances' | t"></app-line-graph>
       </ng-template>
     </mat-tab>
-    <mat-tab label="Movimenti">
+    <mat-tab [label]="'dashboard.tab.movements' | t">
       <ng-template matTabContent>
         <app-transactions-table [accountsData]="accountsData()"></app-transactions-table>
       </ng-template>
     </mat-tab>
-    <mat-tab label="Investimenti">
+    <mat-tab [label]="'dashboard.tab.investments' | t">
       <ng-template matTabContent>
-        <app-line-graph [graphPoints]="brokerGraph()" [loading]="brokerGraphLoading()" [error]="brokerGraphError()"
+        <app-line-graph [graphPoints]="brokerGraph()" [loading]="brokerGraphLoading()" [error]="brokerGraphError() | t"
                         (retry)="refreshBrokerGraph()"
-                        emptyText="Nessun investimento: importa le transazioni del broker."></app-line-graph>
+                        [emptyText]="'dashboard.noInvestments' | t"></app-line-graph>
         <app-instruments (changed)="refreshBrokerGraph()"></app-instruments>
       </ng-template>
     </mat-tab>
-    <mat-tab label="Immobili">
+    <mat-tab [label]="'dashboard.tab.realEstate' | t">
       <ng-template matTabContent>
         <app-real-estate></app-real-estate>
       </ng-template>
     </mat-tab>
-    <mat-tab label="Monte Carlo">
+    <mat-tab [label]="'dashboard.tab.monteCarlo' | t">
       <ng-template matTabContent>
         <app-monte-carlo></app-monte-carlo>
       </ng-template>

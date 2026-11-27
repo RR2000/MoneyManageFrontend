@@ -1,43 +1,43 @@
 <main class="login-container">
   <h1>Money Manage</h1>
-  <p class="intro">Conti, investimenti, immobili e una proiezione Monte Carlo del portafoglio.</p>
+  <p class="intro">{{ 'login.intro' | t }}</p>
   <form (ngSubmit)="submit()">
-    <h2>{{ mode === 'login' ? 'Accedi' : 'Crea un account' }}</h2>
-    <label>{{ mode === 'login' ? 'Username o email' : 'Username' }}
+    <h2>{{ (mode === 'login' ? 'login.title' : 'login.register.title') | t }}</h2>
+    <label>{{ (mode === 'login' ? 'login.username' : 'login.register.username') | t }}
       <input name="username" [(ngModel)]="username" required autocomplete="username"
              autocapitalize="none" autocorrect="off" spellcheck="false">
     </label>
-    <label>Password
+    <label>{{ 'login.password' | t }}
       <input name="password" type="password" [(ngModel)]="password" required
              [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'">
     </label>
     @if (mode === 'register') {
-      <p class="hint">Username da 3 a 32 caratteri, password di almeno 8. Ogni account vede solo i suoi dati.</p>
+      <p class="hint">{{ 'login.register.hint' | t }}</p>
       @if (passwordReset()) {
-        <label>Email (facoltativa)
+        <label>{{ 'login.email' | t }}
           <input name="email" type="email" [(ngModel)]="email" autocomplete="email">
         </label>
-        <p class="hint">Per reimpostare la password se la dimentichi: ti mandiamo un link per confermarla.</p>
+        <p class="hint">{{ 'login.email.hint' | t }}</p>
       }
       <label class="check">
         <input name="sampleData" type="checkbox" [(ngModel)]="sampleData">
-        Inizia con dati di esempio (inventati)
+        {{ 'login.sampleData' | t }}
       </label>
     }
     @if (error()) {
       <div class="error" role="alert">{{ error() }}</div>
     }
     <button type="submit" class="primary" [disabled]="busy() || !username || !password">
-      {{ busy() ? 'Attendere...' : (mode === 'login' ? 'Accedi' : 'Registrati') }}
+      {{ (busy() ? 'common.wait' : mode === 'login' ? 'login.submit' : 'login.register.submit') | t }}
     </button>
     @if (mode === 'login' && passwordReset()) {
-      <a class="forgot" routerLink="/forgot-password">Password dimenticata?</a>
+      <a class="forgot" routerLink="/forgot-password">{{ 'login.forgot' | t }}</a>
     }
     @if (githubUrl()) {
-      <a class="github" [href]="githubUrl()">Accedi con GitHub</a>
+      <a class="github" [href]="githubUrl()">{{ 'login.github' | t }}</a>
     }
     <button type="button" class="link" (click)="switchMode()">
-      {{ mode === 'login' ? 'Non hai un account? Registrati' : 'Hai gia\' un account? Accedi' }}
+      {{ (mode === 'login' ? 'login.toRegister' : 'login.toLogin') | t }}
     </button>
   </form>
 </main>

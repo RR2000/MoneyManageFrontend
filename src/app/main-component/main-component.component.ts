@@ -10,11 +10,13 @@ import {RealEstateComponent} from "../real-estate/real-estate.component";
 import {MonteCarloComponent} from "../monte-carlo/monte-carlo.component";
 import {InstrumentsComponent} from "../instruments/instruments.component";
 import {interval, Subscription, timeout} from "rxjs";
+import {TPipe} from "../i18n/t.pipe";
+import {MessageKey} from "../i18n/messages.en";
 
 const BROKER_GRAPH_REFRESH_MS = 5 * 60 * 1000;
-/** no call keeps the page waiting longer than this: then it says so, with "Riprova" */
+/** no call keeps the page waiting longer than this: then it says so, with "Retry" */
 export const CALL_TIMEOUT_MS = 30 * 1000;
-const FAILED = 'Non sono riuscito a caricare i dati.';
+const FAILED: MessageKey = 'common.loadFailed';
 
 @Component({
   selector: 'app-main-component',
@@ -27,7 +29,8 @@ const FAILED = 'Non sono riuscito a caricare i dati.';
     MatTabContent,
     RealEstateComponent,
     MonteCarloComponent,
-    InstrumentsComponent
+    InstrumentsComponent,
+    TPipe
   ],
   templateUrl: './main-component.component.html',
   styleUrl: './main-component.component.css'
@@ -40,10 +43,11 @@ export class MainComponentComponent implements OnInit, OnDestroy {
   loaded = signal(false);
   sampleLoading = signal(false);
   bankGraphLoading = signal(true);
-  bankGraphError = signal('');
+  /** key of the text of the error, '' if none */
+  bankGraphError = signal<MessageKey | ''>('');
   brokerGraphLoading = signal(true);
-  brokerGraphError = signal('');
-  accountsError = signal('');
+  brokerGraphError = signal<MessageKey | ''>('');
+  accountsError = signal<MessageKey | ''>('');
 
   private brokerRefreshSubscription?: Subscription;
 
@@ -61,7 +65,7 @@ export class MainComponentComponent implements OnInit, OnDestroy {
     this.brokerRefreshSubscription?.unsubscribe();
   }
 
-  /** `quiet`: the periodic refresh, which keeps the chart on screen instead of showing "Caricamento...". */
+  /** `quiet`: the periodic refresh, which keeps the chart on screen instead of showing "Loading...". */
   refreshBrokerGraph(quiet = false) {
     if (!quiet) {
       this.brokerGraphLoading.set(true);

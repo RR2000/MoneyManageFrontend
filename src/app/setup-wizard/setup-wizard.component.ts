@@ -1,4 +1,4 @@
-import {Component, signal} from '@angular/core';
+import {Component, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
@@ -9,6 +9,8 @@ import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {MatListModule} from '@angular/material/list';
 import {RouterLink} from '@angular/router';
+import {I18nService} from '../i18n/i18n.service';
+import {TPipe} from '../i18n/t.pipe';
 
 @Component({
   selector: 'app-setup-wizard',
@@ -21,12 +23,14 @@ import {RouterLink} from '@angular/router';
     MatInputModule,
     MatSelectModule,
     MatListModule,
-    RouterLink
+    RouterLink,
+    TPipe
   ],
   templateUrl: './setup-wizard.component.html',
   styleUrl: './setup-wizard.component.css'
 })
 export class SetupWizardComponent {
+  private i18n = inject(I18nService);
   bankName: string = 'Revolut';
   bankFile: File | null = null;
   bankUploadResult = signal('');
@@ -55,11 +59,11 @@ export class SetupWizardComponent {
     form.append('multipartFile', this.bankFile);
     this.http.post<unknown[]>(`/api/banks/transactions/${this.bankName}/upload`, form).subscribe({
       next: (rows) => {
-        this.bankUploadResult.set(`Caricati ${rows.length} movimenti.`);
+        this.bankUploadResult.set(this.i18n.t('setup.bankUploaded', {count: rows.length}));
         this.bankUploadLoading.set(false);
       },
       error: (err) => {
-        this.bankUploadResult.set(`Errore: ${err.error?.message ?? err.message}`);
+        this.bankUploadResult.set(this.i18n.t('common.error', {message: err.error?.message ?? err.message}));
         this.bankUploadLoading.set(false);
       }
     });
@@ -81,11 +85,11 @@ export class SetupWizardComponent {
         responseType: 'text'
       }).subscribe({
         next: () => {
-          this.brokerUploadResult.set('Upload completato con successo.');
+          this.brokerUploadResult.set(this.i18n.t('setup.brokerUploaded'));
           this.brokerUploadLoading.set(false);
         },
         error: (err) => {
-          this.brokerUploadResult.set(`Errore: ${err.error?.message ?? err.message}`);
+          this.brokerUploadResult.set(this.i18n.t('common.error', {message: err.error?.message ?? err.message}));
           this.brokerUploadLoading.set(false);
         }
       });
@@ -119,7 +123,7 @@ export class SetupWizardComponent {
           if (remaining === 0) this.cumulativeLoading.set(false);
         },
         error: (err) => {
-          this.cumulativeResults.update(r => ({...r, [account]: `Errore: ${err.error?.message ?? err.message}`}));
+          this.cumulativeResults.update(r => ({...r, [account]: this.i18n.t('common.error', {message: err.error?.message ?? err.message})}));
           remaining--;
           if (remaining === 0) this.cumulativeLoading.set(false);
         }

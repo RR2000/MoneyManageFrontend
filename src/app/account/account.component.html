@@ -1,38 +1,44 @@
 <main class="login-container">
-  <h1>Account</h1>
+  <h1>{{ 'account.title' | t }}</h1>
   @if (account(); as a) {
     <form (ngSubmit)="submit()">
-      <p><strong>Username:</strong> {{ a.username }}</p>
+      <p><strong>{{ 'account.username' | t }}</strong> {{ a.username }}</p>
       @if (a.email) {
-        <p><strong>Email:</strong> {{ a.email }}</p>
+        <p><strong>{{ 'account.email' | t }}</strong> {{ a.email }}</p>
       }
-      <p class="hint">Per accedere con la password scrivi lo username{{ a.email ? ' oppure l'email' : '' }}.
+      <p class="hint">{{ (a.email ? 'account.loginHint.email' : 'account.loginHint') | t }}
         @if (a.emailLinks && a.email) {
-          Se non hai mai scelto una password (account nato da "Accedi con GitHub") o l'hai dimenticata, usa
-          "Password dimenticata?" nella pagina di accesso.
+          {{ 'account.noPasswordHint' | t }}
         }
       </p>
       @if (a.emailLinks) {
-        <h2>{{ a.email ? 'Cambia email' : 'Aggiungi un\'email' }}</h2>
-        <p class="hint">Serve per reimpostare la password se la dimentichi. Ti mandiamo un link per confermarla: finche'
-          non lo apri l'account non cambia. L'email serve anche ad "Accedi con GitHub" per ritrovare l'account.</p>
-        <label>Email
+        <h2>{{ (a.email ? 'account.changeEmail' : 'account.addEmail') | t }}</h2>
+        <p class="hint">{{ 'account.emailHint' | t }}</p>
+        <label>{{ 'account.emailLabel' | t }}
           <input name="email" type="email" [(ngModel)]="email" required autocomplete="email">
         </label>
         @if (sentTo()) {
-          <p role="status">Ti abbiamo mandato un link a {{ sentTo() }}: aprilo entro 24 ore per confermare.</p>
+          <p role="status">{{ 'account.sent' | t: {email: sentTo()} }}</p>
         }
         @if (error()) {
           <div class="error" role="alert">{{ error() }}</div>
         }
         <button type="submit" class="primary" [disabled]="busy() || !email">
-          {{ busy() ? 'Attendere...' : 'Mandami il link di conferma' }}
+          {{ (busy() ? 'common.wait' : 'account.submit') | t }}
         </button>
       }
     </form>
   } @else if (error()) {
     <div class="error" role="alert">{{ error() }}</div>
   } @else {
-    <p role="status">Attendere...</p>
+    <p role="status">{{ 'common.wait' | t }}</p>
   }
+  <div class="panel language">
+    <label>{{ 'account.language' | t }}
+      <select name="lang" [ngModel]="i18n.lang()" (ngModelChange)="i18n.setLang($event)">
+        <option value="en" lang="en">English</option>
+        <option value="it" lang="it">Italiano</option>
+      </select>
+    </label>
+  </div>
 </main>

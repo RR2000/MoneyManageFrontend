@@ -11,7 +11,7 @@ describe('LineGraphComponent', () => {
 
   it('says it is loading, not that there is no data', () => {
     const el: HTMLElement = graph({loading: true, emptyText: 'Nessun investimento'}).nativeElement;
-    expect(el.textContent).toContain('Caricamento...');
+    expect(el.textContent).toContain('Loading...');
     expect(el.textContent).not.toContain('Nessun investimento');
   });
 

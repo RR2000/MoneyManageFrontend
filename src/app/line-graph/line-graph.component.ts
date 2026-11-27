@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, ViewChild} from '@angular/core';
 import Chart from 'chart.js/auto';
 import {GraphPointsDto} from "../../models/graph-points.dto";
+import {TPipe} from "../i18n/t.pipe";
 
 /**
  * Line chart of a GraphPointsDto: one line per graph name, one point per label. While the data is on its way it says
@@ -8,14 +9,16 @@ import {GraphPointsDto} from "../../models/graph-points.dto";
  */
 @Component({
   selector: 'app-line-graph',
+  imports: [TPipe],
   templateUrl: './line-graph.component.html',
   styleUrls: ['./line-graph.component.css']
 })
 export class LineGraphComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input() graphPoints: GraphPointsDto = <GraphPointsDto>{};
-  @Input() emptyText = 'Nessun dato da mostrare.';
+  /** '' : the generic "no data" */
+  @Input() emptyText = '';
   @Input() loading = false;
-  /** the call failed: shown instead of the chart, with "Riprova" */
+  /** the call failed: this text is shown instead of the chart, with "Retry" */
   @Input() error = '';
   @Output() retry = new EventEmitter<void>();
   @ViewChild('canvas') canvas?: ElementRef<HTMLCanvasElement>;

@@ -30,3 +30,5 @@ button.link { background: none; border: none; color: #1f5fa8; text-decoration: u
 .error { font-size: .9rem; }
 a.back, a.forgot { color: #1f5fa8; text-align: center; }
 p { margin: 0; }
+.language { margin-top: 16px; }
+select { padding: 8px; font: inherit; border: 1px solid #b8bfc9; border-radius: 4px; }

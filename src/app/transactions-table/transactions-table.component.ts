@@ -1,6 +1,7 @@
-import {Component, Input, OnChanges} from '@angular/core';
-import {DecimalPipe} from '@angular/common';
+import {Component, inject, Input, OnChanges} from '@angular/core';
 import {TPipe} from '../i18n/t.pipe';
+import {NumPipe} from '../i18n/num.pipe';
+import {I18nService} from '../i18n/i18n.service';
 import {TransactionDto} from "../../models/transaction.dto";
 
 export interface TransactionRow {
@@ -16,10 +17,11 @@ export interface TransactionRow {
 @Component({
   selector: 'app-transactions-table',
   templateUrl: './transactions-table.component.html',
-  imports: [DecimalPipe, TPipe],
+  imports: [NumPipe, TPipe],
   styleUrls: ['./transactions-table.component.css']
 })
 export class TransactionsTableComponent implements OnChanges {
+  readonly i18n = inject(I18nService);
   @Input() accountsData: { [account: string]: TransactionDto[] } = {};
   columns: string[] = [];
   rows: TransactionRow[] = [];
