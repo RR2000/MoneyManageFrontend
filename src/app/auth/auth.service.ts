@@ -13,6 +13,32 @@ export interface Account {
   email: string | null;
   /** false: no SMTP on the server, so no email links */
   emailLinks: boolean;
+  /** the single sign-on of the site (raoulrondinella.dev) is on: the account can be linked to it */
+  oidc?: boolean;
+  /** this account is linked to a raoulrondinella.dev account */
+  oidcLinked?: boolean;
+  /** it can be unlinked (not when raoulrondinella.dev is the only way to log in) */
+  oidcCanUnlink?: boolean;
+}
+
+/** What the backend puts in the fragment of /settings after "Link to raoulrondinella.dev". */
+export interface LinkReturn {
+  linked?: boolean;
+  /** the id token of raoulrondinella.dev, only for the logout there */
+  idToken?: string;
+  /** expired, already-linked, other-subject, unavailable or failed */
+  error?: string;
+}
+
+/** Reads the fragment of /settings after a link: #oidc-link=linked&id_token=..., #oidc-link-error=code; null if none. */
+export function linkReturn(hash: string): LinkReturn | null {
+  const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash);
+  if (params.get('oidc-link') === 'linked') {
+    const idToken = params.get('id_token');
+    return idToken ? {linked: true, idToken} : {linked: true};
+  }
+  const error = params.get('oidc-link-error');
+  return error !== null ? {error} : null;
 }
 
 /** Which ways to log in the server offers (GET /api/auth/providers). */
@@ -110,6 +136,24 @@ export class AuthService {
   /** Sends a confirmation link to the new email; the account changes only when it is opened. */
   changeEmail(email: string): Observable<void> {
     return this.http.post<void>(`/api/account/email`, {email});
+  }
+
+  /**
+   * "Link to raoulrondinella.dev": a link request for the logged-in account; answers where to send the browser (the
+   * server also sets a cookie that binds the request to this browser, valid 2 minutes and once).
+   */
+  startOidcLink(): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>(`/api/account/oidc-link`, {});
+  }
+
+  /** Unlinks the account from raoulrondinella.dev (409 if it is the only way to log in). */
+  unlinkOidc(): Observable<void> {
+    return this.http.delete<void>(`/api/account/oidc-link`);
+  }
+
+  /** After a link: the id token of raoulrondinella.dev, so "Log out" ends the session there too. */
+  acceptIdToken(idToken: string): void {
+    localStorage.setItem(this.idTokenKey, idToken);
   }
 
   /** Forgets the login in this browser (also on a 401). The session at raoulrondinella.dev, if any, stays. */

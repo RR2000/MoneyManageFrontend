@@ -2,7 +2,7 @@ import {TestBed} from '@angular/core/testing';
 import {HttpClient, provideHttpClient, withInterceptors} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {provideRouter, Router} from '@angular/router';
-import {AuthService, loginReturn, tokenFromFragment} from './auth.service';
+import {AuthService, linkReturn, loginReturn, tokenFromFragment} from './auth.service';
 import {authInterceptor} from './auth.interceptor';
 
 describe('auth', () => {
@@ -89,6 +89,30 @@ describe('auth', () => {
     expect(loginReturn('#github-error')).toEqual({error: 'github-error'});
     expect(loginReturn('#oidc-error=email-unverified')).toEqual({oidcError: 'email-unverified'});
     expect(loginReturn('')).toEqual({});
+  });
+
+  it('reads the return of a link to raoulrondinella.dev: linked with its id token, error codes, nothing', () => {
+    expect(linkReturn('#oidc-link=linked&id_token=x.y.z')).toEqual({linked: true, idToken: 'x.y.z'});
+    expect(linkReturn('#oidc-link=linked')).toEqual({linked: true});
+    expect(linkReturn('#oidc-link-error=already-linked')).toEqual({error: 'already-linked'});
+    expect(linkReturn('#token=abc')).toBeNull();
+    expect(linkReturn('')).toBeNull();
+  });
+
+  it('asks for a link request and unlinks, as the logged-in account', () => {
+    localStorage.setItem('auth_token', 'jwt-prova');
+    auth.startOidcLink().subscribe(r => expect(r.url).toBe('/api/oauth2/authorization/zitadel?link=t'));
+    const start = http.expectOne('/api/account/oidc-link');
+    expect(start.request.method).toBe('POST');
+    expect(start.request.headers.get('Authorization')).toBe('Bearer jwt-prova');
+    start.flush({url: '/api/oauth2/authorization/zitadel?link=t'});
+    auth.unlinkOidc().subscribe();
+    const unlink = http.expectOne('/api/account/oidc-link');
+    expect(unlink.request.method).toBe('DELETE');
+    unlink.flush(null, {status: 204, statusText: 'No Content'});
+    auth.acceptIdToken('x.y.z');
+    expect(localStorage.getItem('auth_id_token')).toBe('x.y.z');
+    expect(localStorage.getItem('auth_token')).toBe('jwt-prova');
   });
 
   it('logs out at raoulrondinella.dev too, with the id token as hint, after a login there', () => {
