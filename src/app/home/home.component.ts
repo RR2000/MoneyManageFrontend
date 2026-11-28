@@ -16,6 +16,8 @@ import {AmountComponent} from '../ui/amount.component';
 import {ChartComponent, ChartSeries} from '../ui/chart.component';
 import {IconComponent, IconName} from '../ui/icon.component';
 import {SourceTagComponent} from '../ui/source-tag.component';
+import {CostsService, FixedCosts, monthOnly} from '../costs/costs.service';
+import {MonthBarComponent} from '../costs/month-bar.component';
 
 type Range = '6M' | '1Y' | '3Y' | 'ALL';
 const RANGES: { range: Range; label: MessageKey; months: number | null }[] = [
@@ -45,18 +47,20 @@ interface Tile {
 
 /**
  * /, the overview: net worth today and over time, what needs a hand (consents about to end, syncs that failed, prices
- * that stopped), the parts of the net worth, and the newest movements of every account.
+ * that stopped, movements without a category), the parts of the net worth, the fixed costs of this month and the
+ * newest movements of every account.
  */
 @Component({
   selector: 'app-home',
   imports: [RouterLink, TPipe, PageHeaderComponent, LoadStateComponent, FigureComponent, AmountComponent, ChartComponent,
-    IconComponent, SourceTagComponent],
+    IconComponent, SourceTagComponent, MonthBarComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit {
   readonly i18n = inject(I18nService);
   private service = inject(HomeService);
+  private costs = inject(CostsService);
   readonly banking = inject(BankingService);
   readonly ranges = RANGES;
 
@@ -72,6 +76,8 @@ export class HomeComponent implements OnInit {
   readonly instrumentsState = signal<LoadState>('loading');
   readonly links = signal<BankLink[]>([]);
   readonly linksState = signal<LoadState>('loading');
+  readonly fixedCosts = signal<FixedCosts | null>(null);
+  readonly costsState = signal<LoadState>('loading');
   readonly syncing = signal(false);
   readonly syncError = signal(false);
   private netWorthCall?: Subscription;
@@ -176,6 +182,12 @@ export class HomeComponent implements OnInit {
           text: t('home.todo.price.text'), action: {label: t('home.todo.check'), link: '/investments', primary: false}});
       }
     }
+    const loose = this.fixedCosts()?.uncategorized ?? 0;
+    if (loose > 0) {
+      items.push({kind: 'info', icon: 'tag',
+        title: loose === 1 ? t('home.todo.uncategorized.one') : t('home.todo.uncategorized', {count: loose}),
+        text: t('home.todo.uncategorized.text'), action: {label: t('costs.assign'), link: '/costs/uncategorized', primary: false}});
+    }
     if (this.empty()) {
       items.push({kind: 'info', icon: 'import', title: t('home.todo.noData'), text: t('home.todo.noData.text'),
         action: {label: t('nav.import'), link: '/import', primary: true}});
@@ -189,10 +201,17 @@ export class HomeComponent implements OnInit {
     if (this.instrumentsState() === 'error' || links === 'error') {
       return 'error';
     }
-    if (this.instrumentsState() === 'loading' || links === 'loading') {
+    // the fixed costs have a box of their own with its error: here they only wait
+    if (this.instrumentsState() === 'loading' || links === 'loading' || this.costsState() === 'loading') {
       return 'loading';
     }
     return 'ready';
+  });
+
+  /** "Fixed costs of November" */
+  readonly costsTitle = computed(() => {
+    const month = this.fixedCosts()?.month;
+    return month ? this.i18n.t('home.costs', {month: monthOnly(this.i18n.locale(), month)}) : this.i18n.t('nav.costs');
   });
 
   /** the newest sync of the linked banks */
@@ -214,6 +233,7 @@ export class HomeComponent implements OnInit {
     this.loadNetWorth();
     this.loadMovements();
     this.loadInstruments();
+    this.loadCosts();
   }
 
   setRange(range: Range): void {
@@ -272,6 +292,17 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  loadCosts(): void {
+    this.costsState.set('loading');
+    this.costs.fixedCosts().subscribe({
+      next: answer => {
+        this.fixedCosts.set(answer);
+        this.costsState.set(answer.categories.length ? 'ready' : 'empty');
+      },
+      error: () => this.costsState.set('error')
+    });
+  }
+
   loadLinks(): void {
     this.linksState.set('loading');
     this.banking.links().subscribe({
@@ -302,6 +333,7 @@ export class HomeComponent implements OnInit {
         this.linksState.set('ready');
         this.loadNetWorth(true);
         this.loadMovements();
+        this.loadCosts();
       },
       error: () => {
         this.syncing.set(false);

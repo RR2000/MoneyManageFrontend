@@ -42,6 +42,10 @@ a.tile:hover { background: var(--surface-2); }
   color: var(--muted); }
 .rows .m a { color: var(--muted); overflow-wrap: anywhere; }
 
+/* fixed costs of this month */
+.aside { margin: 0; font-size: .88rem; color: var(--muted); }
+.aside b { color: var(--fg); font-variant-numeric: tabular-nums; }
+
 .classic { margin: 0; font-size: .82rem; color: var(--muted); text-align: center; }
 
 @media (max-width: 960px) {

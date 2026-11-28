@@ -45,6 +45,13 @@ export interface Movement {
   currency: string | null;
   source: MovementSource;
   balance: number | null;
+  /** its account and the id of its page */
+  accountId?: string;
+  account?: string;
+  /** its category, null: none; who gave it */
+  categoryId?: number | null;
+  category?: string | null;
+  categorySource?: 'RULE' | 'MANUAL' | null;
 }
 
 export interface MovementPage {
@@ -57,6 +64,8 @@ export type MovementKind = 'ALL' | 'IN' | 'OUT';
 export interface MovementQuery {
   q?: string;
   kind?: MovementKind;
+  /** only the ones without a category */
+  uncategorized?: boolean;
   offset?: number;
   limit?: number;
 }
@@ -89,10 +98,10 @@ export class AccountsService {
       from ? {params: {from}} : {}).pipe(timeout(CALL_TIMEOUT_MS));
   }
 
-  /** the search travels in the body: descriptions and amounts never go in a URL */
+  /** the search travels in the body: descriptions and amounts never go in a URL; `id` empty: every account */
   movements(id: string, query: MovementQuery): Observable<MovementPage> {
-    return this.http.post<MovementPage>(`/api/money-accounts/${encodeURIComponent(id)}/movements`, query)
-      .pipe(timeout(CALL_TIMEOUT_MS));
+    const url = id ? `/api/money-accounts/${encodeURIComponent(id)}/movements` : '/api/money-accounts/movements';
+    return this.http.post<MovementPage>(url, query).pipe(timeout(CALL_TIMEOUT_MS));
   }
 
   delete(name: string, confirm: string): Observable<{ name: string; rows: number }> {

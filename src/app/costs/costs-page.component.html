@@ -1,0 +1,108 @@
+<div class="page">
+  <app-page-header [title]="'nav.costs' | t" [subtitle]="periodText()">
+    <div class="ranges" role="group" [attr.aria-label]="'costs.period.label' | t">
+      @for (p of periods; track p.months) {
+        <button type="button" [attr.aria-pressed]="months() === p.months" (click)="setMonths(p.months)">{{ p.label | t }}</button>
+      }
+    </div>
+    <a class="btn" routerLink="/costs/rules"><app-icon name="tag"/>{{ 'costs.rules' | t }}</a>
+  </app-page-header>
+
+  @if (state() === 'ready' && data(); as d) {
+    <div class="sum3">
+      <div class="tile">
+        <span class="label">{{ 'costs.monthly' | t }}</span>
+        <span class="value">{{ money(d.monthly) }}</span>
+        <span class="note">{{ (d.monthsUsed === 1 ? 'costs.monthly.note.one' : 'costs.monthly.note') | t: {count: d.monthsUsed} }}</span>
+      </div>
+      <div class="tile">
+        <span class="label">{{ 'costs.yearly' | t }}</span>
+        <span class="value">{{ money(d.yearly) }}</span>
+        <span class="note">{{ (d.categories.length === 1 ? 'costs.yearly.note.one' : 'costs.yearly.note') | t: {count: d.categories.length} }}</span>
+      </div>
+      <div class="tile aside">
+        <span class="label">{{ 'costs.setAside' | t }}</span>
+        <span class="value">{{ money(d.setAside) }}</span>
+        <span class="note">{{ 'costs.setAside.note' | t: {step: money(d.roundingStep)} }}</span>
+      </div>
+    </div>
+    @if (d.monthsUsed === 0) {
+      <p class="note"><app-icon name="info"/><span>{{ 'costs.noCompleteMonth' | t }}</span></p>
+    } @else if (d.monthsUsed < d.months) {
+      <p class="note"><app-icon name="info"/><span>{{ 'costs.shorter' | t: {count: d.monthsUsed, date: i18n.month(d.from.substring(0, 7))} }}</span></p>
+    }
+    @for (o of d.otherCurrencies; track o.currency) {
+      <p class="note"><app-icon name="info"/><span>{{ 'costs.otherCurrency' | t: {currency: o.currency, amount: money(o.monthly, o.currency)} }}</span></p>
+    }
+    @if (d.uncategorized > 0) {
+      <p class="note todo"><app-icon name="tag"/><span>{{ (d.uncategorized === 1 ? 'costs.uncategorized.one' : 'costs.uncategorized') | t: {count: d.uncategorized} }}
+        <a routerLink="/costs/uncategorized">{{ 'costs.assign' | t }}</a></span></p>
+    }
+
+    <div class="grid">
+      <section class="card" aria-labelledby="costs-cat">
+        <h2 id="costs-cat">{{ 'costs.byCategory' | t }}</h2>
+        <ul class="hbars">
+          @for (c of d.categories; track c.id) {
+            <li class="hbar">
+              <span class="name">{{ c.name }}</span>
+              <span class="track" aria-hidden="true"><i [style.width.%]="width(c.monthly)"></i></span>
+              <span class="amount">{{ money(c.monthly) }}</span>
+              <span class="sub">{{ 'costs.category.sub' | t: {year: money(c.yearly), month: money(c.thisMonth)} }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <div class="stack">
+        <section class="card" aria-labelledby="costs-month">
+          <h2 id="costs-month">{{ 'costs.thisMonth' | t: {month: monthName()} }}</h2>
+          <app-month-bar [spent]="d.thisMonth" [average]="d.monthly"/>
+        </section>
+
+        <section class="card" aria-labelledby="costs-next">
+          <h2 id="costs-next">{{ 'costs.upcoming' | t }}</h2>
+          @if (d.upcoming.length) {
+            <ul class="rows">
+              @for (u of d.upcoming; track u.categoryId + '-' + u.ruleId + '-' + u.currency) {
+                <li [class.late]="u.late">
+                  <span class="d">{{ u.category }}</span>
+                  <span class="amt">≈ {{ money(u.amount, u.currency, 2) }}</span>
+                  <span class="m">
+                    @if (u.late) {<app-icon name="warn"/>} @else if (u.expectedOn) {<app-icon name="calendar"/>}
+                    <span>{{ when(u) }}</span>
+                  </span>
+                  @if (u.rule) {<span class="m rule">{{ 'costs.upcoming.rule' | t: {rule: u.rule} }}</span>}
+                </li>
+              }
+            </ul>
+            <p class="note"><app-icon name="info"/><span>{{ 'costs.upcoming.how' | t }}</span></p>
+          } @else {
+            <app-load-state state="empty" [emptyText]="'costs.upcoming.none' | t"/>
+          }
+        </section>
+      </div>
+    </div>
+  } @else if (state() === 'empty') {
+    <section class="card">
+      <app-load-state state="empty" [emptyText]="'costs.empty' | t">
+        <a class="btn primary" routerLink="/costs/rules"><app-icon name="plus"/>{{ 'costs.empty.action' | t }}</a>
+      </app-load-state>
+      @if (data()?.uncategorized; as n) {
+        <p class="note"><app-icon name="tag"/><span>{{ (n === 1 ? 'costs.uncategorized.one' : 'costs.uncategorized') | t: {count: n} }}
+          <a routerLink="/costs/uncategorized">{{ 'costs.assign' | t }}</a></span></p>
+      }
+    </section>
+  } @else {
+    @if (state() === 'loading') {
+      <div class="sum3" aria-hidden="true">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="tile"><i class="skel"></i><i class="skel wide"></i><i class="skel"></i></div>
+        }
+      </div>
+    }
+    <section class="card">
+      <app-load-state [state]="state()" (retry)="load()"/>
+    </section>
+  }
+</div>

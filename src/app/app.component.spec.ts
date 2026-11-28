@@ -72,7 +72,7 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
     const side = Array.from(el.querySelectorAll('nav.side a')).map(a => a.getAttribute('href'));
-    expect(side).toEqual(['/', '/', '/accounts', '/investments', '/plan', '/assets', '/import', '/settings']);
+    expect(side).toEqual(['/', '/', '/accounts', '/investments', '/costs', '/plan', '/assets', '/import', '/settings']);
     const bottom = Array.from(el.querySelectorAll('nav.bottomnav a'));
     expect(bottom.map(a => a.getAttribute('href'))).toEqual(['/', '/accounts', '/investments', '/plan', '/more']);
     expect(bottom.map(a => a.textContent?.trim())).toEqual(['Home', 'Accounts', 'Investments', 'Plan', 'More']);

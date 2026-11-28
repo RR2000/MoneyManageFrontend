@@ -15,6 +15,7 @@ export const SIDE_ITEMS: readonly NavItem[] = [
   {path: '/', icon: 'home', label: 'nav.home'},
   {path: '/accounts', icon: 'accounts', label: 'nav.accounts'},
   {path: '/investments', icon: 'investments', label: 'nav.investments'},
+  {path: '/costs', icon: 'costs', label: 'nav.costs'},
   {path: '/plan', icon: 'plan', label: 'nav.plan'},
   {path: '/assets', icon: 'assets', label: 'nav.assets'},
   {path: '/banks', icon: 'bank', label: 'nav.banks', banking: true}

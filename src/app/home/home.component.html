@@ -90,6 +90,7 @@
     </div>
   }
 
+  <div class="grid">
   <section class="card" [attr.aria-label]="'home.latest' | t">
     <div class="card-head"><h2>{{ 'home.latest' | t }}</h2><a class="small" routerLink="/accounts">{{ 'home.all' | t }}</a></div>
     @if (movementsState() === 'ready') {
@@ -112,6 +113,21 @@
       </app-load-state>
     }
   </section>
+
+  <section class="card costs" aria-labelledby="home-costs">
+    <div class="card-head"><h2 id="home-costs">{{ costsTitle() }}</h2><a class="small" routerLink="/costs">{{ 'home.costs.detail' | t }}</a></div>
+    @if (costsState() === 'ready' && fixedCosts(); as c) {
+      <app-month-bar [spent]="c.thisMonth" [average]="c.monthly"/>
+      @if (c.setAside !== null) {
+        <p class="aside">{{ 'home.costs.setAside' | t }} <b>{{ i18n.money(c.setAside, c.currency, 0) }}</b> {{ 'home.costs.perMonth' | t }}</p>
+      }
+    } @else {
+      <app-load-state [state]="costsState()" [emptyText]="'home.costs.none' | t" (retry)="loadCosts()">
+        <a class="btn" routerLink="/costs/rules"><app-icon name="plus"/>{{ 'costs.empty.action' | t }}</a>
+      </app-load-state>
+    }
+  </section>
+  </div>
 
   <p class="classic"><a routerLink="/classic">{{ 'home.classic' | t }}</a>: {{ 'home.classic.text' | t }}</p>
 </div>

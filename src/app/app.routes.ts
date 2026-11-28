@@ -15,6 +15,9 @@ import {AssetsPageComponent} from './assets/assets-page.component';
 import {PlanPageComponent} from './pages/plan-page.component';
 import {MoreComponent} from './pages/more.component';
 import {HomeComponent} from './home/home.component';
+import {CostsPageComponent} from './costs/costs-page.component';
+import {RulesPageComponent} from './costs/rules-page.component';
+import {UncategorizedPageComponent} from './costs/uncategorized-page.component';
 
 /** One address per section (see nav.ts for the menus). */
 export const routes: Routes = [
@@ -30,6 +33,10 @@ export const routes: Routes = [
   {path: 'accounts', component: AccountsPageComponent, canActivate: [authGuard]},
   {path: 'accounts/:id', component: AccountPageComponent, canActivate: [authGuard]},
   {path: 'investments', component: InvestmentsPageComponent, canActivate: [authGuard]},
+  // fixed costs, the categories and their rules, the movements still without a category
+  {path: 'costs', component: CostsPageComponent, canActivate: [authGuard]},
+  {path: 'costs/rules', component: RulesPageComponent, canActivate: [authGuard]},
+  {path: 'costs/uncategorized', component: UncategorizedPageComponent, canActivate: [authGuard]},
   {path: 'plan', component: PlanPageComponent, canActivate: [authGuard]},
   {path: 'assets', component: AssetsPageComponent, canActivate: [authGuard]},
   // open banking; the backend sends the browser back here with ?result=ok|error

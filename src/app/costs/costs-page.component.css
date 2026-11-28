@@ -1,0 +1,54 @@
+.page { display: grid; gap: 16px; }
+app-page-header { margin-bottom: 0; }
+.note { display: flex; gap: 6px; align-items: flex-start; margin: 0; font-size: .82rem; color: var(--muted);
+  --icon-size: 15px; }
+.note app-icon { margin-top: 1px; }
+.note.todo { color: var(--fg); }
+.note a { font-weight: 600; }
+
+/* three boxes side by side, also on a phone */
+.sum3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.sum3 .tile.aside { border-color: var(--accent); }
+.tile .skel { display: block; height: 12px; width: 50%; margin: 4px 0; border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%;
+  animation: sh 1.4s linear infinite; }
+.tile .skel.wide { height: 20px; width: 80%; }
+@keyframes sh { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .tile .skel { animation: none; } }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+
+/* one bar per category: the amount is always written, the length only helps */
+.hbars { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.hbar { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto; gap: 2px 10px; align-items: center;
+  font-size: .88rem; }
+.hbar .name { font-weight: 600; overflow-wrap: anywhere; }
+.hbar .track { height: 12px; background: var(--surface-2); border-radius: 0 4px 4px 0; }
+.hbar .track i { display: block; height: 100%; background: var(--s1); border-radius: 0 4px 4px 0; }
+.hbar .amount { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hbar .sub { grid-column: 1 / -1; font-size: .76rem; color: var(--muted); }
+
+/* coming next */
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 9px 0;
+  border-bottom: 1px solid var(--line); align-items: center; }
+.rows li:last-child { border-bottom: 0; }
+.rows .d { font-weight: 600; overflow-wrap: anywhere; }
+.rows .amt { font-weight: 700; text-align: right; grid-row: 1 / span 2; grid-column: 2; font-variant-numeric: tabular-nums;
+  white-space: nowrap; }
+.rows .m { grid-column: 1; display: flex; gap: 5px; align-items: center; font-size: .8rem; color: var(--muted);
+  overflow-wrap: anywhere; min-width: 0; --icon-size: 14px; }
+.rows .m.rule { font-style: italic; }
+.rows li.late .m:not(.rule) { color: var(--warn); font-weight: 600; }
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 599px) {
+  .sum3 { gap: 6px; }
+  .sum3 .tile { padding: 10px; }
+  .sum3 .tile .value { font-size: 1rem; }
+  .sum3 .tile .label { font-size: .66rem; letter-spacing: .03em; }
+  .sum3 .tile .note { font-size: .72rem; }
+  .hbar { grid-template-columns: minmax(0, 110px) minmax(0, 1fr) auto; font-size: .82rem; }
+}

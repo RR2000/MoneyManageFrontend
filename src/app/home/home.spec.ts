@@ -8,6 +8,7 @@ import {BankingService, BankLink} from '../banks/banking.service';
 import {Instrument} from '../instruments/instruments.component';
 import {isoDay} from '../accounts/account-page.component';
 import {I18nService} from '../i18n/i18n.service';
+import {FixedCosts} from '../costs/costs.service';
 
 // made-up data only
 function point(date: string, cash: number, investments = 0, realEstate = 0, otherAssets = 0, debts = 0): NetWorthPoint {
@@ -33,6 +34,12 @@ function instrument(overrides: Partial<Instrument> = {}): Instrument {
   return {isin: 'XX0000000001', name: 'ETF di prova', symbol: null, manual: false, source: 'esempio',
     quoteCurrency: 'EUR', investmentCurrency: 'EUR', currencyWarning: false, lastPrice: 90, lastDate: isoDay(new Date()),
     prices: 10, ...overrides};
+}
+
+function costs(overrides: Partial<FixedCosts> = {}): FixedCosts {
+  return {currency: 'EUR', months: 12, monthsUsed: 0, from: '2026-11-01', to: '2026-10-31', month: '2026-11', monthly: null,
+    yearly: null, setAside: null, roundingStep: 10, thisMonth: 0, categories: [], upcoming: [], otherCurrencies: [],
+    uncategorized: 0, ...overrides};
 }
 
 function link(overrides: Partial<BankLink> = {}): BankLink {
@@ -64,13 +71,15 @@ describe('Home', () => {
   const instrumentsCall = () => http.expectOne('/api/instruments');
   const flushInstruments = (list: Instrument[]) => instrumentsCall().flush({instruments: list, alphaVantage: false,
     alphaVantageLeftToday: 0});
+  const costsCall = () => http.expectOne(r => r.url === '/api/fixed-costs');
+  const flushCosts = (answer: FixedCosts = costs()) => costsCall().flush(answer);
   const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 
   it('waits with skeletons, then net worth with its 30-day change, the parts, the latest movements', () => {
     const fixture = open();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('h1')?.textContent).toBe('Overview');
-    expect(el.querySelectorAll('app-load-state [role=status]').length).toBe(3);
+    expect(el.querySelectorAll('app-load-state [role=status]').length).toBe(4);
     expect(el.querySelectorAll('.tile .skel').length).toBeGreaterThan(0);
 
     const call = netWorthCall();
@@ -79,6 +88,7 @@ describe('Home', () => {
     call.flush(netWorth());
     latestCall().flush([movement(1, 'Spesa di prova', -64.2), movement(2, 'Stipendio di prova', 2400, 1)]);
     flushInstruments([instrument()]);
+    flushCosts();
     fixture.detectChanges();
 
     expect(text(el.querySelector('app-figure .big'))).toBe('€180,000');
@@ -119,6 +129,7 @@ describe('Home', () => {
     netWorthCall().flush(netWorth());
     latestCall().flush([]);
     flushInstruments([]);
+    flushCosts();
     fixture.detectChanges();
     const all = Array.from(el.querySelectorAll<HTMLButtonElement>('.ranges button')).find(b => text(b) === 'All')!;
     all.click();
@@ -149,6 +160,7 @@ describe('Home', () => {
     old.setDate(old.getDate() - 20);
     flushInstruments([instrument(), instrument({isin: 'XX2', name: 'Fondo fermo', lastDate: isoDay(old)}),
       instrument({isin: 'XX3', name: 'Senza prezzo', lastDate: null, lastPrice: null})]);
+    flushCosts();
     fixture.detectChanges();
 
     const items = Array.from(el.querySelectorAll('.todo li'));
@@ -178,6 +190,7 @@ describe('Home', () => {
     http.expectOne('/api/banking/sync').flush({imported: 1, matched: 0, ambiguous: 0, links: [link()]});
     netWorthCall().flush(netWorth());
     latestCall().flush([movement(1, 'Spesa di prova', -10)]);
+    flushCosts();
     fixture.detectChanges();
     expect(el.querySelectorAll('.todo li').length).toBe(3);
   });
@@ -189,6 +202,7 @@ describe('Home', () => {
       today: point(isoDay(new Date()), 0), before: point('2026-10-29', 0)}));
     latestCall().flush([]);
     flushInstruments([]);
+    flushCosts();
     fixture.detectChanges();
     expect(text(el.querySelector('app-load-state'))).toContain('Nothing here yet');
     expect(el.querySelector('.tiles')).toBeNull();
@@ -204,13 +218,15 @@ describe('Home', () => {
     netWorthCall().flush('', {status: 500, statusText: 'Server Error'});
     latestCall().flush('', {status: 500, statusText: 'Server Error'});
     instrumentsCall().flush('', {status: 500, statusText: 'Server Error'});
+    costsCall().flush('', {status: 500, statusText: 'Server Error'});
     fixture.detectChanges();
     const retries = Array.from(el.querySelectorAll<HTMLButtonElement>('app-load-state [role=alert] button'));
-    expect(retries.length).toBe(3);
+    expect(retries.length).toBe(4);
     retries.forEach(b => b.click());
     netWorthCall().flush(netWorth());
     latestCall().flush([]);
     flushInstruments([]);
+    flushCosts();
     fixture.detectChanges();
     expect(el.querySelector('app-load-state [role=alert]')).toBeNull();
     expect(el.querySelector('app-figure')).toBeTruthy();
@@ -222,6 +238,7 @@ describe('Home', () => {
     netWorthCall().flush(netWorth({excluded: {accounts: 1, realEstates: 0, otherAssets: 0, debts: 0, currencies: ['USD']}}));
     latestCall().flush([]);
     flushInstruments([]);
+    flushCosts();
     fixture.detectChanges();
     expect(text(el.querySelector('.note'))).toBe('One item in USD is not in the total: nothing is converted.');
   });
@@ -235,6 +252,7 @@ describe('Home', () => {
       excluded: {accounts: 0, realEstates: 0, otherAssets: 1, debts: 1, currencies: ['CHF', 'USD']}}));
     latestCall().flush([]);
     flushInstruments([]);
+    flushCosts();
     fixture.detectChanges();
     const tiles = Array.from(el.querySelectorAll('.tiles .tile'));
     expect(text(tiles[2])).toContain('€162,000');
@@ -243,6 +261,44 @@ describe('Home', () => {
     expect(text(tiles[3])).toContain('1 debt');
     expect(tiles[3].getAttribute('href')).toBe('/assets');
     expect(text(el.querySelector('.note'))).toBe('2 items in CHF, USD are not in the total: nothing is converted.');
+  });
+
+  it('fixed costs of this month against the average, what to set aside, movements without a category to assign', () => {
+    const fixture = open();
+    const el: HTMLElement = fixture.nativeElement;
+    netWorthCall().flush(netWorth());
+    latestCall().flush([]);
+    flushInstruments([]);
+    flushCosts(costs({monthsUsed: 12, monthly: 612.4, yearly: 7348.8, setAside: 620, thisMonth: 418, uncategorized: 3,
+      categories: [{id: 1, name: 'Casa di prova', total: 7348.8, monthly: 612.4, yearly: 7348.8, thisMonth: 418, movements: 12}]}));
+    fixture.detectChanges();
+    const card = el.querySelector('section.costs')!;
+    expect(text(card.querySelector('h2'))).toBe('Fixed costs of November');
+    expect(card.querySelector('.card-head a')?.getAttribute('href')).toBe('/costs');
+    expect(text(card.querySelector('app-month-bar .line'))).toBe('€418 out of an average of €612 a month');
+    // the bar has its words: as its label and written under it
+    expect(card.querySelector('app-month-bar .bar')?.getAttribute('aria-label')).toBe('68% of the monthly average');
+    expect(text(card.querySelector('app-month-bar .share'))).toBe('68% of the monthly average');
+    expect(text(card.querySelector('.aside'))).toBe('To set aside: €620 a month');
+
+    const todo = Array.from(el.querySelectorAll('.todo li')).find(li => text(li.querySelector('.t')) === '3 movements without a category')!;
+    expect(todo.querySelector('app-icon')).toBeTruthy();
+    expect(todo.querySelector('.act a')?.getAttribute('href')).toBe('/costs/uncategorized');
+    expect(text(todo.querySelector('.act a'))).toBe('Assign');
+  });
+
+  it('no fixed cost yet: the card says how to start; above the average the bar says by how much', () => {
+    const fixture = open();
+    const el: HTMLElement = fixture.nativeElement;
+    netWorthCall().flush(netWorth());
+    latestCall().flush([]);
+    flushInstruments([]);
+    flushCosts();
+    fixture.detectChanges();
+    const card = el.querySelector('section.costs')!;
+    expect(text(card)).toContain('No fixed cost yet');
+    expect(card.querySelector('app-load-state a')?.getAttribute('href')).toBe('/costs/rules');
+    expect(el.querySelector('.all-good')).toBeTruthy();
   });
 
   it('days since a date', () => {
