@@ -13,7 +13,7 @@
     <!-- desktop: side bar with every section; the column runs to the end of the page, the bar inside stays in view -->
     <div class="side-col">
     <nav class="side" [attr.aria-label]="'nav.sections' | t">
-      <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>money</a>
+      <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>Money Manage</a>
       @for (item of sideItems(); track item.path) {
         <a class="nav-item" [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page"
            [routerLinkActiveOptions]="{exact: item.path === '/'}">
@@ -38,7 +38,7 @@
     <div class="content">
       <!-- phone: bar on top with the name, sections at the bottom -->
       <header class="topbar">
-        <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>money</a>
+        <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>Money Manage</a>
       </header>
       <main id="main" tabindex="-1">
         <router-outlet></router-outlet>
