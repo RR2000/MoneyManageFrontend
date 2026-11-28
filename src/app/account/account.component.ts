@@ -1,3 +1,4 @@
+import {ThemeSwitchComponent} from '../theme/theme-switch.component';
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
@@ -8,7 +9,7 @@ import {TPipe} from '../i18n/t.pipe';
 /** The account: username and the email a forgotten password is reset with (confirmed from a link). */
 @Component({
   selector: 'app-account',
-  imports: [FormsModule, TPipe],
+  imports: [FormsModule, TPipe, ThemeSwitchComponent],
   templateUrl: './account.component.html',
   styleUrls: ['../login/login.component.css']
 })

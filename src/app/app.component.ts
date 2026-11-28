@@ -5,11 +5,12 @@ import {AuthService} from './auth/auth.service';
 import {BankingService} from './banks/banking.service';
 import {TPipe} from './i18n/t.pipe';
 import {I18nService} from './i18n/i18n.service';
+import {ThemeSwitchComponent} from './theme/theme-switch.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TPipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TPipe, ThemeSwitchComponent],
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {

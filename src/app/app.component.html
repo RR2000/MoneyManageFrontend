@@ -20,11 +20,13 @@
       <a routerLink="/account" routerLinkActive="active">{{ 'nav.account' | t }}</a>
       <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
               (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
+      <app-theme-switch [compact]="true"/>
       <button type="button" (click)="logout()">{{ 'nav.logout' | t }}</button>
     </nav>
   </header>
 } @else {
   <div class="lang-bar">
+    <app-theme-switch [compact]="true"/>
     <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
             (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
   </div>

@@ -3,32 +3,33 @@
   margin: 8vh auto;
   padding: 0 16px;
 }
-h1 { margin: 0 0 4px; font-size: 1.8rem; color: #1f3b5a; }
-.intro { margin: 0 0 20px; color: #4a5260; }
+h1 { margin: 0 0 4px; font-size: 1.8rem; color: var(--accent); }
+.intro { margin: 0 0 20px; color: var(--muted); }
 form, .panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 20px;
-  background: #fff;
-  border: 1px solid #d9dde3;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 8px;
 }
 h2 { margin: 0; font-size: 1.2rem; }
-label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: #333a44; }
-input:not([type=checkbox]) { padding: 8px; font-size: 1rem; border: 1px solid #b8bfc9; border-radius: 4px; }
+label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--fg); }
+input:not([type=checkbox]) { padding: 8px; font-size: 1rem; border: 1px solid var(--line-strong); border-radius: 4px; }
 label.check { flex-direction: row; align-items: center; gap: 8px; }
-.hint { margin: 0; font-size: .85rem; color: #4a5260; }
+.hint { margin: 0; font-size: .85rem; color: var(--muted); }
 button { padding: 10px; font: inherit; border-radius: 4px; cursor: pointer; }
-button.primary { background: #1f3b5a; color: #fff; border: none; }
+button.primary { background: var(--accent); color: var(--accent-fg); border: none; }
 button.primary:disabled { opacity: .6; cursor: default; }
 a.github {
   display: block; text-align: center; padding: 10px; border-radius: 4px;
-  border: 1px solid #1c1f24; color: #1c1f24; text-decoration: none; font-weight: 500;
+  border: 1px solid var(--fg); color: var(--fg); text-decoration: none; font-weight: 500;
 }
-button.link { background: none; border: none; color: #1f5fa8; text-decoration: underline; }
+button.link { background: none; border: none; color: var(--accent); text-decoration: underline; }
 .error { font-size: .9rem; }
-a.back, a.forgot { color: #1f5fa8; text-align: center; }
+a.back, a.forgot { color: var(--accent); text-align: center; }
 p { margin: 0; }
 .language { margin-top: 16px; }
-select { padding: 8px; font: inherit; border: 1px solid #b8bfc9; border-radius: 4px; }
+select { padding: 8px; font: inherit; border: 1px solid var(--line-strong); border-radius: 4px; }
+.theme { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--fg); }

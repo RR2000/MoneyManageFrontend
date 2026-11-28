@@ -16,7 +16,7 @@ table {
 .empty {
   text-align: center;
   padding: 32px;
-  color: #888;
+  color: var(--muted);
 }
 
 .form-panel {

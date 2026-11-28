@@ -1,6 +1,6 @@
 .chart-container { position: relative; height: 60vh; min-height: 280px; max-height: 520px; padding-top: 12px; }
 .chart-container.hidden { display: none; }
-.empty { color: #4a5260; padding: 16px 0; }
+.empty { color: var(--muted); padding: 16px 0; }
 .error { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 16px 0; padding: 10px 14px;
-  border: 1px solid #b3261e; border-radius: 6px; color: #8c1d18; background: #fdecea; }
+  border: 1px solid var(--bad); border-radius: 6px; color: var(--bad); background: var(--bad-bg); }
 .error button { padding: 4px 12px; font: inherit; cursor: pointer; }

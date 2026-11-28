@@ -1,6 +1,10 @@
 /** English texts, the default. Every key must also be in messages.it.ts (the compiler checks it). */
 export const en = {
   'nav.banks': 'Banks',
+  'theme.label': 'Theme',
+  'theme.system': 'System',
+  'theme.light': 'Light',
+  'theme.dark': 'Dark',
 
   'banks.title': 'Banks',
   'banks.intro': 'Link a bank account and its movements arrive by themselves, every day. The consent is given on '

@@ -3,6 +3,10 @@ import {MessageKey} from './messages.en';
 /** Testi in italiano: stesse chiavi di messages.en.ts. */
 export const it: Record<MessageKey, string> = {
   'nav.banks': 'Banche',
+  'theme.label': 'Tema',
+  'theme.system': 'Sistema',
+  'theme.light': 'Chiaro',
+  'theme.dark': 'Scuro',
 
   'banks.title': 'Banche',
   'banks.intro': 'Collega un conto e i suoi movimenti arrivano da soli, ogni giorno. Il consenso si da\' sul sito '
