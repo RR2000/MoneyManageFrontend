@@ -1,21 +1,49 @@
-.app-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 16px;
-  padding: 10px 16px;
-  background: var(--surface);
-  color: var(--fg);
-  border-bottom: 1px solid var(--line);
+/* desktop: side bar + content; the document scrolls, the side bar stays (sticky) */
+.shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100dvh; }
+.side { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; gap: 2px;
+  padding: 18px 12px; background: var(--surface); border-right: 1px solid var(--line); }
+.brand { display: flex; gap: 8px; align-items: center; padding: 4px 10px 16px; color: var(--fg); text-decoration: none;
+  font-weight: 800; font-size: 1.15rem; }
+.brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: var(--accent-fg);
+  display: grid; place-items: center; font-size: .85rem; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; min-height: 40px; border-radius: 8px;
+  color: var(--fg); text-decoration: none; font-weight: 500; }
+.nav-item:hover { background: var(--surface-2); }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+.nav-foot { margin-top: auto; display: grid; gap: 2px; }
+.nav-sep { height: 1px; background: var(--line); margin: 8px 6px; }
+.side-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 4px 0; }
+.side-tools button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; min-height: 36px;
+  border-radius: 8px; cursor: pointer; --icon-size: 16px; }
+.content { min-width: 0; display: flex; flex-direction: column; }
+main { flex: 1; min-width: 0; outline: none; }
+.topbar, .bottomnav { display: none; }
+.skip { position: absolute; left: 8px; top: -60px; z-index: 10; padding: 8px 12px; border-radius: 8px;
+  background: var(--accent); color: var(--accent-fg); }
+.skip:focus { top: 8px; }
+
+/* phone and narrow windows: name on top, five sections in a bar at the bottom */
+@media (max-width: 839px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side { display: none; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px;
+    background: var(--surface); border-bottom: 1px solid var(--line); }
+  .topbar .brand { padding: 0; font-size: 1.05rem; }
+  /* room for the bar at the bottom, which covers the end of the page otherwise */
+  main { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  .bottomnav { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border-top: 1px solid var(--line);
+    padding: 4px 4px calc(6px + env(safe-area-inset-bottom, 0px)); }
+  .bottomnav a { display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px;
+    padding: 4px 0; color: var(--muted); text-decoration: none; font-size: .72rem; --icon-size: 22px;
+    overflow-wrap: anywhere; text-align: center; }
+  .bottomnav a.active { color: var(--accent); font-weight: 700; }
+  /* the current section is also marked by a bar, not only by its colour */
+  .bottomnav a.active app-icon { border-bottom: 2px solid currentColor; padding-bottom: 1px; box-sizing: content-box; }
 }
-.app-title { font-size: 1.15rem; font-weight: 700; }
-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
-nav a { color: var(--fg); text-decoration: none; padding: 4px 2px; border-bottom: 2px solid transparent; }
-nav a.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-nav button { border-radius: 6px; padding: 4px 10px; cursor: pointer; min-height: 32px; }
+
 .lang-bar { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; padding: 8px 16px 0; }
-.lang-bar button { border-radius: 6px; padding: 4px 10px; cursor: pointer; min-height: 32px; }
+.lang-bar button { border-radius: 6px; padding: 4px 10px; cursor: pointer; min-height: 36px; }
 .lang-suggest { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 16px;
   background: var(--accent-soft); color: var(--fg); border-bottom: 1px solid var(--line); }
 .lang-suggest-buttons { display: flex; flex-wrap: wrap; gap: 8px; }

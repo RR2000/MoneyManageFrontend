@@ -8,27 +8,54 @@
   </div>
 }
 @if (isLoggedIn()) {
-  <header class="app-toolbar">
-    <span class="app-title">Money Manage</span>
-    <nav>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">{{ 'nav.dashboard' | t }}</a>
-      <a routerLink="/setup" routerLinkActive="active">{{ 'nav.import' | t }}</a>
-      @if (banksAvailable()) {
-        <a routerLink="/banks" routerLinkActive="active">{{ 'nav.banks' | t }}</a>
+  <div class="shell">
+    <a class="skip" href="#main">{{ 'nav.skip' | t }}</a>
+    <!-- desktop: side bar with every section -->
+    <nav class="side" [attr.aria-label]="'nav.sections' | t">
+      <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>money</a>
+      @for (item of sideItems(); track item.path) {
+        <a class="nav-item" [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page"
+           [routerLinkActiveOptions]="{exact: item.path === '/'}">
+          <app-icon [name]="item.icon"/><span>{{ item.label | t }}</span>
+        </a>
       }
-      <a routerLink="/accounts" routerLinkActive="active">{{ 'nav.moneyAccounts' | t }}</a>
-      <a routerLink="/account" routerLinkActive="active">{{ 'nav.account' | t }}</a>
-      <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
-              (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
-      <app-theme-switch [compact]="true"/>
-      <button type="button" (click)="logout()">{{ 'nav.logout' | t }}</button>
+      <div class="nav-foot">
+        <div class="nav-sep" role="presentation"></div>
+        @for (item of footItems; track item.path) {
+          <a class="nav-item" [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page">
+            <app-icon [name]="item.icon"/><span>{{ item.label | t }}</span>
+          </a>
+        }
+        <div class="side-tools">
+          <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
+                  (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
+          <button type="button" (click)="logout()"><app-icon name="logout"/>{{ 'nav.logout' | t }}</button>
+        </div>
+      </div>
     </nav>
-  </header>
+    <div class="content">
+      <!-- phone: bar on top with the name, sections at the bottom -->
+      <header class="topbar">
+        <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>money</a>
+      </header>
+      <main id="main" tabindex="-1">
+        <router-outlet></router-outlet>
+      </main>
+      <nav class="bottomnav" [attr.aria-label]="'nav.sections' | t">
+        @for (item of bottomItems; track item.path) {
+          <a [routerLink]="item.path" [class.active]="bottomActive(item.path)"
+             [attr.aria-current]="bottomActive(item.path) ? 'page' : null">
+            <app-icon [name]="item.icon"/><span>{{ item.label | t }}</span>
+          </a>
+        }
+      </nav>
+    </div>
+  </div>
 } @else {
   <div class="lang-bar">
     <app-theme-switch [compact]="true"/>
     <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
             (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
   </div>
+  <router-outlet></router-outlet>
 }
-<router-outlet></router-outlet>

@@ -7,7 +7,7 @@
   }
   @if (loaded() && accountNames().length === 0) {
     <div class="empty">
-      <p>{{ 'dashboard.empty' | t }} <a routerLink="/setup">{{ 'dashboard.emptyImport' | t }}</a>
+      <p>{{ 'dashboard.empty' | t }} <a routerLink="/import">{{ 'dashboard.emptyImport' | t }}</a>
         {{ 'dashboard.emptyRest' | t }}</p>
       <button type="button" (click)="loadSampleData()" [disabled]="sampleLoading()">
         {{ (sampleLoading() ? 'common.loading' : 'dashboard.sample') | t }}
