@@ -139,3 +139,35 @@ button:where(:not(.mat-mdc-button-base, .mdc-tab)) {
   border-radius: 6px;
 }
 button:disabled { opacity: .6; }
+
+/* building blocks of the pages (one style of button, one of card) */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px;
+  display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card > h2, .card-head h2 { margin: 0; font-size: 1rem; font-weight: 700; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.label { font-size: .74rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 7px 14px;
+  border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg);
+  font-weight: 600; font-size: .9rem; cursor: pointer; text-decoration: none; --icon-size: 16px; }
+.btn:hover:not(:disabled) { background: var(--surface-2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
+.btn.danger { color: var(--bad); border-color: var(--bad); }
+.btn:disabled { opacity: .6; cursor: default; }
+.chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); background: var(--surface);
+  border-radius: 999px; padding: 3px 10px; font-size: .78rem; color: var(--fg); white-space: nowrap; --icon-size: 13px; }
+.chip.good { background: var(--good-bg); border-color: transparent; color: var(--good); }
+.chip.warn { background: var(--warn-bg); border-color: transparent; color: var(--warn); }
+.chip.bad { background: var(--bad-bg); border-color: transparent; color: var(--bad); }
+/* segmented choice (periods, filters): the pressed one is bold and raised, not only coloured */
+.ranges { display: inline-flex; flex-wrap: wrap; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: 8px; }
+.ranges button { border: 0; background: transparent; color: var(--muted); padding: 4px 10px; border-radius: 6px;
+  min-height: 32px; cursor: pointer; font-size: .82rem; }
+.ranges button[aria-pressed="true"] { background: var(--surface); color: var(--fg); font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .18); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px;
+  display: grid; gap: 2px; min-width: 0; }
+.tile .value { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tile .note { font-size: .8rem; color: var(--muted); }
+.stack { display: grid; gap: 16px; min-width: 0; }

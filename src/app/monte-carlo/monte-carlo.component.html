@@ -1,5 +1,5 @@
 <div class="mc-container">
-  <h3>{{ 'monteCarlo.title' | t }}</h3>
+  <h2>{{ 'monteCarlo.title' | t }}</h2>
 
   <div class="controls">
     <mat-form-field>
@@ -12,18 +12,19 @@
       <input matInput type="number" [(ngModel)]="simulations" min="100" max="20000" step="1000"/>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="run()" [disabled]="loading()">
+    <button mat-flat-button (click)="run()" [disabled]="loading()">
       {{ (loading() ? 'monteCarlo.running' : 'monteCarlo.run') | t }}
     </button>
   </div>
 
-  <p *ngIf="error()" class="error">{{ error() }}</p>
+  <p class="legend-note">{{ 'monteCarlo.basis' | t }}</p>
 
-  <p class="legend-note">
-    <strong>P50</strong> = {{ 'monteCarlo.median' | t }} &nbsp;|&nbsp;
-    <strong>P5–P95</strong> = {{ 'monteCarlo.range' | t }} &nbsp;|&nbsp;
-    {{ 'monteCarlo.basis' | t }}
-  </p>
-
-  <div class="chart-box"><canvas id="MonteCarloChart"></canvas></div>
+  @if (loading()) {
+    <app-load-state state="loading" shape="chart"/>
+  } @else if (error()) {
+    <app-load-state state="error" [errorText]="error()" (retry)="run()"/>
+  } @else if (data()) {
+    <app-chart [labels]="labels()" [series]="series()" [band]="band()" [height]="340"
+               [ariaLabel]="'monteCarlo.title' | t"/>
+  }
 </div>

@@ -1,23 +1,5 @@
-.mc-container {
-  padding: 16px;
-}
-
-.controls {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.chart-box { position: relative; height: 55vh; min-height: 280px; max-height: 480px; }
-
-.error {
-  color: var(--bad);
-}
-
-.legend-note {
-  font-size: 0.85em;
-  color: var(--muted);
-  margin-bottom: 8px;
-}
+.mc-container { padding: 8px 0; }
+h2 { font-size: 1.1rem; margin: 0 0 12px; }
+.controls { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 8px; }
+.controls mat-form-field { width: min(100%, 12rem); }
+.legend-note { font-size: .85rem; color: var(--muted); margin: 0 0 8px; }

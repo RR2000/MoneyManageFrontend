@@ -80,15 +80,57 @@ export class I18nService {
   }
 
   /** an amount with its currency; an unknown currency code is written after the number */
-  money(value: number, currency: string | null | undefined): string {
+  money(value: number, currency: string | null | undefined, decimals?: number): string {
     if (currency) {
       try {
-        return new Intl.NumberFormat(this.locale(), {style: 'currency', currency}).format(value);
+        const digits = decimals === undefined ? {} : {minimumFractionDigits: decimals, maximumFractionDigits: decimals};
+        return new Intl.NumberFormat(this.locale(), {style: 'currency', currency, ...digits}).format(value);
       } catch {
-        return `${this.number(value)} ${currency}`;
+        return `${this.number(value, decimals ?? 2)} ${currency}`;
       }
     }
-    return this.number(value);
+    return this.number(value, decimals ?? 2);
+  }
+
+  /**
+   * An amount with its sign always written: "+1.234,00 €" for money in, "−56,70 €" (minus sign) for money out, so the
+   * direction is said by the text and not only by a colour.
+   */
+  signedMoney(value: number, currency: string | null | undefined, decimals?: number): string {
+    const sign = value > 0 ? '+' : value < 0 ? '−' : '';
+    return sign + this.money(Math.abs(value), currency, decimals);
+  }
+
+  /** a share: 0.123 -> "12,3 %" in Italian, "12.3%" in English */
+  percent(value: number, decimals = 1): string {
+    return new Intl.NumberFormat(this.locale(), {style: 'percent', minimumFractionDigits: 0, maximumFractionDigits: decimals})
+      .format(value);
+  }
+
+  /** a month: "novembre 2026" (long) or "nov 26" */
+  month(iso: string | null | undefined, long = true): string {
+    const date = parse(iso && /^\d{4}-\d{2}$/.test(iso) ? iso + '-01' : iso);
+    return date ? new Intl.DateTimeFormat(this.locale(), long ? {month: 'long', year: 'numeric'} : {month: 'short', year: '2-digit'})
+      .format(date) : '';
+  }
+
+  /** a day as a heading of a list: "Today", "Yesterday", "Thursday 27 November" (the year only when not this year) */
+  dayHeading(iso: string | null | undefined, today = new Date()): string {
+    const date = parse(iso ? iso.substring(0, 10) : iso);
+    if (!date) {
+      return '';
+    }
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const days = Math.round((start.getTime() - date.getTime()) / 86400000);
+    if (days === 0) {
+      return this.t('day.today');
+    }
+    if (days === 1) {
+      return this.t('day.yesterday');
+    }
+    const text = new Intl.DateTimeFormat(this.locale(), {weekday: 'long', day: 'numeric', month: 'long',
+      ...(date.getFullYear() === today.getFullYear() ? {} : {year: 'numeric'})}).format(date);
+    return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
   /** a day, from an ISO date or date-time */
