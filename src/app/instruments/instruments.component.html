@@ -1,15 +1,12 @@
-<section class="instruments">
+<div class="instruments">
   <h2>{{ 'instruments.title' | t }}</h2>
   @if (loading()) {
-    <p role="status">{{ 'common.loading' | t }}</p>
+    <app-load-state state="loading"/>
   } @else if (error()) {
-    <div class="error" role="alert">
-      <span>{{ error() | t }}</span>
-      <button type="button" (click)="load()">{{ 'common.retry' | t }}</button>
-    </div>
+    <app-load-state state="error" [errorText]="error() | t" (retry)="load()"/>
   } @else if (answer(); as a) {
     @if (!a.instruments.length) {
-      <p class="hint">{{ 'instruments.none' | t }}</p>
+      <app-load-state state="empty" [emptyText]="'instruments.none' | t"/>
     } @else {
       <p class="hint">
         @if (a.alphaVantage) {
@@ -35,7 +32,7 @@
               }
             </div>
             @if (i.currencyWarning) {
-              <p class="warning" role="note">{{ 'instruments.currencyWarning' | t: {quote: i.quoteCurrency ?? ('instruments.unknownCurrency' | t), currency: i.investmentCurrency} }}</p>
+              <p class="warning" role="note"><app-icon name="warn"/><span>{{ 'instruments.currencyWarning' | t: {quote: i.quoteCurrency ?? ('instruments.unknownCurrency' | t), currency: i.investmentCurrency} }}</span></p>
             }
             @if (editing() === i.isin) {
               <div class="edit">
@@ -44,12 +41,12 @@
                          autocapitalize="characters" autocomplete="off" spellcheck="false">
                 </label>
                 <div class="buttons">
-                  <button type="button" (click)="showPreview(i.isin)" [disabled]="busy() || !symbol.trim()">{{ 'instruments.preview' | t }}</button>
-                  <button type="button" class="primary" (click)="save(i.isin)"
+                  <button type="button" class="btn" (click)="showPreview(i.isin)" [disabled]="busy() || !symbol.trim()">{{ 'instruments.preview' | t }}</button>
+                  <button type="button" class="btn primary" (click)="save(i.isin)"
                           [disabled]="busy() || (!!symbol.trim() && !preview())">
                     {{ (symbol.trim() ? 'common.save' : 'instruments.automatic') | t }}
                   </button>
-                  <button type="button" (click)="cancel()" [disabled]="busy()">{{ 'common.cancel' | t }}</button>
+                  <button type="button" class="btn" (click)="cancel()" [disabled]="busy()">{{ 'common.cancel' | t }}</button>
                 </div>
                 @if (busy()) {
                   <p role="status">{{ 'common.wait' | t }}</p>
@@ -57,14 +54,14 @@
                 @if (preview(); as p) {
                   <p role="status">{{ 'instruments.previewText' | t: {symbol: p.symbol + (p.name ? ' - ' + p.name : ''), price: (p.lastPrice | num: 2: 4), currency: p.currency ?? ('instruments.previewUnknownCurrency' | t), date: i18n.date(p.lastDate), weeks: p.weeks} }}</p>
                   @if (p.currencyWarning) {
-                    <p class="warning" role="note">{{ 'instruments.previewWarning' | t: {quote: p.currency ?? ('instruments.unknownCurrency' | t), currency: i.investmentCurrency} }}</p>
+                    <p class="warning" role="note"><app-icon name="warn"/><span>{{ 'instruments.previewWarning' | t: {quote: p.currency ?? ('instruments.unknownCurrency' | t), currency: i.investmentCurrency} }}</span></p>
                   }
                 }
               </div>
             } @else {
               <div class="buttons">
-                <button type="button" (click)="edit(i)" [disabled]="!a.alphaVantage">{{ 'instruments.change' | t }}</button>
-                <label class="file">{{ 'instruments.importCsv' | t }}
+                <button type="button" class="btn" (click)="edit(i)" [disabled]="!a.alphaVantage"><app-icon name="edit"/>{{ 'instruments.change' | t }}</button>
+                <label class="btn file"><app-icon name="import"/>{{ 'instruments.importCsv' | t }}
                   <input type="file" accept=".csv,text/csv,text/plain" (change)="importCsv(i.isin, $any($event.target))"
                          [disabled]="busy()">
                 </label>
@@ -80,4 +77,4 @@
       </ul>
     }
   }
-</section>
+</div>

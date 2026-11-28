@@ -5,6 +5,8 @@ import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
 import {NumPipe} from '../i18n/num.pipe';
 import {MessageKey} from '../i18n/messages.en';
+import {LoadStateComponent} from '../ui/load-state.component';
+import {IconComponent} from '../ui/icon.component';
 
 /** One investment: where its prices come from (GET /api/instruments). */
 export interface Instrument {
@@ -47,7 +49,7 @@ const SOURCES = ['alphavantage', 'yahoo', 'csv', 'esempio', 'nessuna'];
  */
 @Component({
   selector: 'app-instruments',
-  imports: [FormsModule, TPipe, NumPipe],
+  imports: [FormsModule, TPipe, NumPipe, LoadStateComponent, IconComponent],
   templateUrl: './instruments.component.html',
   styleUrl: './instruments.component.css'
 })

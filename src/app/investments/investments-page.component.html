@@ -1,0 +1,160 @@
+<div class="page">
+  <app-page-header [title]="'nav.investments' | t" [subtitle]="pricesAt()"/>
+
+  @if (state() === 'ready' && data(); as d) {
+    <section class="card" [attr.aria-label]="'inv.summary' | t">
+      <app-figure [label]="'inv.value' | t" [value]="d.totals.value" [currency]="d.currency" [decimals]="0"/>
+      @if (excludedText()) {
+        <p class="note"><app-icon name="info"/><span>{{ excludedText() }}</span></p>
+      }
+      <div class="tiles">
+        @for (tile of tiles(); track tile.label) {
+          <div class="tile">
+            <span class="label">{{ tile.label }}</span>
+            <span class="value" [class.up]="tile.sign === 1" [class.down]="tile.sign === -1">
+              @if (tile.sign === 1) {
+                <app-icon name="up"/>
+              } @else if (tile.sign === -1) {
+                <app-icon name="down"/>
+              }
+              {{ tile.value }}</span>
+            <span class="note">{{ tile.note }}</span>
+          </div>
+        }
+      </div>
+      <div class="method">
+        <p><app-icon name="info"/><span>{{ 'inv.method' | t }}@if (simpleText()) { {{ simpleText() }}}</span></p>
+        @if (shortPeriod()) {
+          <p class="warn-line"><app-icon name="warn"/><span>{{ 'inv.short' | t }}</span></p>
+        }
+        <details>
+          <summary>{{ 'inv.how' | t }}</summary>
+          <ul>
+            <li>{{ 'inv.how.xirr' | t }}</li>
+            <li>{{ 'inv.how.twr' | t }}</li>
+            <li>{{ 'inv.how.simple' | t }}</li>
+            <li>{{ 'inv.how.average' | t }}</li>
+            <li>{{ 'inv.how.tax' | t: {rate: i18n.percent(d.taxRate, 0)} }}</li>
+            <li>{{ 'inv.how.currency' | t }}</li>
+          </ul>
+        </details>
+      </div>
+    </section>
+
+    <section class="card" [attr.aria-label]="'inv.chart' | t">
+      <div class="card-head">
+        <h2>{{ 'inv.chart' | t }}</h2>
+        <div class="controls">
+          <div class="ranges" role="group" [attr.aria-label]="'inv.chart.view' | t">
+            <button type="button" [attr.aria-pressed]="view() === 'total'" (click)="view.set('total')">{{ 'inv.chart.total' | t }}</button>
+            <button type="button" [attr.aria-pressed]="view() === 'each'" (click)="view.set('each')">{{ 'inv.chart.each' | t }}</button>
+          </div>
+          <div class="ranges" role="group" [attr.aria-label]="'range.label' | t">
+            @for (r of ranges; track r.range) {
+              <button type="button" [attr.aria-pressed]="range() === r.range" (click)="range.set(r.range)">{{ r.label | t }}</button>
+            }
+          </div>
+        </div>
+      </div>
+      @if (chart().enough) {
+        <app-chart [labels]="chart().labels" [series]="chart().series" [height]="260" [currency]="d.currency"
+                   [ariaLabel]="chart().aria"/>
+      } @else {
+        <app-load-state state="empty" [emptyText]="'inv.chart.empty' | t"/>
+      }
+    </section>
+
+    <section class="card" [attr.aria-label]="'inv.positions' | t">
+      <div class="card-head">
+        <h2>{{ 'inv.positions' | t }}</h2>
+        <span class="small muted">{{ 'inv.positions.note' | t }}</span>
+      </div>
+      @if (held().length) {
+        <!-- wide screens: one table that fits, never wider than the page -->
+        <table class="tbl wide">
+          <thead>
+            <tr>
+              <th scope="col">{{ 'inv.col.name' | t }}</th>
+              <th scope="col">{{ 'inv.col.quantity' | t }}</th>
+              <th scope="col">{{ 'inv.col.average' | t }}</th>
+              <th scope="col">{{ 'inv.col.invested' | t }}</th>
+              <th scope="col">{{ 'inv.col.last' | t }}</th>
+              <th scope="col">{{ 'inv.col.value' | t }}</th>
+              <th scope="col">{{ 'inv.col.gain' | t }}</th>
+              <th scope="col">{{ 'inv.col.net' | t }}</th>
+              <th scope="col">{{ 'inv.col.share' | t }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of held(); track p.isin) {
+              <tr [class.out]="!p.inTotal">
+                <th scope="row">
+                  <span class="pname">{{ p.name || p.isin }}</span>
+                  <span class="isin">{{ p.isin }}</span>
+                  @if (!p.inTotal) {
+                    <span class="chip warn"><app-icon name="warn"/>{{ excludedLabel(p) }}</span>
+                  }
+                </th>
+                <td>{{ quantity(p) }}</td>
+                <td>{{ money(p.averagePrice, p.currency) }}</td>
+                <td>{{ money(p.invested, p.currency) }}</td>
+                <td>{{ money(p.lastPrice, p.currency) }}@if (p.lastDate) {<span class="sub">{{ i18n.shortDate(p.lastDate) }}</span>}</td>
+                <td class="strong">{{ money(p.value, p.currency) }}</td>
+                <td [class]="sign(p.gain)">
+                  @if (p.gain !== null && p.gain !== 0) {<app-icon [name]="p.gain > 0 ? 'up' : 'down'"/>}{{ signedMoney(p.gain, p.currency) }}
+                  <span class="sub">{{ share(p.gainShare) }}</span>
+                </td>
+                <td>{{ signedMoney(p.netGain, p.currency) }}</td>
+                <td>{{ portion(p.portfolioShare) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <!-- phones and narrow windows: a list -->
+        <ul class="plist">
+          @for (p of held(); track p.isin) {
+            <li [class.out]="!p.inTotal">
+              <span class="pname">{{ p.name || p.isin }}</span>
+              <span class="pvalue">{{ money(p.value, p.currency) }}</span>
+              <span class="pmeta">{{ p.isin }} · {{ 'inv.pos.quantity' | t: {quantity: quantity(p)} }}</span>
+              <span class="pgain" [class]="'pgain ' + sign(p.gain)">
+                @if (p.gain !== null && p.gain !== 0) {<app-icon [name]="p.gain > 0 ? 'up' : 'down'"/>}{{ signedMoney(p.gain, p.currency) }} ({{ share(p.gainShare) }})
+              </span>
+              @if (!p.inTotal) {
+                <span class="pchip"><span class="chip warn"><app-icon name="warn"/>{{ excludedLabel(p) }}</span></span>
+              }
+              <dl class="pfacts">
+                <div><dt>{{ 'inv.col.average' | t }}</dt><dd>{{ money(p.averagePrice, p.currency) }}</dd></div>
+                <div><dt>{{ 'inv.col.invested' | t }}</dt><dd>{{ money(p.invested, p.currency) }}</dd></div>
+                <div class="full"><dt>{{ 'inv.col.last' | t }}</dt><dd>{{ money(p.lastPrice, p.currency) }}@if (p.lastDate) { · {{ i18n.shortDate(p.lastDate) }}}</dd></div>
+                <div><dt>{{ 'inv.col.net' | t }}</dt><dd>{{ signedMoney(p.netGain, p.currency) }}</dd></div>
+                <div><dt>{{ 'inv.col.share' | t }}</dt><dd>{{ portion(p.portfolioShare) }}</dd></div>
+              </dl>
+            </li>
+          }
+        </ul>
+      } @else {
+        <app-load-state state="empty" [emptyText]="'inv.positions.none' | t">
+          <a class="btn primary" routerLink="/import">{{ 'nav.import' | t }}</a>
+        </app-load-state>
+      }
+      @if (d.closed > 0) {
+        <p class="small muted">{{ (d.closed === 1 ? 'inv.closed.one' : 'inv.closed') | t: {count: d.closed} }}</p>
+      }
+    </section>
+
+    <section class="card" [attr.aria-label]="'inv.allocation' | t">
+      <app-allocation [portfolio]="d" (changed)="targetsChanged()"/>
+    </section>
+  } @else {
+    <section class="card">
+      <app-load-state [state]="state()" shape="chart" [emptyText]="'inv.empty' | t" (retry)="load()">
+        <a class="btn primary" routerLink="/import">{{ 'nav.import' | t }}</a>
+      </app-load-state>
+    </section>
+  }
+
+  <section class="card">
+    <app-instruments (changed)="pricesChanged()"/>
+  </section>
+</div>

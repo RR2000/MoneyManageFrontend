@@ -10,7 +10,7 @@ import {AccountComponent} from './account/account.component';
 import {BanksComponent} from './banks/banks.component';
 import {AccountsPageComponent} from './accounts/accounts-page.component';
 import {AccountPageComponent} from './accounts/account-page.component';
-import {InvestmentsPageComponent} from './pages/investments-page.component';
+import {InvestmentsPageComponent} from './investments/investments-page.component';
 import {AssetsPageComponent} from './pages/assets-page.component';
 import {PlanPageComponent} from './pages/plan-page.component';
 import {MoreComponent} from './pages/more.component';
