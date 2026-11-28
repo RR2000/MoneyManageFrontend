@@ -1,0 +1,224 @@
+<div class="page">
+  <app-page-header [title]="'costs.rules' | t" [subtitle]="'costs.rules.subtitle' | t" [crumb]="'nav.costs' | t"
+                   crumbLink="/costs" [crumbLabel]="'nav.back' | t"/>
+
+  <p class="status" role="status" aria-live="polite">
+    @if (status()) {
+      <app-icon name="ok"/><span>{{ status() }}</span>
+    }
+  </p>
+
+  @if (state() === 'ready' && data(); as d) {
+    @if (d.uncategorized > 0) {
+      <p class="note todo"><app-icon name="tag"/><span>{{ (d.uncategorized === 1 ? 'costs.uncategorized.one' : 'costs.uncategorized') | t: {count: d.uncategorized} }}
+        <a routerLink="/costs/uncategorized">{{ 'costs.assign' | t }}</a></span></p>
+    }
+
+    <!-- categories -->
+    <section class="card" aria-labelledby="rules-cat">
+      <div class="card-head">
+        <h2 id="rules-cat">{{ 'costs.categories' | t }}</h2>
+        @if (categories().length && !categoryForm()) {
+          <button type="button" class="btn" (click)="newCategory()"><app-icon name="plus"/>{{ 'costs.category.add' | t }}</button>
+        }
+      </div>
+
+      @if (categoryForm(); as f) {
+        <form class="form" novalidate (ngSubmit)="saveCategory()" (keydown.escape)="closeForms()">
+          <h3>{{ f.id === null ? ('costs.category.new' | t) : ('costs.category.edit' | t: {name: categoryName(f.id)}) }}</h3>
+          <div class="field">
+            <label for="cat-name">{{ 'costs.field.name' | t }}</label>
+            <input id="cat-name" name="name" [(ngModel)]="category.name" maxlength="60" autocomplete="off"
+                   [placeholder]="'costs.placeholder.category' | t" [attr.aria-invalid]="!!errors().name"
+                   [attr.aria-describedby]="errors().name ? 'cat-name-err' : null">
+            @if (errors().name; as e) {<p class="ferr" id="cat-name-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </div>
+          <div class="field">
+            <label class="check"><input type="checkbox" name="fixed" [(ngModel)]="category.fixed" aria-describedby="cat-fixed-hint">
+              <span>{{ 'costs.field.fixed' | t }}</span></label>
+            <p class="hint" id="cat-fixed-hint">{{ 'costs.hint.fixed' | t }}</p>
+          </div>
+          @if (formError()) {
+            <p class="alert" role="alert"><app-icon name="error"/><span>{{ formError() }}</span></p>
+          }
+          <div class="buttons">
+            <button type="submit" class="btn primary" [disabled]="busy()">{{ (busy() ? 'common.wait' : 'common.save') | t }}</button>
+            <button type="button" class="btn" (click)="closeForms()" [disabled]="busy()">{{ 'common.cancel' | t }}</button>
+          </div>
+        </form>
+      }
+
+      @if (categories().length) {
+        <ul class="items">
+          @for (c of categories(); track c.id) {
+            <li>
+              <span class="name">{{ c.name }}</span>
+              <span class="kind" [class.fixed]="c.fixed">
+                @if (c.fixed) {<app-icon name="costs"/>}
+                {{ (c.fixed ? 'costs.fixed' : 'costs.notFixed') | t }}</span>
+              <span class="meta">{{ categoryMeta(c) }}</span>
+              @if (confirming() === 'c' + c.id) {
+                <div class="confirm" role="group" [attr.aria-label]="'costs.delete.category' | t: {name: c.name}">
+                  <span class="q"><app-icon name="warn"/>{{ 'costs.delete.category' | t: {name: c.name} }}</span>
+                  <span class="btns">
+                    <button type="button" class="btn danger" (click)="deleteCategory(c)" [disabled]="deleting()">
+                      <app-icon name="trash"/>{{ (deleting() ? 'common.wait' : 'costs.delete.yes') | t }}</button>
+                    <button type="button" class="btn" (click)="cancelDelete()">{{ 'common.cancel' | t }}</button>
+                  </span>
+                  @if (deleteError()) {<p class="del-err" role="alert"><app-icon name="error"/><span>{{ 'common.failed' | t }}</span></p>}
+                </div>
+              } @else {
+                <span class="acts">
+                  <button type="button" class="btn small" (click)="editCategory(c)">
+                    <app-icon name="edit"/>{{ 'costs.edit' | t }}<span class="sr-only"> {{ c.name }}</span></button>
+                  <button type="button" class="btn small" (click)="newRule(c.id)">
+                    <app-icon name="plus"/>{{ 'costs.rule.add' | t }}<span class="sr-only"> {{ c.name }}</span></button>
+                  <button type="button" class="btn small" (click)="askDelete('c' + c.id)">
+                    <app-icon name="trash"/>{{ 'costs.delete' | t }}<span class="sr-only"> {{ c.name }}</span></button>
+                </span>
+              }
+            </li>
+          }
+        </ul>
+      } @else if (!categoryForm()) {
+        <app-load-state state="empty" [emptyText]="'costs.categories.none' | t">
+          <button type="button" class="btn primary" (click)="newCategory()"><app-icon name="plus"/>{{ 'costs.empty.action' | t }}</button>
+        </app-load-state>
+      }
+    </section>
+
+    <!-- rules -->
+    <section class="card" aria-labelledby="rules-rules">
+      <div class="card-head">
+        <h2 id="rules-rules">{{ 'costs.rulesList' | t }}</h2>
+        @if (categories().length && rules().length && !ruleForm()) {
+          <button type="button" class="btn" (click)="newRule()"><app-icon name="plus"/>{{ 'costs.rule.add' | t }}</button>
+        }
+      </div>
+      <p class="note"><app-icon name="info"/><span>{{ 'costs.rules.how' | t }}</span></p>
+
+      @if (ruleForm(); as f) {
+        <form class="form two" novalidate (ngSubmit)="saveRule()" (keydown.escape)="closeForms()">
+          <h3>{{ (f.id === null ? 'costs.rule.new' : 'costs.rule.edit') | t }}</h3>
+          <div class="field">
+            <label for="rule-pattern">{{ 'costs.field.pattern' | t }}</label>
+            <input id="rule-pattern" name="pattern" [(ngModel)]="rule.pattern" maxlength="100" autocomplete="off" spellcheck="false"
+                   [placeholder]="'costs.placeholder.pattern' | t" [attr.aria-invalid]="!!errors().pattern"
+                   [attr.aria-describedby]="'rule-pattern-hint' + (errors().pattern ? ' rule-pattern-err' : '')">
+            <p class="hint" id="rule-pattern-hint">{{ 'costs.hint.pattern' | t }}</p>
+            @if (errors().pattern; as e) {<p class="ferr" id="rule-pattern-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </div>
+          <div class="field">
+            <label for="rule-cat">{{ 'costs.field.category' | t }}</label>
+            <select id="rule-cat" name="category" [(ngModel)]="rule.categoryId" [attr.aria-invalid]="!!errors().category"
+                    [attr.aria-describedby]="errors().category ? 'rule-cat-err' : null">
+              @for (c of categories(); track c.id) {
+                <option [value]="'' + c.id">{{ c.name }}{{ c.fixed ? ' · ' + ('costs.fixed.short' | t) : '' }}</option>
+              }
+            </select>
+            @if (errors().category; as e) {<p class="ferr" id="rule-cat-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </div>
+          <div class="field">
+            <label for="rule-dir">{{ 'costs.field.direction' | t }}</label>
+            <select id="rule-dir" name="direction" [(ngModel)]="rule.direction">
+              <option value="OUT">{{ 'costs.direction.OUT' | t }}</option>
+              <option value="IN">{{ 'costs.direction.IN' | t }}</option>
+              <option value="">{{ 'costs.direction.any' | t }}</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="rule-acc">{{ 'costs.field.account' | t }}</label>
+            <select id="rule-acc" name="account" [(ngModel)]="rule.accountId" [attr.aria-invalid]="!!errors().account"
+                    [attr.aria-describedby]="errors().account ? 'rule-acc-err' : null">
+              <option value="">{{ 'costs.account.any' | t }}</option>
+              @for (a of accounts(); track a.id) {
+                <option [value]="a.id">{{ a.name }}</option>
+              }
+            </select>
+            @if (errors().account; as e) {<p class="ferr" id="rule-acc-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </div>
+          @if (formError()) {
+            <p class="alert full" role="alert"><app-icon name="error"/><span>{{ formError() }}</span></p>
+          }
+          <div class="buttons full">
+            <button type="submit" class="btn primary" [disabled]="busy()">{{ (busy() ? 'common.wait' : 'common.save') | t }}</button>
+            <button type="button" class="btn" (click)="closeForms()" [disabled]="busy()">{{ 'common.cancel' | t }}</button>
+          </div>
+        </form>
+      }
+
+      @if (rules().length) {
+        <ul class="items">
+          @for (r of rules(); track r.id) {
+            <li>
+              <span class="name"><span class="quote">“{{ r.pattern }}”</span>{{ ' ' }}<span class="arrow" aria-hidden="true">→</span><span
+                class="sr-only">{{ 'costs.rule.gives' | t }}</span>{{ ' ' + categoryName(r.categoryId) }}</span>
+              <span class="meta">{{ ruleMeta(r) }}</span>
+              @if (confirming() === 'r' + r.id) {
+                <div class="confirm" role="group" [attr.aria-label]="'costs.delete.rule' | t: {rule: r.pattern}">
+                  <span class="q"><app-icon name="warn"/>{{ 'costs.delete.rule' | t: {rule: r.pattern} }}</span>
+                  <span class="btns">
+                    <button type="button" class="btn danger" (click)="deleteRule(r)" [disabled]="deleting()">
+                      <app-icon name="trash"/>{{ (deleting() ? 'common.wait' : 'costs.delete.yes') | t }}</button>
+                    <button type="button" class="btn" (click)="cancelDelete()">{{ 'common.cancel' | t }}</button>
+                  </span>
+                  @if (deleteError()) {<p class="del-err" role="alert"><app-icon name="error"/><span>{{ 'common.failed' | t }}</span></p>}
+                </div>
+              } @else {
+                <span class="acts">
+                  <button type="button" class="btn small" (click)="editRule(r)">
+                    <app-icon name="edit"/>{{ 'costs.edit' | t }}<span class="sr-only"> {{ r.pattern }}</span></button>
+                  <button type="button" class="btn small" (click)="askDelete('r' + r.id)">
+                    <app-icon name="trash"/>{{ 'costs.delete' | t }}<span class="sr-only"> {{ r.pattern }}</span></button>
+                </span>
+              }
+            </li>
+          }
+        </ul>
+      } @else if (!ruleForm()) {
+        <app-load-state state="empty" [emptyText]="(categories().length ? 'costs.rules.none' : 'costs.rules.noCategory') | t">
+          @if (categories().length) {
+            <button type="button" class="btn primary" (click)="newRule()"><app-icon name="plus"/>{{ 'costs.rule.add' | t }}</button>
+          }
+        </app-load-state>
+      }
+    </section>
+
+    <!-- apply to all -->
+    @if (rules().length) {
+      <section class="card" aria-labelledby="rules-apply">
+        <h2 id="rules-apply">{{ 'costs.apply.title' | t }}</h2>
+        <p class="text">{{ 'costs.apply.text' | t }}</p>
+        @if (preview(); as p) {
+          <div class="preview" role="group" [attr.aria-label]="'costs.apply.title' | t">
+            @if (p.total > 0) {
+              <ul>
+                @for (line of previewLines(p); track line) {<li>{{ line }}</li>}
+              </ul>
+              <span class="btns">
+                <button type="button" class="btn primary" (click)="apply()" [disabled]="applying()">
+                  {{ (applying() ? 'common.wait' : (p.total === 1 ? 'costs.apply.yes.one' : 'costs.apply.yes')) | t: {count: p.total} }}</button>
+                <button type="button" class="btn" (click)="preview.set(null)" [disabled]="applying()">{{ 'common.cancel' | t }}</button>
+              </span>
+              @if (applyError()) {<p class="del-err" role="alert"><app-icon name="error"/><span>{{ 'common.failed' | t }}</span></p>}
+            } @else {
+              <p class="nothing"><app-icon name="ok"/><span>{{ 'costs.apply.nothing' | t }}</span></p>
+              @for (line of previewLines(p); track line) {<p class="small">{{ line }}</p>}
+            }
+          </div>
+        } @else {
+          <button type="button" class="btn check-btn" (click)="check()" [disabled]="previewState() === 'loading'">
+            {{ (previewState() === 'loading' ? 'common.wait' : 'costs.apply.check') | t }}</button>
+          @if (previewState() === 'error') {
+            <app-load-state state="error" (retry)="check()"/>
+          }
+        }
+      </section>
+    }
+  } @else {
+    <section class="card"><app-load-state [state]="state()" (retry)="load()"/></section>
+    @if (state() === 'loading') {
+      <section class="card"><app-load-state state="loading"/></section>
+    }
+  }
+</div>

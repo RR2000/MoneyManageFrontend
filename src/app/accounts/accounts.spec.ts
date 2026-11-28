@@ -108,7 +108,7 @@ describe('Accounts', () => {
     const el: HTMLElement = fixture.nativeElement;
     const first = http.expectOne('/api/money-accounts/a1b2c3d4e5f6/movements');
     expect(first.request.method).toBe('POST');
-    expect(first.request.body).toEqual({q: '', kind: 'ALL', offset: 0, limit: 50});
+    expect(first.request.body).toEqual({q: '', kind: 'ALL', uncategorized: false, offset: 0, limit: 50});
     first.flush({items: [
       movement(3, '2026-11-27T19:00:00', 'Supermercato Esempio', -64.2, 'BANK'),
       movement(2, '2026-11-27T08:00:00', 'Stipendio', 2400, 'BANK'),
@@ -134,7 +134,7 @@ describe('Accounts', () => {
     input.dispatchEvent(new Event('input'));
     vi.advanceTimersByTime(400);
     const search = http.expectOne('/api/money-accounts/a1b2c3d4e5f6/movements');
-    expect(search.request.body).toEqual({q: '64,20', kind: 'ALL', offset: 0, limit: 50});
+    expect(search.request.body).toEqual({q: '64,20', kind: 'ALL', uncategorized: false, offset: 0, limit: 50});
     search.flush({items: [], hasMore: false});
     fixture.detectChanges();
     expect(el.textContent).toContain('No movement matches.');

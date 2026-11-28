@@ -1,0 +1,62 @@
+.page { display: grid; gap: 16px; }
+app-page-header { margin-bottom: 0; }
+.status { display: flex; gap: 6px; align-items: center; margin: 0; color: var(--good); font-weight: 600; --icon-size: 18px; }
+.status:empty { display: none; }
+.note { display: flex; gap: 6px; align-items: flex-start; margin: 0; font-size: .82rem; color: var(--muted);
+  --icon-size: 15px; }
+.note app-icon { margin-top: 1px; }
+.note.todo { color: var(--fg); }
+.note a { font-weight: 600; }
+.text { margin: 0; font-size: .9rem; }
+.small { margin: 0; font-size: .82rem; color: var(--muted); }
+
+/* the forms, in the page */
+.form { display: grid; gap: 12px 16px; padding: 14px; border-radius: 10px; border: 1px solid var(--accent);
+  background: var(--surface-2); }
+.form.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form h3 { grid-column: 1 / -1; margin: 0; font-size: 1rem; }
+.form .full { grid-column: 1 / -1; }
+.field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+label { font-size: .84rem; font-weight: 600; }
+.field input:not([type=checkbox]), .field select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px;
+  font-size: 1rem; border-radius: 8px; }
+.field input[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: var(--bad); border-width: 2px; }
+.check { display: flex; gap: 8px; align-items: center; min-height: 40px; font-weight: 500; font-size: .92rem; }
+.check input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--accent); }
+.hint { margin: 0; font-size: .78rem; color: var(--muted); }
+.ferr { display: flex; gap: 5px; align-items: flex-start; margin: 0; font-size: .82rem; color: var(--bad);
+  font-weight: 600; --icon-size: 15px; }
+.alert { display: flex; gap: 6px; align-items: flex-start; margin: 0; color: var(--bad); font-weight: 600; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1 / -1; }
+
+/* the lists: one row per item */
+.items { list-style: none; margin: 0; padding: 0; }
+.items li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--line); align-items: baseline; }
+.items li:last-child { border-bottom: 0; }
+.name { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
+.quote { font-weight: 600; }
+.arrow { color: var(--muted); margin: 0 4px; }
+.kind { display: inline-flex; gap: 4px; align-items: center; font-size: .8rem; color: var(--muted); white-space: nowrap;
+  --icon-size: 14px; }
+.kind.fixed { color: var(--accent); font-weight: 600; }
+.meta { grid-column: 1 / -1; font-size: .82rem; color: var(--muted); overflow-wrap: anywhere; }
+.acts, .confirm { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.btn.small { min-height: 36px; padding: 4px 12px; font-size: .84rem; --icon-size: 15px; }
+.confirm { padding: 10px 12px; border-radius: 10px; background: var(--warn-bg); }
+.confirm .q { display: flex; gap: 6px; align-items: center; font-weight: 600; flex: 1 1 14rem; min-width: 0;
+  overflow-wrap: anywhere; --icon-size: 16px; }
+.confirm .q app-icon { color: var(--warn); }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.confirm .btn.danger { background: var(--surface); }
+.del-err { flex-basis: 100%; display: flex; gap: 6px; align-items: center; margin: 0; color: var(--bad); font-weight: 600; }
+
+/* apply to all */
+.check-btn { justify-self: start; }
+.preview { display: grid; gap: 10px; padding: 12px; border-radius: 10px; background: var(--accent-soft); }
+.preview ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.nothing { display: flex; gap: 6px; align-items: center; margin: 0; color: var(--good); font-weight: 600; }
+
+@media (max-width: 599px) {
+  .form.two { grid-template-columns: minmax(0, 1fr); }
+}
