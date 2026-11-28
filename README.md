@@ -15,6 +15,15 @@ when the backend can send email (`passwordReset` in `GET /api/auth/providers`). 
 `/reset-password#token=...` and `/verify-email#token=...`: the token stays in the fragment, so it never reaches a
 server log, and the page removes it from the address bar.
 
+"Continue with raoulrondinella.dev" (the single sign-on of the site) appears when `GET /api/auth/providers` says
+`oidc: true`, above the password form; with `password: false` (backend `AUTH_MODE=oidc`) it is the only way in. The
+backend comes back to `/login#token=...&id_token=...` (both kept in `localStorage`, the id token only for the logout)
+or `/login#oidc-error=<code>`, shown next to the button. "Log out" forgets the login here and, after a login with
+raoulrondinella.dev, opens its logout (`oidcLogoutUrl` plus `id_token_hint`), which ends the session there too (also
+for the other apps that use it) and comes back to the site; without that address (server or provider unreachable) only
+here, and the next click on the button may log in again without asking. A 401 (expired token) only forgets the login
+here.
+
 The "Banks" page (`/banks`, open banking through the backend) links bank accounts so their movements arrive by
 themselves: the consent is given on the bank's site, which comes back to `/banks?result=ok|error`. The menu entry and
 the page exist only when `GET /api/account` says `banking: true` (without the flag: when `GET /api/banking/links` does

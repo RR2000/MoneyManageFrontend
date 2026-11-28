@@ -1,54 +1,77 @@
 <div class="auth">
   <div class="brand"><span class="brand-mark" aria-hidden="true">m</span>money</div>
   <p class="intro">{{ 'login.intro' | t }}</p>
-  <form novalidate (ngSubmit)="submit()">
-    <h1>{{ (mode === 'login' ? 'login.title' : 'login.register.title') | t }}</h1>
-    <div class="field">
-      <label for="login-username">{{ (mode === 'login' ? 'login.username' : 'login.register.username') | t }}</label>
-      <input id="login-username" name="username" [(ngModel)]="username" required autocomplete="username"
-             autocapitalize="none" autocorrect="off" spellcheck="false" [attr.aria-invalid]="!!error() || null">
-    </div>
-    <div class="field">
-      <label for="login-password">{{ 'login.password' | t }}</label>
-      <input id="login-password" name="password" type="password" [(ngModel)]="password" required
-             [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
-             [attr.aria-describedby]="mode === 'register' ? 'login-register-hint' : null" [attr.aria-invalid]="!!error() || null">
-    </div>
-    @if (mode === 'register') {
-      <p class="hint" id="login-register-hint">{{ 'login.register.hint' | t }}</p>
-      @if (passwordReset()) {
-        <div class="field">
-          <label for="login-email">{{ 'login.email' | t }}</label>
-          <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="email"
-                 aria-describedby="login-email-hint">
-          <p class="hint" id="login-email-hint">{{ 'login.email.hint' | t }}</p>
-        </div>
+  @if (oidcUrl() || !passwordLogin() || oidcError()) {
+    <section class="panel sso" [attr.aria-label]="passwordLogin() ? ('login.oidc' | t) : null">
+      @if (!passwordLogin()) {
+        <h1>{{ 'login.title' | t }}</h1>
       }
-      <label class="check">
-        <input name="sampleData" type="checkbox" [(ngModel)]="sampleData">
-        <span>{{ 'login.sampleData' | t }}</span>
-      </label>
-    }
-    @if (error()) {
-      <p class="line bad" role="alert"><app-icon name="error"/><span>{{ error() }}</span></p>
-    }
-    <button type="submit" class="btn primary" [disabled]="busy() || !username || !password">
-      {{ (busy() ? 'common.wait' : mode === 'login' ? 'login.submit' : 'login.register.submit') | t }}
-    </button>
-    @if (busy()) {
-      <span class="sr-only" role="status">{{ 'common.wait' | t }}</span>
-    }
-    @if (githubUrl()) {
-      <p class="or" aria-hidden="true">{{ 'login.or' | t }}</p>
-      <a class="btn" [href]="githubUrl()">{{ 'login.github' | t }}</a>
-    }
-    <div class="links">
-      @if (mode === 'login' && passwordReset()) {
-        <a routerLink="/forgot-password">{{ 'login.forgot' | t }}</a>
+      @if (oidcError()) {
+        <p class="line bad" role="alert"><app-icon name="error"/><span>{{ oidcError() }}</span></p>
       }
-      <button type="button" class="link" (click)="switchMode()">
-        {{ (mode === 'login' ? 'login.toRegister' : 'login.toLogin') | t }}
+      @if (oidcUrl()) {
+        <a class="btn primary sso-button" [href]="oidcUrl()">
+          <span class="sso-mark" aria-hidden="true">r</span>{{ 'login.oidc' | t }}
+        </a>
+        <p class="hint">{{ 'login.oidc.hint' | t }}</p>
+      } @else if (!passwordLogin()) {
+        <p class="line"><span class="spinner" aria-hidden="true"></span><span>{{ 'common.wait' | t }}</span></p>
+      }
+    </section>
+    @if (passwordLogin() && oidcUrl()) {
+      <p class="or" aria-hidden="true">{{ 'login.oidc.or' | t }}</p>
+    }
+  }
+  @if (passwordLogin()) {
+    <form novalidate (ngSubmit)="submit()">
+      <h1>{{ (mode === 'login' ? 'login.title' : 'login.register.title') | t }}</h1>
+      <div class="field">
+        <label for="login-username">{{ (mode === 'login' ? 'login.username' : 'login.register.username') | t }}</label>
+        <input id="login-username" name="username" [(ngModel)]="username" required autocomplete="username"
+               autocapitalize="none" autocorrect="off" spellcheck="false" [attr.aria-invalid]="!!error() || null">
+      </div>
+      <div class="field">
+        <label for="login-password">{{ 'login.password' | t }}</label>
+        <input id="login-password" name="password" type="password" [(ngModel)]="password" required
+               [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
+               [attr.aria-describedby]="mode === 'register' ? 'login-register-hint' : null" [attr.aria-invalid]="!!error() || null">
+      </div>
+      @if (mode === 'register') {
+        <p class="hint" id="login-register-hint">{{ 'login.register.hint' | t }}</p>
+        @if (passwordReset()) {
+          <div class="field">
+            <label for="login-email">{{ 'login.email' | t }}</label>
+            <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="email"
+                   aria-describedby="login-email-hint">
+            <p class="hint" id="login-email-hint">{{ 'login.email.hint' | t }}</p>
+          </div>
+        }
+        <label class="check">
+          <input name="sampleData" type="checkbox" [(ngModel)]="sampleData">
+          <span>{{ 'login.sampleData' | t }}</span>
+        </label>
+      }
+      @if (error()) {
+        <p class="line bad" role="alert"><app-icon name="error"/><span>{{ error() }}</span></p>
+      }
+      <button type="submit" class="btn" [class.primary]="!oidcUrl()" [disabled]="busy() || !username || !password">
+        {{ (busy() ? 'common.wait' : mode === 'login' ? 'login.submit' : 'login.register.submit') | t }}
       </button>
-    </div>
-  </form>
+      @if (busy()) {
+        <span class="sr-only" role="status">{{ 'common.wait' | t }}</span>
+      }
+      @if (githubUrl()) {
+        <p class="or" aria-hidden="true">{{ 'login.or' | t }}</p>
+        <a class="btn" [href]="githubUrl()">{{ 'login.github' | t }}</a>
+      }
+      <div class="links">
+        @if (mode === 'login' && passwordReset()) {
+          <a routerLink="/forgot-password">{{ 'login.forgot' | t }}</a>
+        }
+        <button type="button" class="link" (click)="switchMode()">
+          {{ (mode === 'login' ? 'login.toRegister' : 'login.toLogin') | t }}
+        </button>
+      </div>
+    </form>
+  }
 </div>
