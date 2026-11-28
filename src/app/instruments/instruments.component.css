@@ -1,21 +1,24 @@
-.instruments { margin-top: 24px; }
-.instruments h2 { font-size: 1.1rem; margin: 0 0 8px; }
-.hint { color: var(--muted); margin: 0 0 12px; }
-.list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.item { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; min-width: 0; }
+:host { display: block; min-width: 0; }
+.instruments { display: grid; gap: 12px; min-width: 0; }
+.instruments h2 { font-size: 1rem; font-weight: 700; margin: 0; }
+.hint { color: var(--muted); margin: 0; font-size: .85rem; }
+.hint code { overflow-wrap: anywhere; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; min-width: 0; display: grid; gap: 6px; }
 .head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
-.isin { color: var(--muted); font-family: monospace; overflow-wrap: anywhere; }
-.facts { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0; color: var(--fg); }
-.warning { margin: 6px 0; padding: 6px 10px; border-left: 4px solid var(--warn); background: var(--warn-bg); color: var(--warn); }
-.edit label { display: flex; flex-direction: column; gap: 4px; }
-.edit input { font: inherit; padding: 6px 8px; width: 100%; max-width: 220px; box-sizing: border-box; }
-.buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
-.buttons button { padding: 4px 12px; font: inherit; cursor: pointer; }
-.file { position: relative; display: inline-flex; align-items: center; padding: 4px 12px; cursor: pointer;
-  border: 1px solid var(--line-strong); border-radius: 4px; }
+.head strong { overflow-wrap: anywhere; }
+.isin { color: var(--muted); font-family: ui-monospace, monospace; font-size: .8rem; overflow-wrap: anywhere; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--fg); font-size: .88rem; }
+.facts span { overflow-wrap: anywhere; }
+.item p { margin: 0; }
+.warning { display: flex; gap: 6px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: var(--warn-bg);
+  color: var(--warn); font-size: .85rem; --icon-size: 15px; }
+.warning app-icon { margin-top: 1px; }
+.edit { display: grid; gap: 8px; }
+.edit label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; }
+.edit input { padding: 7px 8px; width: 100%; max-width: 240px; min-height: 40px; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.file { position: relative; }
 .file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.file:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-.primary { font-weight: 600; }
-.error { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 14px;
-  border: 1px solid var(--bad); border-radius: 6px; color: var(--bad); background: var(--bad-bg); }
+.file:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
 .error-text { color: var(--bad); }
