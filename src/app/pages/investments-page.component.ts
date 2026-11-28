@@ -4,6 +4,7 @@ import {interval, Subscription, timeout} from 'rxjs';
 import {LineGraphComponent} from '../line-graph/line-graph.component';
 import {InstrumentsComponent} from '../instruments/instruments.component';
 import {GraphPointsDto} from '../../models/graph-points.dto';
+import {PageHeaderComponent} from '../ui/page-header.component';
 import {TPipe} from '../i18n/t.pipe';
 import {MessageKey} from '../i18n/messages.en';
 import {CALL_TIMEOUT_MS} from '../main-component/main-component.component';
@@ -13,15 +14,14 @@ const REFRESH_MS = 5 * 60 * 1000;
 /** /investments: worth of the portfolio over time and the instruments with their prices. */
 @Component({
   selector: 'app-investments-page',
-  imports: [LineGraphComponent, InstrumentsComponent, TPipe],
+  imports: [PageHeaderComponent, LineGraphComponent, InstrumentsComponent, TPipe],
   template: `
     <div class="page">
-      <h1>{{ 'nav.investments' | t }}</h1>
+      <app-page-header [title]="'nav.investments' | t"/>
       <app-line-graph [graphPoints]="graph()" [loading]="loading()" [error]="error() | t" (retry)="load()"
                       [emptyText]="'dashboard.noInvestments' | t"></app-line-graph>
       <app-instruments (changed)="load()"></app-instruments>
-    </div>`,
-  styles: ['h1 { font-size: 1.5rem; margin: 4px 0 12px; }']
+    </div>`
 })
 export class InvestmentsPageComponent implements OnInit, OnDestroy {
   readonly graph = signal(<GraphPointsDto>{});

@@ -1,96 +1,69 @@
-import {AfterViewInit, Component, effect, ElementRef, EventEmitter, inject, Input, OnChanges, OnDestroy, Output, ViewChild} from '@angular/core';
-import Chart from 'chart.js/auto';
+import {Component, computed, EventEmitter, Input, Output, signal} from '@angular/core';
 import {GraphPointsDto} from "../../models/graph-points.dto";
-import {TPipe} from "../i18n/t.pipe";
-import {ThemeService} from "../theme/theme.service";
-import {chartColors, SERIES_DASH} from "../theme/chart-colors";
+import {ChartComponent, ChartSeries} from '../ui/chart.component';
+import {LoadState, LoadStateComponent} from '../ui/load-state.component';
 
 /**
- * Line chart of a GraphPointsDto: one line per graph name, one point per label. While the data is on its way it says
- * so; if the call failed it says that too, with a button to try again (never an empty chart that looks like no data).
+ * Line chart of a GraphPointsDto (one line per graph name, one point per label) on the app's only chart component.
+ * While the data is on its way a skeleton shows at once; a failed call says so with "Retry" (never an empty chart that
+ * looks like no data).
  */
 @Component({
   selector: 'app-line-graph',
-  imports: [TPipe],
-  templateUrl: './line-graph.component.html',
-  styleUrls: ['./line-graph.component.css']
+  imports: [ChartComponent, LoadStateComponent],
+  template: `
+    @if (state() === 'ready') {
+      <app-chart [labels]="labels()" [series]="series()" [height]="320" [ariaLabel]="ariaLabel"/>
+    } @else {
+      <app-load-state [state]="state()" shape="chart" [errorText]="error" [emptyText]="emptyText" (retry)="retry.emit()"/>
+    }`,
+  styles: [':host { display: block; padding-top: 8px; }']
 })
-export class LineGraphComponent implements OnChanges, AfterViewInit, OnDestroy {
-  @Input() graphPoints: GraphPointsDto = <GraphPointsDto>{};
+export class LineGraphComponent {
+  private readonly points = signal<GraphPointsDto>(<GraphPointsDto>{});
+  private readonly loadingSig = signal(false);
+  private readonly errorSig = signal('');
+
+  @Input() set graphPoints(value: GraphPointsDto) {
+    this.points.set(value ?? <GraphPointsDto>{});
+  }
+
   /** '' : the generic "no data" */
   @Input() emptyText = '';
-  @Input() loading = false;
+
+  @Input() set loading(value: boolean) {
+    this.loadingSig.set(value);
+  }
+
   /** the call failed: this text is shown instead of the chart, with "Retry" */
-  @Input() error = '';
+  @Input() set error(value: string) {
+    this.errorSig.set(value ?? '');
+  }
+
+  get error(): string {
+    return this.errorSig();
+  }
+
+  @Input() ariaLabel = '';
   @Output() retry = new EventEmitter<void>();
-  @ViewChild('canvas') canvas?: ElementRef<HTMLCanvasElement>;
 
-  private chart?: Chart;
-  private theme = inject(ThemeService);
-
-  constructor() {
-    // the colours are read from the theme: a new theme draws the chart again
-    effect(() => {
-      this.theme.dark();
-      this.chart?.destroy();
-      this.chart = undefined;
-      this.render();
-    });
-  }
-
-  hasData(): boolean {
-    return !this.loading && !this.error && (this.graphPoints?.uniqueGraphNames?.length ?? 0) > 0 && (this.graphPoints?.uniqueLabels?.length ?? 0) > 0;
-  }
-
-  ngAfterViewInit(): void {
-    this.render();
-  }
-
-  ngOnChanges(): void {
-    this.render();
-  }
-
-  ngOnDestroy(): void {
-    this.chart?.destroy();
-  }
-
-  private render(): void {
-    if (!this.canvas || !this.hasData()) {
-      return;
-    }
-    const colors = chartColors();
-    const labels = [...this.graphPoints.uniqueLabels];
-    const datasets = this.graphPoints.uniqueGraphNames.map((name, i) => ({
-      label: name,
-      data: labels.map(label => this.graphPoints.graphData[name]?.[label] ?? null),
-      pointRadius: 0,
-      borderColor: colors.series[i % colors.series.length],
-      backgroundColor: colors.series[i % colors.series.length],
-      borderDash: SERIES_DASH[i % SERIES_DASH.length],
-      borderWidth: name.startsWith('Total') ? 2.5 : 1.5,
-      spanGaps: true
+  readonly labels = computed(() => [...(this.points().uniqueLabels ?? [])]);
+  readonly series = computed<ChartSeries[]>(() => {
+    const p = this.points();
+    return (p.uniqueGraphNames ?? []).map(name => ({
+      name,
+      values: this.labels().map(label => p.graphData?.[name]?.[label] ?? null),
+      width: name.startsWith('Total') ? 2.5 : 1.5
     }));
-    if (this.chart) {
-      this.chart.data.labels = labels;
-      this.chart.data.datasets = datasets as any;
-      this.chart.update();
-      return;
+  });
+
+  readonly state = computed<LoadState>(() => {
+    if (this.loadingSig()) {
+      return 'loading';
     }
-    this.chart = new Chart(this.canvas.nativeElement, {
-      type: 'line',
-      data: {labels, datasets: datasets as any},
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        color: colors.muted,
-        interaction: {mode: 'index', intersect: false},
-        scales: {
-          x: {ticks: {color: colors.muted}, grid: {color: colors.grid}},
-          y: {ticks: {color: colors.muted}, grid: {color: colors.grid}}
-        },
-        plugins: {legend: {position: 'bottom', labels: {color: colors.text}}}
-      }
-    });
-  }
+    if (this.errorSig()) {
+      return 'error';
+    }
+    return this.series().length && this.labels().length ? 'ready' : 'empty';
+  });
 }

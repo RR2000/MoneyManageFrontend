@@ -9,9 +9,9 @@ describe('LineGraphComponent', () => {
     return fixture;
   }
 
-  it('says it is loading, not that there is no data', () => {
+  it('shows a skeleton at once while loading, not that there is no data', () => {
     const el: HTMLElement = graph({loading: true, emptyText: 'Nessun investimento'}).nativeElement;
-    expect(el.textContent).toContain('Loading...');
+    expect(el.querySelector('[role=status]')?.getAttribute('aria-label')).toBe('Loading');
     expect(el.textContent).not.toContain('Nessun investimento');
   });
 
