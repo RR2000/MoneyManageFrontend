@@ -1,7 +1,7 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
-import {Router, RouterLink} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {AuthService, loginReturn, Providers} from '../auth/auth.service';
 import {I18nService} from '../i18n/i18n.service';
 import {MessageKey} from '../i18n/messages.en';
@@ -41,11 +41,18 @@ export class LoginComponent implements OnInit {
   oidcUrl = signal('');
   /** why the last login with raoulrondinella.dev did not work, shown next to its button */
   oidcError = signal('');
+  /** "Try the demo": the server makes sandboxes with made-up data */
+  demo = signal(false);
+  private route = inject(ActivatedRoute);
 
   constructor(private auth: AuthService, private router: Router, private http: HttpClient) {
   }
 
   ngOnInit(): void {
+    // "Create a real account" from the demo bar
+    if (this.route.snapshot.queryParamMap.get('mode') === 'register') {
+      this.mode = 'register';
+    }
     // back from GitHub or raoulrondinella.dev: the backend puts the token (or the error) in the fragment
     const back = loginReturn(window.location.hash);
     if (back.token) {
@@ -68,6 +75,7 @@ export class LoginComponent implements OnInit {
         this.githubUrl.set(p.github && p.githubUrl ? p.githubUrl : '');
         this.passwordReset.set(!!p.passwordReset);
         this.oidcUrl.set(p.oidc && p.oidcUrl ? p.oidcUrl : '');
+        this.demo.set(!!p.demo);
       },
       error: () => this.githubUrl.set('')
     });

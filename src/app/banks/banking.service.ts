@@ -1,7 +1,8 @@
 import {inject, Injectable, InjectionToken, signal} from '@angular/core';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Observable, tap} from 'rxjs';
-import {AuthService} from '../auth/auth.service';
+import {Account, AuthService} from '../auth/auth.service';
+import {DemoService} from '../demo/demo.service';
 
 /** A bank that can be linked (GET /api/banking/aspsps). */
 export interface Aspsp {
@@ -101,6 +102,7 @@ export const REDIRECT = new InjectionToken<(url: string) => void>('REDIRECT', {
 export class BankingService {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private demo = inject(DemoService);
 
   /** null: not known yet */
   readonly available = signal<boolean | null>(null);
@@ -116,6 +118,7 @@ export class BankingService {
     if (!token) {
       this.checkedFor = null;
       this.available.set(null);
+      this.demo.accept(null);
       return;
     }
     if (token === this.checkedFor) {
@@ -123,9 +126,17 @@ export class BankingService {
     }
     this.checkedFor = token;
     this.available.set(null);
-    this.http.get<{ banking?: boolean }>('/api/account').subscribe({
-      next: account => typeof account?.banking === 'boolean'
-        ? this.available.set(account.banking) : this.checkLinks(),
+    this.demo.accept(null);
+    // the one call per login: also whether it is a demo sandbox (the demo bar)
+    this.http.get<Account & { banking?: boolean }>('/api/account').subscribe({
+      next: account => {
+        this.demo.accept(account);
+        if (typeof account?.banking === 'boolean') {
+          this.available.set(account.banking);
+        } else {
+          this.checkLinks();
+        }
+      },
       // a 401 is the end of the login (the interceptor goes to the login page): nothing else to ask
       error: (err: unknown) => err instanceof HttpErrorResponse && err.status === 401 ? undefined : this.checkLinks()
     });

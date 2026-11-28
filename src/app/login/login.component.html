@@ -74,4 +74,11 @@
       </div>
     </form>
   }
+  @if (demo()) {
+    <section class="panel demo" aria-labelledby="login-demo">
+      <h2 id="login-demo">{{ 'demo.login.title' | t }}</h2>
+      <p class="hint">{{ 'demo.login.text' | t }}</p>
+      <a class="btn demo-button" routerLink="/demo"><app-icon name="investments"/>{{ 'demo.login.button' | t }}</a>
+    </section>
+  }
 </div>
