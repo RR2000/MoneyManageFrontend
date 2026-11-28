@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test --watch=false"
+    "test": "node scripts/check-contrast.mjs && ng test --watch=false"
   },
   "dependencies": {
     "@angular/cdk": "22.2.7",

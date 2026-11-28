@@ -13,11 +13,11 @@
 .chart-box { position: relative; height: 55vh; min-height: 280px; max-height: 480px; }
 
 .error {
-  color: #f44336;
+  color: var(--bad);
 }
 
 .legend-note {
   font-size: 0.85em;
-  color: #555;
+  color: var(--muted);
   margin-bottom: 8px;
 }

@@ -1,14 +1,14 @@
-table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 12px; font-size: .9rem; }
-th, td { border-bottom: 1px solid #e3e6ea; padding: 6px 8px; text-align: left; vertical-align: top; }
-th { background: #eef1f5; position: sticky; top: 0; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); margin-top: 12px; font-size: .9rem; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); position: sticky; top: 0; }
 .num { text-align: right; white-space: nowrap; }
 .date { white-space: nowrap; }
-.neg { color: #b3261e; }
+.neg { color: var(--bad); }
 /* the movements sent by the bank: a small label with an icon, not only a colour */
-.from-bank { display: inline-block; margin-left: 6px; padding: 0 6px; border: 1px solid #8a919c; border-radius: 8px;
-  color: #2b313b; font-size: .75rem; white-space: nowrap; }
+.from-bank { display: inline-block; margin-left: 6px; padding: 0 6px; border: 1px solid var(--line-strong); border-radius: 8px;
+  color: var(--fg); font-size: .75rem; white-space: nowrap; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.empty { color: #4a5260; padding: 16px 0; }
+.empty { color: var(--muted); padding: 16px 0; }
 @media (max-width: 480px) {
   table { font-size: .8rem; }
   th, td { padding: 4px; }

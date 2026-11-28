@@ -9,14 +9,11 @@ import Chart from 'chart.js/auto';
 import {GraphPointsDto} from '../../models/graph-points.dto';
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
+import {ThemeService} from '../theme/theme.service';
+import {chartColors, SERIES_DASH} from '../theme/chart-colors';
 
-const PERCENTILE_COLORS: { [key: string]: string } = {
-  'P5':  'rgba(244, 67, 54, 0.8)',
-  'P25': 'rgba(255, 152, 0, 0.8)',
-  'P50': 'rgba(33, 150, 243, 1)',
-  'P75': 'rgba(76, 175, 80, 0.8)',
-  'P95': 'rgba(156, 39, 176, 0.8)',
-};
+/** series index of each percentile (colour and dash from the theme): the median is the first, solid and thicker */
+const PERCENTILE_SERIES: { [key: string]: number } = {P50: 0, P25: 1, P75: 2, P5: 3, P95: 4};
 
 @Component({
   selector: 'app-monte-carlo',
@@ -34,6 +31,8 @@ export class MonteCarloComponent {
   private api = `/api/montecarlo`;
 
   private i18n = inject(I18nService);
+  private theme = inject(ThemeService);
+  private lastData?: GraphPointsDto;
 
   constructor(private http: HttpClient) {
     // the axis title follows the language
@@ -42,6 +41,15 @@ export class MonteCarloComponent {
       if (this.chart) {
         this.chart.options.scales.y.title.text = title;
         this.chart.update();
+      }
+    });
+    // colours from the theme: a new theme draws the chart again
+    effect(() => {
+      this.theme.dark();
+      if (this.chart && this.lastData) {
+        this.chart.destroy();
+        this.chart = undefined;
+        this.renderChart(this.lastData);
       }
     });
   }
@@ -66,11 +74,14 @@ export class MonteCarloComponent {
   }
 
   private renderChart(data: GraphPointsDto) {
+    this.lastData = data;
+    const colors = chartColors();
     const labels = data.uniqueLabels as unknown as string[];
     const datasets = data.uniqueGraphNames.map((name: string) => ({
       label: name,
       data: labels.map((l: string) => data.graphData[name]?.[l] ?? null),
-      borderColor: PERCENTILE_COLORS[name] ?? 'rgba(100,100,100,0.8)',
+      borderColor: colors.series[PERCENTILE_SERIES[name] ?? 0],
+      borderDash: SERIES_DASH[PERCENTILE_SERIES[name] ?? 0],
       backgroundColor: 'transparent',
       borderWidth: name === 'P50' ? 2.5 : 1.5,
       pointRadius: 0,
@@ -85,8 +96,15 @@ export class MonteCarloComponent {
           responsive: true,
           maintainAspectRatio: false,
           animation: false,
-          plugins: {legend: {display: true}},
-          scales: {y: {title: {display: true, text: this.i18n.t('monteCarlo.axis')}}}
+          color: colors.muted,
+          plugins: {legend: {display: true, labels: {color: colors.text}}},
+          scales: {
+            x: {ticks: {color: colors.muted}, grid: {color: colors.grid}},
+            y: {
+              title: {display: true, text: this.i18n.t('monteCarlo.axis'), color: colors.muted},
+              ticks: {color: colors.muted}, grid: {color: colors.grid}
+            }
+          }
         }
       });
     } else {

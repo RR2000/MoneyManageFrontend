@@ -30,6 +30,6 @@
 }
 
 .result {
-  color: green;
+  color: var(--good);
   font-size: 0.9em;
 }

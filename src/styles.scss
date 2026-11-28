@@ -1,0 +1,141 @@
+@use '@angular/material' as mat;
+
+/*
+ * Design tokens: every colour of the app comes from here, light and dark from the same names.
+ * The theme follows the system unless the user picked one (ThemeService puts data-theme="light|dark" on <html>).
+ * scripts/check-contrast.mjs (part of `npm test`) checks the pairs below against WCAG AA in both themes.
+ */
+:root {
+  --bg: #eef2f5;
+  --surface: #ffffff;
+  --surface-2: #f3f6f9;
+  --fg: #15202b;
+  --muted: #4f5d6b;
+  --line: #d3dbe3;
+  /* borders that must be seen (inputs, outlined buttons): 3:1 on the surface */
+  --line-strong: #7b8794;
+  --accent: #1c5d8a;
+  --accent-fg: #ffffff;
+  --accent-soft: #e0ecf6;
+  --good: #1a7337;
+  --good-bg: #e3f3e8;
+  --warn: #7f5300;
+  --warn-bg: #fff2d6;
+  --bad: #b3261e;
+  --bad-bg: #fde9e7;
+  /* chart series: 3:1 on the surface, told apart also by dash and width, never by colour alone */
+  --s1: #1f6fc5;
+  --s2: #c4561c;
+  --s3: #00806a;
+  --s4: #7a4fb8;
+  --s5: #8a6d00;
+  --band: rgba(31, 111, 197, .14);
+  --grid: #e4e9ee;
+  --shadow: 0 1px 2px rgba(16, 24, 32, .08), 0 4px 14px rgba(16, 24, 32, .06);
+  --radius: 12px;
+  --font-text: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: var(--font-text);
+  color-scheme: light;
+}
+
+@mixin dark-tokens {
+  --bg: #0e141a;
+  --surface: #161f28;
+  --surface-2: #1c2732;
+  --fg: #e5ecf2;
+  --muted: #a2b0bd;
+  --line: #2b3946;
+  --line-strong: #6b7c8c;
+  --accent: #72b4e8;
+  --accent-fg: #0b1620;
+  --accent-soft: #1b3246;
+  --good: #63c982;
+  --good-bg: #15301f;
+  --warn: #f1b748;
+  --warn-bg: #352710;
+  --bad: #ff8b80;
+  --bad-bg: #3a1a18;
+  --s1: #4b9bf0;
+  --s2: #ef7a3c;
+  --s3: #19b996;
+  --s4: #b192ec;
+  --s5: #d6b443;
+  --band: rgba(75, 155, 240, .2);
+  --grid: #24313d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px rgba(0, 0, 0, .3);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { @include dark-tokens; }
+}
+:root[data-theme="dark"] { @include dark-tokens; }
+
+/* Angular Material, M3: the system colours are our tokens, so Material components follow the same theme */
+html {
+  @include mat.theme((
+    color: (primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+    typography: (plain-family: var(--font-text), brand-family: var(--font-display)),
+    density: 0
+  ));
+  @include mat.theme-overrides((
+    primary: var(--accent),
+    on-primary: var(--accent-fg),
+    primary-container: var(--accent-soft),
+    on-primary-container: var(--accent),
+    secondary-container: var(--accent-soft),
+    on-secondary-container: var(--fg),
+    background: var(--bg),
+    on-background: var(--fg),
+    surface: var(--surface),
+    on-surface: var(--fg),
+    on-surface-variant: var(--muted),
+    surface-container-lowest: var(--surface),
+    surface-container-low: var(--surface),
+    surface-container: var(--surface),
+    surface-container-high: var(--surface-2),
+    surface-container-highest: var(--surface-2),
+    outline: var(--line-strong),
+    outline-variant: var(--line),
+    error: var(--bad),
+    on-error: var(--surface),
+    error-container: var(--bad-bg),
+    on-error-container: var(--bad)
+  ));
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font-text);
+  background: var(--bg);
+  color: var(--fg);
+  overflow-x: hidden;
+}
+* { box-sizing: border-box; }
+a { color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.page { max-width: 1100px; margin: 0 auto; padding: 16px; }
+/* tables wider than the screen scroll inside their box, never the page */
+.table-scroll { width: 100%; overflow-x: auto; }
+.error { color: var(--bad); }
+.ok { color: var(--good); }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* native controls in the theme */
+button, input, select, textarea { font: inherit; color: inherit; }
+input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]), select, textarea {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+}
+button:where(:not(.mat-mdc-button-base, .mdc-tab)) {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+}
+button:disabled { opacity: .6; }
