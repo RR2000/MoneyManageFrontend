@@ -1,0 +1,83 @@
+<div class="page">
+  @if (state() === 'ready' && detail(); as d) {
+    <app-page-header [title]="d.name" [crumb]="'nav.accounts' | t" crumbLink="/accounts" [crumbLabel]="'nav.back' | t">
+      @if (bank(); as b) {
+        <span class="chip good"><app-icon name="link"/>{{ 'account.bankLinked' | t: {bank: b.link.aspsp} }}</span>
+        @if (consentDays() !== null && consentDays()! <= warnDays) {
+          <a class="chip warn" routerLink="/banks"><app-icon name="warn"/>{{ 'account.consentDays' | t: {days: consentDays()!} }}</a>
+        }
+      }
+    </app-page-header>
+
+    <div class="grid">
+      <section class="card" [attr.aria-label]="'account.balance' | t">
+        <div class="card-head">
+          <span class="label">{{ 'account.balanceAt' | t: {date: i18n.date(d.balanceDate)} }}</span>
+          <div class="ranges" role="group" [attr.aria-label]="'range.label' | t">
+            @for (r of ranges; track r.range) {
+              <button type="button" [attr.aria-pressed]="range() === r.range" (click)="setRange(r.range)">{{ r.label | t }}</button>
+            }
+          </div>
+        </div>
+        @if (d.balance !== null) {
+          <app-figure [value]="d.balance" [currency]="d.currency"/>
+        }
+        @if (chartState() === 'ready') {
+          <app-chart [labels]="chart().labels" [series]="chart().series" [height]="200" [legend]="false"
+                     [currency]="d.currency" [ariaLabel]="'account.chart' | t: {name: d.name}"/>
+        } @else {
+          <app-load-state [state]="chartState()" shape="chart" [emptyText]="'account.noBalances' | t" (retry)="loadChart()"/>
+        }
+      </section>
+
+      <section class="card" [attr.aria-label]="monthLabel()">
+        <h2>{{ monthLabel() }}</h2>
+        <div class="sum3">
+          <div class="tile"><span class="label">{{ 'account.in' | t }}</span>
+            <app-amount class="value" [value]="d.monthIn" [currency]="d.currency" [signed]="true"/></div>
+          <div class="tile"><span class="label">{{ 'account.out' | t }}</span>
+            <app-amount class="value" [value]="d.monthOut" [currency]="d.currency" [signed]="true"/></div>
+          <div class="tile"><span class="label">{{ 'account.net' | t }}</span>
+            <app-amount class="value" [value]="d.monthIn + d.monthOut" [currency]="d.currency" [signed]="true"/></div>
+        </div>
+        @if (bank(); as b) {
+          <p class="small muted">
+            @if (b.link.lastSyncAt) {
+              {{ 'account.lastSync' | t: {when: i18n.dateTime(b.link.lastSyncAt)} }}
+            }
+            {{ 'account.nextSync' | t }}
+          </p>
+          <button type="button" class="btn" (click)="sync()" [disabled]="syncing()">
+            <app-icon name="sync"/>{{ (syncing() ? 'account.syncing' : 'account.syncNow') | t }}</button>
+          @if (syncError()) {
+            <p class="error" role="alert">{{ 'account.syncError' | t }}</p>
+          }
+        } @else if (!d.linked) {
+          <p class="small muted">{{ 'account.notLinked' | t }}
+            <a routerLink="/import">{{ 'nav.import' | t }}</a></p>
+        }
+      </section>
+    </div>
+
+    <section class="card" [attr.aria-label]="'account.movements' | t">
+      <div class="card-head"><h2>{{ 'account.movements' | t }}</h2></div>
+      <app-movements [accountId]="d.id" [currency]="d.currency"/>
+    </section>
+
+    <section class="card manage" [attr.aria-label]="'account.manage' | t">
+      <h2>{{ 'account.manage' | t }}</h2>
+      @if (bank(); as b) {
+        <app-bank-history [account]="b.account" [active]="b.link.status === 'ACTIVE'" (changed)="load()"/>
+        <p class="small muted">{{ 'accounts.linked.hint' | t }} <a routerLink="/banks">{{ 'accounts.toBanks' | t }}</a></p>
+      } @else if (d.linked) {
+        <p class="small muted">{{ 'accounts.linked.hint' | t }} <a routerLink="/banks">{{ 'accounts.toBanks' | t }}</a></p>
+      } @else {
+        <app-delete-account [name]="d.name" [rows]="d.rows" [firstDate]="d.firstDate" [lastDate]="d.lastDate"
+                            (deleted)="deleted($event)"/>
+      }
+    </section>
+  } @else {
+    <app-page-header [title]="'nav.accounts' | t" [crumb]="'nav.accounts' | t" crumbLink="/accounts" [crumbLabel]="'nav.back' | t"/>
+    <app-load-state [state]="state()" (retry)="load()"/>
+  }
+</div>

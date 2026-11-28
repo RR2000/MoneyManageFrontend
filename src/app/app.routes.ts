@@ -8,7 +8,8 @@ import {ResetPasswordComponent} from './reset-password/reset-password.component'
 import {VerifyEmailComponent} from './verify-email/verify-email.component';
 import {AccountComponent} from './account/account.component';
 import {BanksComponent} from './banks/banks.component';
-import {MoneyAccountsComponent} from './money-accounts/money-accounts.component';
+import {AccountsPageComponent} from './accounts/accounts-page.component';
+import {AccountPageComponent} from './accounts/account-page.component';
 import {InvestmentsPageComponent} from './pages/investments-page.component';
 import {AssetsPageComponent} from './pages/assets-page.component';
 import {PlanPageComponent} from './pages/plan-page.component';
@@ -22,8 +23,9 @@ export const routes: Routes = [
   {path: 'reset-password', component: ResetPasswordComponent},
   {path: 'verify-email', component: VerifyEmailComponent},
   {path: '', component: MainComponentComponent, canActivate: [authGuard]},
-  // the money accounts: where their rows come from, delete one
-  {path: 'accounts', component: MoneyAccountsComponent, canActivate: [authGuard]},
+  // the money accounts, and the page of one (by id, a hash of the name: the name never goes in a URL)
+  {path: 'accounts', component: AccountsPageComponent, canActivate: [authGuard]},
+  {path: 'accounts/:id', component: AccountPageComponent, canActivate: [authGuard]},
   {path: 'investments', component: InvestmentsPageComponent, canActivate: [authGuard]},
   {path: 'plan', component: PlanPageComponent, canActivate: [authGuard]},
   {path: 'assets', component: AssetsPageComponent, canActivate: [authGuard]},

@@ -26,6 +26,14 @@ dates follow the language. Texts in `src/app/i18n`: `messages.en.ts` and `messag
 compiler checks it), `{{ 'key' | t }}` and `{{ amount | num }}` in templates, one build for both languages. Messages
 written by the server (e.g. why a file was refused) are shown as they come.
 
+## Pages
+
+One address per section: `/` overview, `/accounts` and `/accounts/<id>` (one account: balance over time, this month,
+movements by day with search, filter and "load more", the bank that imports there, delete), `/investments`, `/plan`,
+`/assets`, `/banks`, `/import`, `/settings` (`/more` on a phone). On a wide screen the sections are in a side bar, on a
+phone in a bar at the bottom. Light and dark theme follow the system, or the choice in Settings (kept in the browser);
+the colours are tokens in `src/styles.scss`, checked at WCAG AA by `scripts/check-contrast.mjs` (part of `npm test`).
+
 ## Stack
 
 Angular 22 with Angular Material and Chart.js, unit tests with Vitest. In production nginx serves the app
