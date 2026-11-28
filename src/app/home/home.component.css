@@ -1,0 +1,52 @@
+.page { display: grid; gap: 16px; }
+app-page-header { margin-bottom: 0; }
+.error { margin: 0; }
+.grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.small { font-size: .85rem; }
+a.small { font-weight: 600; }
+.note { display: flex; gap: 6px; align-items: flex-start; margin: 0; font-size: .82rem; color: var(--muted);
+  --icon-size: 15px; }
+.chip.synced { color: var(--muted); }
+
+/* to do: icon and words, the colour only helps */
+.todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.todo li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px 10px; align-items: start;
+  padding: 10px 12px; border-radius: 10px; background: var(--surface-2); --icon-size: 20px; }
+.todo li.warn { background: var(--warn-bg); }
+.todo li > app-icon { margin-top: 1px; color: var(--accent); }
+.todo li.warn > app-icon { color: var(--warn); }
+.todo .t { font-weight: 600; overflow-wrap: anywhere; }
+.todo .act { grid-column: 2; display: flex; gap: 8px; flex-wrap: wrap; }
+.todo .act .btn { min-height: 36px; padding: 5px 12px; }
+.all-good { display: flex; gap: 8px; align-items: center; margin: 0; padding: 10px 12px; border-radius: 10px;
+  background: var(--good-bg); color: var(--good); font-weight: 600; --icon-size: 20px; }
+
+/* the parts of the net worth */
+a.tile { color: var(--fg); text-decoration: none; }
+a.tile:hover { background: var(--surface-2); }
+.tile .skel { display: block; height: 12px; width: 50%; margin: 4px 0; border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%;
+  animation: sh 1.4s linear infinite; }
+.tile .skel.wide { height: 20px; width: 80%; }
+@keyframes sh { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .tile .skel { animation: none; } }
+
+/* newest movements */
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 9px 0;
+  border-bottom: 1px solid var(--line); align-items: center; }
+.rows li:last-child { border-bottom: 0; }
+.rows .d { font-weight: 500; overflow-wrap: anywhere; }
+.rows .amt { font-weight: 600; text-align: right; grid-row: 1 / span 2; grid-column: 2; }
+.rows .m { grid-column: 1; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: .8rem;
+  color: var(--muted); }
+.rows .m a { color: var(--muted); overflow-wrap: anywhere; }
+
+.classic { margin: 0; font-size: .82rem; color: var(--muted); text-align: center; }
+
+@media (max-width: 960px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 599px) {
+  .chip.synced { display: none; }
+}

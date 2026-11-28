@@ -1,0 +1,116 @@
+<div class="page">
+  <app-page-header [title]="'nav.home' | t">
+    @if (banking.available() === true) {
+      @if (lastSync(); as when) {
+        <span class="chip synced"><app-icon name="sync"/>{{ 'home.lastSync' | t: {when: i18n.dateTime(when)} }}</span>
+      }
+      <button type="button" class="btn" (click)="sync()" [disabled]="syncing()">
+        <app-icon name="sync"/>{{ (syncing() ? 'account.syncing' : 'account.syncNow') | t }}</button>
+    }
+  </app-page-header>
+  @if (syncError()) {
+    <p class="error" role="alert">{{ 'account.syncError' | t }}</p>
+  }
+
+  <div class="grid">
+    <section class="card" [attr.aria-label]="'home.netWorth' | t">
+      <div class="card-head">
+        <span class="label">{{ 'home.netWorth' | t }}</span>
+        <div class="ranges" role="group" [attr.aria-label]="'range.label' | t">
+          @for (r of ranges; track r.range) {
+            <button type="button" [attr.aria-pressed]="range() === r.range" (click)="setRange(r.range)">{{ r.label | t }}</button>
+          }
+        </div>
+      </div>
+      @if (state() === 'ready' && figure(); as f) {
+        <app-figure [value]="f.value" [currency]="netWorth()!.currency" [delta]="f.delta" [deltaShare]="f.share"
+                    [period]="'home.period30' | t" [decimals]="0"/>
+        @if (excludedText()) {
+          <p class="note"><app-icon name="info"/><span>{{ excludedText() }}</span></p>
+        }
+        @if (chartState() === 'ready') {
+          <app-chart [labels]="chart().labels" [series]="chart().series" [height]="220" [legend]="false"
+                     [currency]="netWorth()!.currency" [ariaLabel]="chart().aria"/>
+        } @else {
+          <app-load-state [state]="chartState()" shape="chart" (retry)="loadNetWorth(true)"/>
+        }
+      } @else {
+        <app-load-state [state]="state()" shape="chart" [emptyText]="'home.noData' | t" (retry)="loadNetWorth()">
+          <a class="btn primary" routerLink="/import">{{ 'nav.import' | t }}</a>
+        </app-load-state>
+      }
+    </section>
+
+    <section class="card" [attr.aria-label]="'home.todo' | t">
+      <h2>{{ 'home.todo' | t }}</h2>
+      @if (todoState() === 'ready') {
+        @if (todo().length) {
+          <ul class="todo">
+            @for (item of todo(); track item.title) {
+              <li [class]="item.kind">
+                <app-icon [name]="item.icon"/>
+                <div><span class="t">{{ item.title }}</span><div class="small">{{ item.text }}</div></div>
+                <div class="act"><a class="btn" [class.primary]="item.action.primary" [routerLink]="item.action.link">{{ item.action.label }}</a></div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="all-good" role="status"><app-icon name="ok"/><span>{{ 'home.todo.none' | t }}</span></p>
+        }
+      } @else {
+        <app-load-state [state]="todoState()" (retry)="retryTodo()"/>
+      }
+    </section>
+  </div>
+
+  @if (state() !== 'empty' && state() !== 'error') {
+    <div class="tiles" [attr.aria-busy]="state() === 'loading'">
+      @if (state() === 'ready') {
+        @for (tile of tiles(); track tile.label) {
+          @if (tile.link) {
+            <a class="tile link" [routerLink]="tile.link">
+              <span class="label">{{ tile.label }}</span>
+              <app-amount class="value" [value]="tile.value" [currency]="netWorth()!.currency" [decimals]="0"/>
+              <span class="note">{{ tile.note }}</span>
+            </a>
+          } @else {
+            <div class="tile">
+              <span class="label">{{ tile.label }}</span>
+              <app-amount class="value" [value]="tile.value" [currency]="netWorth()!.currency" [decimals]="0"/>
+              <span class="note">{{ tile.note }}</span>
+            </div>
+          }
+        }
+      } @else {
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="tile"><i class="skel"></i><i class="skel wide"></i><i class="skel"></i></div>
+        }
+      }
+    </div>
+  }
+
+  <section class="card" [attr.aria-label]="'home.latest' | t">
+    <div class="card-head"><h2>{{ 'home.latest' | t }}</h2><a class="small" routerLink="/accounts">{{ 'home.all' | t }}</a></div>
+    @if (movementsState() === 'ready') {
+      <ul class="rows">
+        @for (m of movements(); track m.id) {
+          <li>
+            <span class="d">{{ m.description }}</span>
+            <app-amount class="amt" [value]="m.amount" [currency]="m.currency || 'EUR'" [signed]="true"/>
+            <span class="m">
+              <span>{{ day(m.datetime) }}</span><span aria-hidden="true">·</span>
+              <a [routerLink]="['/accounts', m.accountId]">{{ m.account }}</a>
+              <app-source-tag [source]="m.source"/>
+            </span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <app-load-state [state]="movementsState()" [emptyText]="'home.noMovements' | t" (retry)="loadMovements()">
+        <a class="btn primary" routerLink="/import">{{ 'nav.import' | t }}</a>
+      </app-load-state>
+    }
+  </section>
+
+  <p class="classic"><a routerLink="/classic">{{ 'home.classic' | t }}</a>: {{ 'home.classic.text' | t }}</p>
+</div>

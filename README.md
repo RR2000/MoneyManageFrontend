@@ -28,7 +28,9 @@ written by the server (e.g. why a file was refused) are shown as they come.
 
 ## Pages
 
-One address per section: `/` overview, `/accounts` and `/accounts/<id>` (one account: balance over time, this month,
+One address per section: `/` overview (net worth today and over time, with its parts; "to do": bank consents about
+to end, syncs that failed, prices that stopped; the newest movements of every account), `/classic` (the old dashboard
+with tabs, until every section has its page), `/accounts` and `/accounts/<id>` (one account: balance over time, this month,
 movements by day with search, filter and "load more", the bank that imports there, delete), `/investments`, `/plan`,
 `/assets`, `/banks`, `/import`, `/settings` (`/more` on a phone). On a wide screen the sections are in a side bar, on a
 phone in a bar at the bottom. Light and dark theme follow the system, or the choice in Settings (kept in the browser);

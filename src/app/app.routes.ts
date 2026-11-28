@@ -14,6 +14,7 @@ import {InvestmentsPageComponent} from './pages/investments-page.component';
 import {AssetsPageComponent} from './pages/assets-page.component';
 import {PlanPageComponent} from './pages/plan-page.component';
 import {MoreComponent} from './pages/more.component';
+import {HomeComponent} from './home/home.component';
 
 /** One address per section (see nav.ts for the menus). */
 export const routes: Routes = [
@@ -22,7 +23,9 @@ export const routes: Routes = [
   {path: 'forgot-password', component: ForgotPasswordComponent},
   {path: 'reset-password', component: ResetPasswordComponent},
   {path: 'verify-email', component: VerifyEmailComponent},
-  {path: '', component: MainComponentComponent, canActivate: [authGuard]},
+  {path: '', component: HomeComponent, canActivate: [authGuard]},
+  // the old dashboard with tabs, until every section has its own page (no menu entry: a link at the bottom of /)
+  {path: 'classic', component: MainComponentComponent, canActivate: [authGuard]},
   // the money accounts, and the page of one (by id, a hash of the name: the name never goes in a URL)
   {path: 'accounts', component: AccountsPageComponent, canActivate: [authGuard]},
   {path: 'accounts/:id', component: AccountPageComponent, canActivate: [authGuard]},
