@@ -20,6 +20,7 @@ import {CostsService, FixedCosts, monthOnly} from '../costs/costs.service';
 import {MonthBarComponent} from '../costs/month-bar.component';
 import {PlanService, PlanSummary} from '../plan/plan.service';
 import {PlanTrackingComponent} from '../plan/plan-tracking.component';
+import {SampleDataComponent} from '../ui/sample-data.component';
 
 type Range = '6M' | '1Y' | '3Y' | 'ALL';
 const RANGES: { range: Range; label: MessageKey; months: number | null }[] = [
@@ -55,7 +56,7 @@ interface Tile {
 @Component({
   selector: 'app-home',
   imports: [RouterLink, TPipe, PageHeaderComponent, LoadStateComponent, FigureComponent, AmountComponent, ChartComponent,
-    IconComponent, SourceTagComponent, MonthBarComponent, PlanTrackingComponent],
+    IconComponent, SourceTagComponent, MonthBarComponent, PlanTrackingComponent, SampleDataComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -127,8 +128,11 @@ export class HomeComponent implements OnInit {
       return [];
     }
     const t = n.today;
-    const share = (value: number) => t.total > 0 && value > 0
-      ? ' · ' + this.i18n.t('home.share', {share: this.i18n.percent(value / t.total, 0)}) : '';
+    // shares of what is owned (before the debts), so they add up to 100% whatever the debts; the debts are said as a
+    // share of the same total ("equal to 12% of the assets")
+    const owned = [t.cash, t.investments, t.realEstate + t.otherAssets].filter(v => v > 0).reduce((a, b) => a + b, 0);
+    const pct = (value: number) => this.i18n.percent(value / owned, 0);
+    const share = (value: number) => owned > 0 && value > 0 ? ' · ' + this.i18n.t('home.share', {share: pct(value)}) : '';
     const count = (value: number, one: MessageKey, many: MessageKey) =>
       value === 1 ? this.i18n.t(one) : this.i18n.t(many, {count: value});
     return [
@@ -140,7 +144,8 @@ export class HomeComponent implements OnInit {
         note: count(n.realEstates, 'home.properties.one', 'home.properties') + ', '
           + count(n.otherAssets, 'assets.count.other.one', 'assets.count.other') + share(t.realEstate + t.otherAssets)},
       {label: this.i18n.t('home.debts'), value: t.debts, link: '/assets', signed: true,
-        note: n.debts === 0 ? this.i18n.t('home.debts.none') : count(n.debts, 'assets.count.debt.one', 'assets.count.debt')}
+        note: n.debts === 0 ? this.i18n.t('home.debts.none') : count(n.debts, 'assets.count.debt.one', 'assets.count.debt')
+          + (owned > 0 && t.debts < 0 ? ' · ' + this.i18n.t('home.debts.share', {share: pct(-t.debts)}) : '')}
     ];
   });
 
@@ -236,6 +241,11 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.reload();
+  }
+
+  /** everything again: at the start, and after the sample data arrived */
+  reload(): void {
     this.loadNetWorth();
     this.loadMovements();
     this.loadInstruments();

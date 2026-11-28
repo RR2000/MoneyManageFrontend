@@ -8,6 +8,9 @@ import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
 import {MessageKey} from '../i18n/messages.en';
 import {BankHistoryComponent} from './bank-history.component';
+import {PageHeaderComponent} from '../ui/page-header.component';
+import {LoadStateComponent} from '../ui/load-state.component';
+import {IconComponent, IconName} from '../ui/icon.component';
 
 /** countries the open banking provider covers; Italy first */
 export const COUNTRIES = ['IT', 'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS',
@@ -44,7 +47,7 @@ function capitalized(text: string): string {
  */
 @Component({
   selector: 'app-banks',
-  imports: [FormsModule, TPipe, BankHistoryComponent],
+  imports: [FormsModule, TPipe, BankHistoryComponent, PageHeaderComponent, LoadStateComponent, IconComponent],
   templateUrl: './banks.component.html',
   styleUrl: './banks.component.css'
 })
@@ -52,8 +55,6 @@ export class BanksComponent implements OnInit {
   readonly countries = COUNTRIES;
   readonly NEW_ACCOUNT = NEW_ACCOUNT;
   readonly NO_ACCOUNT = NO_ACCOUNT;
-  /** next to the words, never instead of them */
-  readonly icons = {ok: '✓', warning: '⚠', expired: '⌛'};
   readonly i18n = inject(I18nService);
   private banking = inject(BankingService);
   private http = inject(HttpClient);
@@ -384,9 +385,10 @@ export class BanksComponent implements OnInit {
     return this.i18n.has(key) ? key : 'banks.status.unknown';
   }
 
-  statusIcon(link: BankLink): string {
+  /** next to the words, never instead of them */
+  statusIcon(link: BankLink): IconName {
     const status = this.status(link);
-    return status === 'ACTIVE' ? this.icons.ok : status === 'EXPIRED' ? this.icons.expired : this.icons.warning;
+    return status === 'ACTIVE' ? 'ok' : status === 'EXPIRED' ? 'calendar' : 'warn';
   }
 
   expiresText(link: BankLink): string {

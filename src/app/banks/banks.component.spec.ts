@@ -50,7 +50,7 @@ describe('BanksComponent', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const fixture = TestBed.createComponent(BanksComponent);
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[role=status] .spinner')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('app-load-state [role=status]')).not.toBeNull();
     http.expectOne('/api/banking/links').flush(links);
     http.expectOne('/api/banks/transactions/accounts').flush(moneyAccounts);
     fixture.detectChanges();

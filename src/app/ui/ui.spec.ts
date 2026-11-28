@@ -43,22 +43,22 @@ describe('UI components', () => {
 
   it('amounts say money in or out with the sign, not only with the colour', () => {
     const el: HTMLElement = host().nativeElement;
-    expect(el.querySelector('.a1')?.textContent).toBe('+€1,234.50');
+    expect(el.querySelector('.a1')?.textContent).toBe('+\u2060€1,234.50');
     expect(el.querySelector('.a1')?.classList).toContain('in');
-    expect(el.querySelector('.a2')?.textContent).toBe('−€56.70');
-    expect(el.querySelector('.a3')?.textContent).toBe('-€56.70');
+    expect(el.querySelector('.a2')?.textContent).toBe('−\u2060€56.70');
+    expect(el.querySelector('.a3')?.textContent).toBe('-\u2060€56.70');
   });
 
   it('the big number has its change with arrow, sign, period and share; in Italian too', () => {
     const fixture = host();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('app-figure .big')?.textContent).toBe('€248,300.00');
-    expect(el.querySelector('app-figure .delta')?.textContent?.trim()).toBe('+€3,420 in 30 giorni (+1.4%)');
+    expect(el.querySelector('app-figure .delta')?.textContent?.trim()).toBe('+\u2060€3,420 in 30 giorni (+1.4%)');
     expect(el.querySelector('app-figure .delta app-icon')).toBeTruthy();
 
     TestBed.inject(I18nService).setLang('it');
     fixture.detectChanges();
-    expect(el.querySelector('app-figure .delta')?.textContent?.trim().replace(/\s/g, ' ')).toBe('+3420 € in 30 giorni (+1,4%)');
+    expect(el.querySelector('app-figure .delta')?.textContent?.trim().replace(/\s/g, ' ')).toBe('+\u20603420 € in 30 giorni (+1,4%)');
   });
 
   it('waiting shows a skeleton at once, an error has Retry, empty has the action that fills it', () => {

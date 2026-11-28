@@ -5,11 +5,12 @@ import {RouterLink} from '@angular/router';
 import {AuthService} from '../auth/auth.service';
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
+import {IconComponent} from '../ui/icon.component';
 
 /** "Forgot password": asks for the email, the answer is the same whether an account has it or not. */
 @Component({
   selector: 'app-forgot-password',
-  imports: [FormsModule, RouterLink, TPipe],
+  imports: [FormsModule, RouterLink, TPipe, IconComponent],
   templateUrl: './forgot-password.component.html',
   styleUrls: ['../login/login.component.css']
 })

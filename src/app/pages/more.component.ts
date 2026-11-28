@@ -7,14 +7,15 @@ import {TPipe} from '../i18n/t.pipe';
 import {MORE_ITEMS} from '../nav';
 import {ThemeSwitchComponent} from '../theme/theme-switch.component';
 import {IconComponent} from '../ui/icon.component';
+import {PageHeaderComponent} from '../ui/page-header.component';
 
 /** "More" on the phone: the sections that do not fit in the bar at the bottom, theme, language and log out. */
 @Component({
   selector: 'app-more',
-  imports: [RouterLink, TPipe, IconComponent, ThemeSwitchComponent],
+  imports: [RouterLink, TPipe, IconComponent, ThemeSwitchComponent, PageHeaderComponent],
   template: `
     <div class="page">
-      <h1>{{ 'nav.more' | t }}</h1>
+      <app-page-header [title]="'nav.more' | t"/>
       <ul class="list">
         @for (item of items(); track item.path) {
           <li><a [routerLink]="item.path"><app-icon [name]="item.icon"/><span>{{ item.label | t }}</span>
@@ -32,7 +33,6 @@ import {IconComponent} from '../ui/icon.component';
       </div>
     </div>`,
   styles: [`
-    h1 { font-size: 1.4rem; margin: 4px 0 12px; }
     .list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line);
       border-radius: var(--radius); overflow: hidden; }
     .list li + li { border-top: 1px solid var(--line); }
@@ -42,7 +42,7 @@ import {IconComponent} from '../ui/icon.component';
     .chev { color: var(--muted); }
     .tools { display: grid; gap: 12px; margin-top: 16px; }
     .tool { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
-    .tool button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; min-height: 40px;
+    .tool button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; min-height: 44px;
       border-radius: 8px; cursor: pointer; }
   `]
 })

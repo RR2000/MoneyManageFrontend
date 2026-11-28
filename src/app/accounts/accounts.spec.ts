@@ -79,9 +79,9 @@ describe('Accounts', () => {
     expect(el.querySelector('h1')?.textContent).toBe('Conto vecchio');
     expect(el.querySelector('.crumb a')?.getAttribute('href')).toBe('/accounts');
     expect(el.querySelector('app-figure .big')?.textContent).toBe('€1,520.50');
-    expect(el.querySelector('.sum3')?.textContent).toContain('+€2,400.00');
-    expect(el.querySelector('.sum3')?.textContent).toContain('−€1,912.30');
-    expect(el.querySelector('.sum3')?.textContent).toContain('+€487.70');
+    expect(el.querySelector('.sum3')?.textContent).toContain('+\u2060€2,400.00');
+    expect(el.querySelector('.sum3')?.textContent).toContain('−\u2060€1,912.30');
+    expect(el.querySelector('.sum3')?.textContent).toContain('+\u2060€487.70');
 
     const six = http.expectOne(r => r.url === '/api/money-accounts/a1b2c3d4e5f6/balances');
     expect(six.request.params.get('from')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -116,9 +116,9 @@ describe('Accounts', () => {
     fixture.detectChanges();
     expect(Array.from(el.querySelectorAll('.day')).length).toBe(2);
     const rows = Array.from(el.querySelectorAll('.row'));
-    expect(rows[0].textContent).toContain('−€64.20');
+    expect(rows[0].textContent).toContain('−\u2060€64.20');
     expect(rows[0].textContent).toContain('bank');
-    expect(rows[1].textContent).toContain('+€2,400.00');
+    expect(rows[1].textContent).toContain('+\u2060€2,400.00');
     expect(rows[2].textContent).toContain('by hand');
 
     buttons(el, 'Load 50 more')[0].click();

@@ -97,14 +97,14 @@ describe('Home', () => {
     fixture.detectChanges();
 
     expect(text(el.querySelector('app-figure .big'))).toBe('€180,000');
-    expect(text(el.querySelector('app-figure .delta'))).toBe('+€2,000 in 30 days (+1.1%)');
+    expect(text(el.querySelector('app-figure .delta'))).toBe('+\u2060€2,000 in 30 days (+1.1%)');
     expect(el.querySelector('app-figure .delta app-icon')).toBeTruthy();
     expect(el.querySelector('app-chart canvas')?.getAttribute('aria-label')).toContain('Net worth from');
 
     const tiles = Array.from(el.querySelectorAll('.tiles .tile'));
     expect(tiles.map(t => text(t.querySelector('.label')))).toEqual(['Cash', 'Investments', 'Property and assets', 'Debts']);
     expect(text(tiles[0])).toContain('€10,000');
-    expect(text(tiles[0])).toContain('2 accounts · 6% of the total');
+    expect(text(tiles[0])).toContain('2 accounts · 6% of what you own');
     expect(tiles[1].getAttribute('href')).toBe('/investments');
     expect(text(tiles[2])).toContain('1 property, 0 assets');
     expect(tiles[2].getAttribute('href')).toBe('/assets');
@@ -113,11 +113,11 @@ describe('Home', () => {
 
     const rows = Array.from(el.querySelectorAll('.rows li'));
     expect(text(rows[0])).toContain('Spesa di prova');
-    expect(text(rows[0].querySelector('.amt'))).toBe('−€64.20');
+    expect(text(rows[0].querySelector('.amt'))).toBe('−\u2060€64.20');
     expect(text(rows[0].querySelector('.m'))).toContain('Today');
     expect(rows[0].querySelector('.m a')?.getAttribute('href')).toBe('/accounts/a1b2c3d4e5f6');
     expect(rows[0].querySelector('app-source-tag')).toBeTruthy();
-    expect(text(rows[1].querySelector('.amt'))).toBe('+€2,400.00');
+    expect(text(rows[1].querySelector('.amt'))).toBe('+\u2060€2,400.00');
     expect(text(rows[1].querySelector('.m'))).toContain('Yesterday');
 
     // nothing to do: said in words, with an icon
@@ -125,7 +125,6 @@ describe('Home', () => {
     expect(el.querySelector('.all-good app-icon')).toBeTruthy();
     // without open banking: no "Sync now", no call to the bank links
     expect(Array.from(el.querySelectorAll('button')).some(b => text(b) === 'Sync now')).toBe(false);
-    expect(el.querySelector('.classic a')?.getAttribute('href')).toBe('/classic');
   });
 
   it('a new period asks again from its date and keeps the figure on screen', () => {
@@ -215,6 +214,35 @@ describe('Home', () => {
     expect(text(todo?.querySelector('.t'))).toBe('No data yet');
     expect(todo?.querySelector('a')?.getAttribute('href')).toBe('/import');
     expect(Array.from(el.querySelectorAll('app-load-state')).map(text).join(' ')).toContain('No movement yet.');
+
+    // or the sample data, then everything is read again
+    const sample = Array.from(el.querySelectorAll<HTMLButtonElement>('app-sample-data button'))[0];
+    expect(text(sample)).toBe('Load sample data');
+    sample.click();
+    fixture.detectChanges();
+    expect(text(el.querySelector('app-sample-data [role=status]'))).toBe('Loading the sample data...');
+    http.expectOne(r => r.method === 'POST' && r.url === '/api/sample-data').flush(null, {status: 201, statusText: 'Created'});
+    netWorthCall().flush(netWorth());
+    latestCall().flush([]);
+    flushInstruments([]);
+    flushCosts();
+    fixture.detectChanges();
+    expect(el.querySelector('app-figure')).toBeTruthy();
+  });
+
+  it('sample data on an account that has data already: says so, nothing changes', () => {
+    const fixture = open();
+    const el: HTMLElement = fixture.nativeElement;
+    netWorthCall().flush(netWorth({accounts: 0, realEstates: 0, instruments: 0, points: [point(isoDay(new Date()), 0)],
+      today: point(isoDay(new Date()), 0), before: point('2026-10-29', 0)}));
+    latestCall().flush([]);
+    flushInstruments([]);
+    flushCosts();
+    fixture.detectChanges();
+    el.querySelector<HTMLButtonElement>('app-sample-data button')!.click();
+    http.expectOne('/api/sample-data').flush({message: 'x'}, {status: 409, statusText: 'Conflict'});
+    fixture.detectChanges();
+    expect(text(el.querySelector('app-sample-data [role=alert]'))).toContain('already has data');
   });
 
   it('a failed call says so with Retry, card by card', () => {
@@ -262,9 +290,15 @@ describe('Home', () => {
     const tiles = Array.from(el.querySelectorAll('.tiles .tile'));
     expect(text(tiles[2])).toContain('€162,000');
     expect(text(tiles[2])).toContain('1 property, 2 assets');
-    expect(text(tiles[3])).toContain('−€6,200');
+    expect(text(tiles[3])).toContain('−\u2060€6,200');
     expect(text(tiles[3])).toContain('1 debt');
     expect(tiles[3].getAttribute('href')).toBe('/assets');
+    // shares of what is owned (192,000), so they never add up to more than 100% because of a debt
+    expect(text(tiles[0])).toContain('5% of what you own');
+    expect(text(tiles[1])).toContain('10% of what you own');
+    expect(text(tiles[2])).toContain('84% of what you own');
+    expect(text(tiles[3])).toContain('equal to 3% of what you own');
+    expect(text(el.querySelector('#home-shares'))).toContain('before the debts');
     expect(text(el.querySelector('.note'))).toBe('2 items in CHF, USD are not in the total: nothing is converted.');
   });
 

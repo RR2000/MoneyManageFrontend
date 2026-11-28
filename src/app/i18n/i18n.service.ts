@@ -79,26 +79,29 @@ export class I18nService {
       .format(value);
   }
 
-  /** an amount with its currency; an unknown currency code is written after the number */
+  /**
+   * An amount with its currency; an unknown currency code is written after the number. It never breaks across lines:
+   * the spaces are non-breaking and a sign is joined to what follows (a browser may break between "-" and "€").
+   */
   money(value: number, currency: string | null | undefined, decimals?: number): string {
     if (currency) {
       try {
         const digits = decimals === undefined ? {} : {minimumFractionDigits: decimals, maximumFractionDigits: decimals};
-        return new Intl.NumberFormat(this.locale(), {style: 'currency', currency, ...digits}).format(value);
+        return unbreakable(new Intl.NumberFormat(this.locale(), {style: 'currency', currency, ...digits}).format(value));
       } catch {
-        return `${this.number(value, decimals ?? 2)} ${currency}`;
+        return unbreakable(`${this.number(value, decimals ?? 2)} ${currency}`);
       }
     }
-    return this.number(value, decimals ?? 2);
+    return unbreakable(this.number(value, decimals ?? 2));
   }
 
   /**
    * An amount with its sign always written: "+1.234,00 €" for money in, "−56,70 €" (minus sign) for money out, so the
-   * direction is said by the text and not only by a colour.
+   * direction is said by the text and not only by a colour. The sign stays with the amount (word joiner).
    */
   signedMoney(value: number, currency: string | null | undefined, decimals?: number): string {
     const sign = value > 0 ? '+' : value < 0 ? '−' : '';
-    return sign + this.money(Math.abs(value), currency, decimals);
+    return sign ? sign + JOINER + this.money(Math.abs(value), currency, decimals) : this.money(value, currency, decimals);
   }
 
   /** a share: 0.123 -> "12,3 %" in Italian, "12.3%" in English */
@@ -165,6 +168,14 @@ export class I18nService {
       document.documentElement.lang = this.lang();
     }
   }
+}
+
+/** U+2060 WORD JOINER: invisible, no line break on either side */
+export const JOINER = '\u2060';
+
+/** spaces that do not break, and a leading sign joined to the rest */
+function unbreakable(text: string): string {
+  return text.replace(/ /g, '\u00a0').replace(/^([-\u2212+])(?!\u2060)/, `$1${JOINER}`);
 }
 
 function browserLang(): string {

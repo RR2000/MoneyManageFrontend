@@ -1,19 +1,21 @@
 /* desktop: side bar + content; the document scrolls, the side bar stays (sticky) */
 .shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100dvh; }
-.side { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; gap: 2px;
-  padding: 18px 12px; background: var(--surface); border-right: 1px solid var(--line); }
+/* the column has the background and the border down to the end of the page; the bar in it stays on screen */
+.side-col { background: var(--surface); border-right: 1px solid var(--line); min-width: 0; }
+.side { position: sticky; top: 0; height: 100dvh; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
+  padding: 18px 12px; }
 .brand { display: flex; gap: 8px; align-items: center; padding: 4px 10px 16px; color: var(--fg); text-decoration: none;
   font-weight: 800; font-size: 1.15rem; }
 .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: var(--accent-fg);
   display: grid; place-items: center; font-size: .85rem; }
-.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; min-height: 40px; border-radius: 8px;
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; min-height: 44px; border-radius: 8px;
   color: var(--fg); text-decoration: none; font-weight: 500; }
 .nav-item:hover { background: var(--surface-2); }
 .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 700; }
 .nav-foot { margin-top: auto; display: grid; gap: 2px; }
 .nav-sep { height: 1px; background: var(--line); margin: 8px 6px; }
 .side-tools { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 4px 0; }
-.side-tools button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; min-height: 36px;
+.side-tools button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; min-height: 44px;
   border-radius: 8px; cursor: pointer; --icon-size: 16px; }
 .content { min-width: 0; display: flex; flex-direction: column; }
 main { flex: 1; min-width: 0; outline: none; }
@@ -25,12 +27,12 @@ main { flex: 1; min-width: 0; outline: none; }
 /* phone and narrow windows: name on top, five sections in a bar at the bottom */
 @media (max-width: 839px) {
   .shell { grid-template-columns: minmax(0, 1fr); }
-  .side { display: none; }
+  .side-col { display: none; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 16px;
     background: var(--surface); border-bottom: 1px solid var(--line); }
   .topbar .brand { padding: 0; font-size: 1.05rem; }
   /* room for the bar at the bottom, which covers the end of the page otherwise */
-  main { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  .content main { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
   .bottomnav { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--surface); border-top: 1px solid var(--line);
     padding: 4px 4px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -43,8 +45,8 @@ main { flex: 1; min-width: 0; outline: none; }
 }
 
 .lang-bar { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; padding: 8px 16px 0; }
-.lang-bar button { border-radius: 6px; padding: 4px 10px; cursor: pointer; min-height: 36px; }
+.lang-bar button { border-radius: 8px; padding: 4px 12px; cursor: pointer; min-height: 44px; min-width: 44px; }
 .lang-suggest { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 16px;
   background: var(--accent-soft); color: var(--fg); border-bottom: 1px solid var(--line); }
 .lang-suggest-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.lang-suggest button { padding: 4px 10px; cursor: pointer; }
+.lang-suggest button { padding: 4px 12px; min-height: 44px; border-radius: 8px; cursor: pointer; }

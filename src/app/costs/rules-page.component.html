@@ -69,12 +69,12 @@
                 </div>
               } @else {
                 <span class="acts">
-                  <button type="button" class="btn small" (click)="editCategory(c)">
-                    <app-icon name="edit"/>{{ 'costs.edit' | t }}<span class="sr-only"> {{ c.name }}</span></button>
+                  <button type="button" class="btn small icon-phone" (click)="editCategory(c)">
+                    <app-icon name="edit"/><span class="bt">{{ 'costs.edit' | t }}</span><span class="sr-only"> {{ c.name }}</span></button>
                   <button type="button" class="btn small" (click)="newRule(c.id)">
                     <app-icon name="plus"/>{{ 'costs.rule.add' | t }}<span class="sr-only"> {{ c.name }}</span></button>
-                  <button type="button" class="btn small" (click)="askDelete('c' + c.id)">
-                    <app-icon name="trash"/>{{ 'costs.delete' | t }}<span class="sr-only"> {{ c.name }}</span></button>
+                  <button type="button" class="btn small icon-phone" (click)="askDelete('c' + c.id)">
+                    <app-icon name="trash"/><span class="bt">{{ 'costs.delete' | t }}</span><span class="sr-only"> {{ c.name }}</span></button>
                 </span>
               }
             </li>
@@ -166,10 +166,10 @@
                 </div>
               } @else {
                 <span class="acts">
-                  <button type="button" class="btn small" (click)="editRule(r)">
-                    <app-icon name="edit"/>{{ 'costs.edit' | t }}<span class="sr-only"> {{ r.pattern }}</span></button>
-                  <button type="button" class="btn small" (click)="askDelete('r' + r.id)">
-                    <app-icon name="trash"/>{{ 'costs.delete' | t }}<span class="sr-only"> {{ r.pattern }}</span></button>
+                  <button type="button" class="btn small icon-phone" (click)="editRule(r)">
+                    <app-icon name="edit"/><span class="bt">{{ 'costs.edit' | t }}</span><span class="sr-only"> {{ r.pattern }}</span></button>
+                  <button type="button" class="btn small icon-phone" (click)="askDelete('r' + r.id)">
+                    <app-icon name="trash"/><span class="bt">{{ 'costs.delete' | t }}</span><span class="sr-only"> {{ r.pattern }}</span></button>
                 </span>
               }
             </li>

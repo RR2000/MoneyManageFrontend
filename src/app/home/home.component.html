@@ -36,7 +36,8 @@
         }
       } @else {
         <app-load-state [state]="state()" shape="chart" [emptyText]="'home.noData' | t" (retry)="loadNetWorth()">
-          <a class="btn primary" routerLink="/import">{{ 'nav.import' | t }}</a>
+          <a class="btn primary" routerLink="/import"><app-icon name="import"/>{{ 'nav.import' | t }}</a>
+          <app-sample-data (loaded)="reload()"/>
         </app-load-state>
       }
     </section>
@@ -64,7 +65,7 @@
   </div>
 
   @if (state() !== 'empty' && state() !== 'error') {
-    <div class="tiles" [attr.aria-busy]="state() === 'loading'">
+    <div class="tiles" [attr.aria-busy]="state() === 'loading'" [attr.aria-describedby]="state() === 'ready' ? 'home-shares' : null">
       @if (state() === 'ready') {
         @for (tile of tiles(); track tile.label) {
           @if (tile.link) {
@@ -88,6 +89,9 @@
         }
       }
     </div>
+    @if (state() === 'ready') {
+      <p class="note" id="home-shares"><app-icon name="info"/><span>{{ 'home.share.how' | t }}</span></p>
+    }
   }
 
   <div class="grid">
@@ -142,5 +146,4 @@
     }
   </section>
 
-  <p class="classic"><a routerLink="/classic">{{ 'home.classic' | t }}</a>: {{ 'home.classic.text' | t }}</p>
 </div>

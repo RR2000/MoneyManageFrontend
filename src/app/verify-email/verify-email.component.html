@@ -1,24 +1,24 @@
-<main class="login-container">
-  <h1>Money Manage</h1>
+<div class="auth">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">m</span>money</div>
   <div class="panel">
-    <h2>{{ 'verify.title' | t }}</h2>
+    <h1>{{ 'verify.title' | t }}</h1>
     @switch (state()) {
       @case ('busy') {
-        <p role="status">{{ 'common.wait' | t }}</p>
+        <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'common.wait' | t }}</p>
       }
       @case ('done') {
-        <p role="status">{{ 'verify.done' | t }}</p>
+        <p class="line ok" role="status"><app-icon name="ok"/><span>{{ 'verify.done' | t }}</span></p>
       }
       @case ('broken') {
-        <div class="error" role="alert">{{ 'verify.broken' | t }}</div>
+        <p class="line bad" role="alert"><app-icon name="error"/><span>{{ 'verify.broken' | t }}</span></p>
       }
       @case ('taken') {
-        <div class="error" role="alert">{{ 'verify.taken' | t }}</div>
+        <p class="line bad" role="alert"><app-icon name="error"/><span>{{ 'verify.taken' | t }}</span></p>
       }
       @default {
-        <div class="error" role="alert">{{ 'verify.failed' | t }}</div>
+        <p class="line bad" role="alert"><app-icon name="error"/><span>{{ 'verify.failed' | t }}</span></p>
       }
     }
-    <a class="back" [routerLink]="loggedIn() ? '/settings' : '/login'">{{ (loggedIn() ? 'verify.toAccount' : 'verify.toLogin') | t }}</a>
+    <a class="btn" [routerLink]="loggedIn() ? '/settings' : '/login'">{{ (loggedIn() ? 'verify.toAccount' : 'verify.toLogin') | t }}</a>
   </div>
-</main>
+</div>

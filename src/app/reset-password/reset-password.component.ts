@@ -5,11 +5,12 @@ import {RouterLink} from '@angular/router';
 import {AuthService, tokenFromFragment} from '../auth/auth.service';
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
+import {IconComponent} from '../ui/icon.component';
 
 /** The page of the link in the "forgot password" email: /reset-password#token=... */
 @Component({
   selector: 'app-reset-password',
-  imports: [FormsModule, RouterLink, TPipe],
+  imports: [FormsModule, RouterLink, TPipe, IconComponent],
   templateUrl: './reset-password.component.html',
   styleUrls: ['../login/login.component.css']
 })

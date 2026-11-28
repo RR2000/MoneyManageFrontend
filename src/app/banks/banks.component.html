@@ -1,69 +1,73 @@
-<main class="page banks">
-  <h1>{{ 'banks.title' | t }}</h1>
-  <p class="hint">{{ 'banks.intro' | t }}</p>
+<div class="page banks">
+  <app-page-header [title]="'banks.title' | t" [subtitle]="'banks.intro' | t">
+    @if (!pickerOpen()) {
+      <button type="button" class="btn primary" (click)="openPicker()" [disabled]="busy()">
+        <app-icon name="plus"/>{{ 'banks.connect' | t }}</button>
+    }
+    @if (links()?.length) {
+      <button type="button" class="btn" (click)="sync()" [disabled]="busy()">
+        @if (syncing()) {
+          <span class="spinner" aria-hidden="true"></span>{{ 'banks.syncing' | t }}
+        } @else {
+          <app-icon name="sync"/>{{ 'banks.sync' | t }}
+        }
+      </button>
+    }
+  </app-page-header>
 
   @if (result(); as r) {
     <div class="banner" [class.banner-ok]="r === 'ok'" [class.banner-error]="r === 'error'"
          [attr.role]="r === 'ok' ? 'status' : 'alert'">
-      <span class="icon" aria-hidden="true">{{ r === 'ok' ? icons.ok : icons.warning }}</span>
+      <app-icon [name]="r === 'ok' ? 'ok' : 'warn'"/>
       <span class="grow">{{ (r === 'ok' ? 'banks.result.ok' : 'banks.result.error') | t }}</span>
-      <button type="button" (click)="result.set(null)">{{ 'banks.dismiss' | t }}</button>
+      <button type="button" class="btn small" (click)="result.set(null)">{{ 'banks.dismiss' | t }}</button>
     </div>
   }
-
-  <div class="actions">
-    @if (!pickerOpen()) {
-      <button type="button" class="primary" (click)="openPicker()" [disabled]="busy()">{{ 'banks.connect' | t }}</button>
-    }
-    @if (links()?.length) {
-      <button type="button" (click)="sync()" [disabled]="busy()">
-        @if (syncing()) {
-          <span class="spinner" aria-hidden="true"></span>{{ 'banks.syncing' | t }}
-        } @else {
-          {{ 'banks.sync' | t }}
-        }
-      </button>
-    }
-    @if (syncResult(); as sr) {
-      <span class="ok" role="status"><span aria-hidden="true">&#10003; </span>{{ syncText(sr) }}</span>
-    } @else if (syncError()) {
-      <span class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ syncError() }}</span>
-    }
-  </div>
-
+  @if (syncing()) {
+    <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.syncing' | t }}</p>
+  } @else if (syncResult(); as sr) {
+    <p class="line ok" role="status"><app-icon name="ok"/><span>{{ syncText(sr) }}</span></p>
+  } @else if (syncError()) {
+    <p class="line error-text" role="alert"><app-icon name="error"/><span>{{ syncError() }}</span></p>
+  }
   @if (startError()) {
     <div class="banner banner-error" role="alert">
-      <span class="icon" aria-hidden="true">&#9888;</span><span class="grow">{{ startError() }}</span>
+      <app-icon name="error"/><span class="grow">{{ startError() }}</span>
     </div>
   }
 
   @if (pickerOpen()) {
-    <section class="picker" aria-labelledby="picker-title">
-      <h2 id="picker-title">{{ 'banks.connect' | t }}</h2>
+    <section class="card picker" aria-labelledby="picker-title">
+      <div class="card-head">
+        <h2 id="picker-title">{{ 'banks.connect' | t }}</h2>
+        <button type="button" class="btn small" (click)="closePicker()" [disabled]="!!redirecting()">
+          <app-icon name="close"/>{{ 'banks.connect.close' | t }}</button>
+      </div>
       <div class="fields">
-        <label>{{ 'banks.country' | t }}
-          <select name="country" [ngModel]="country()" (ngModelChange)="setCountry($event)" [disabled]="busy()">
+        <div class="field">
+          <label for="bank-country">{{ 'banks.country' | t }}</label>
+          <select id="bank-country" name="country" [ngModel]="country()" (ngModelChange)="setCountry($event)"
+                  [disabled]="busy()" aria-describedby="bank-country-hint">
             @for (code of countries; track code) {
               <option [value]="code">{{ i18n.country(code) }}</option>
             }
           </select>
-        </label>
-        <label>{{ 'banks.filter' | t }}
-          <input name="filter" type="search" autocomplete="off" [ngModel]="filter()" (ngModelChange)="setFilter($event)">
-        </label>
+          <p class="hint" id="bank-country-hint">{{ 'banks.country.hint' | t }}</p>
+        </div>
+        <div class="field">
+          <label for="bank-filter">{{ 'banks.filter' | t }}</label>
+          <input id="bank-filter" name="filter" type="search" autocomplete="off" [ngModel]="filter()"
+                 (ngModelChange)="setFilter($event)">
+        </div>
       </div>
-      <p class="hint">{{ 'banks.country.hint' | t }}</p>
 
       @if (aspspsLoading()) {
-        <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.aspsps.loading' | t }}</p>
+        <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.aspsps.loading' | t }}</p>
       } @else if (aspspsError()) {
-        <div class="banner banner-error" role="alert">
-          <span class="grow">{{ 'banks.aspsps.error' | t }}</span>
-          <button type="button" (click)="loadAspsps()">{{ 'banks.retry' | t }}</button>
-        </div>
+        <app-load-state state="error" [errorText]="'banks.aspsps.error' | t" (retry)="loadAspsps()"/>
       } @else if (aspsps()) {
         @if (filtered().length === 0) {
-          <p>{{ 'banks.aspsps.none' | t }}</p>
+          <app-load-state state="empty" [emptyText]="'banks.aspsps.none' | t"/>
         } @else {
           <ul class="aspsps">
             @for (a of visibleAspsps(); track a.name) {
@@ -83,69 +87,70 @@
             }
           </ul>
           @if (visibleAspsps().length < filtered().length) {
-            <p class="hint">{{ 'banks.aspsps.shown' | t: {shown: visibleAspsps().length, total: filtered().length} }}
-              <button type="button" (click)="showAll.set(true)">
+            <p class="line hint">{{ 'banks.aspsps.shown' | t: {shown: visibleAspsps().length, total: filtered().length} }}
+              <button type="button" class="btn small" (click)="showAll.set(true)">
                 {{ 'banks.aspsps.showAll' | t: {total: filtered().length} }}</button>
             </p>
           }
         }
       }
       @if (redirecting()) {
-        <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.redirecting' | t: {bank: redirecting()} }}</p>
+        <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.redirecting' | t: {bank: redirecting()} }}</p>
       }
-      <button type="button" (click)="closePicker()" [disabled]="!!redirecting()">{{ 'banks.connect.close' | t }}</button>
     </section>
   }
 
   @if (loading()) {
-    <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.loading' | t }}</p>
+    <app-load-state state="loading"/>
   } @else if (loadError()) {
-    <div class="banner banner-error" role="alert">
-      <span class="grow">{{ 'banks.loadError' | t }}</span>
-      <button type="button" (click)="load()">{{ 'banks.retry' | t }}</button>
-    </div>
+    <app-load-state state="error" [errorText]="'banks.loadError' | t" (retry)="load()"/>
   } @else if (links(); as list) {
     @if (list.length === 0) {
-      <p class="empty">{{ 'banks.none' | t }}</p>
+      <app-load-state state="empty" [emptyText]="'banks.none' | t">
+        @if (!pickerOpen()) {
+          <button type="button" class="btn primary" (click)="openPicker()" [disabled]="busy()">
+            <app-icon name="plus"/>{{ 'banks.connect' | t }}</button>
+        }
+      </app-load-state>
     }
-    <ul class="links">
-      @for (link of list; track link.id) {
-        <li class="link">
-          <div class="head">
-            <h2>{{ link.aspsp }}</h2>
-            <span [class]="'status status-' + status(link)">
-              <span aria-hidden="true">{{ statusIcon(link) }}</span>
-              {{ statusKey(link) | t }}
-            </span>
-            <span class="muted">{{ i18n.country(link.country) }}</span>
-          </div>
+    @for (link of list; track link.id) {
+      <section class="card link" [attr.aria-labelledby]="'bank-' + link.id">
+        <div class="head">
+          <h2 [id]="'bank-' + link.id">{{ link.aspsp }}</h2>
+          <span [class]="'chip status status-' + status(link)">
+            <app-icon [name]="statusIcon(link)"/>{{ statusKey(link) | t }}
+          </span>
+          <span class="muted small">{{ i18n.country(link.country) }}</span>
+        </div>
+        <div class="facts">
           @if (expiresText(link); as expires) {
-            <p class="fact">{{ expires }}</p>
+            <p class="fact"><app-icon name="calendar"/><span>{{ expires }}</span></p>
           }
-          @if (warning(link); as w) {
-            <div class="banner banner-warning" role="status">
-              <span class="icon" aria-hidden="true">&#9888;</span><span class="grow">{{ w }}</span>
-              <button type="button" (click)="start(link.aspsp, link.country)" [disabled]="busy()">
-                {{ 'banks.reconnect' | t }}</button>
-            </div>
-          }
-          <p class="fact">
-            {{ link.lastSyncAt ? ('banks.lastSync' | t: {when: i18n.dateTime(link.lastSyncAt)}) : ('banks.lastSync.never' | t) }}
-          </p>
+          <p class="fact"><app-icon name="sync"/>
+            <span>{{ link.lastSyncAt ? ('banks.lastSync' | t: {when: i18n.dateTime(link.lastSyncAt)}) : ('banks.lastSync.never' | t) }}</span></p>
           @if (link.lastError) {
-            <p class="error-text"><span aria-hidden="true">&#9888; </span>
-              {{ 'banks.lastError' | t: {text: errorCodeText(link.lastError)} }}</p>
+            <p class="fact error-text"><app-icon name="error"/>
+              <span>{{ 'banks.lastError' | t: {text: errorCodeText(link.lastError)} }}</span></p>
           }
           @if (link.lastAmbiguous) {
-            <p class="fact"><span aria-hidden="true">&#9888; </span>{{ 'banks.lastAmbiguous' | t: {count: link.lastAmbiguous} }}</p>
+            <p class="fact warn-text"><app-icon name="warn"/><span>{{ 'banks.lastAmbiguous' | t: {count: link.lastAmbiguous} }}</span></p>
           }
+        </div>
+        @if (warning(link); as w) {
+          <div class="banner banner-warning" role="status">
+            <app-icon name="warn"/><span class="grow">{{ w }}</span>
+            <button type="button" class="btn small" (click)="start(link.aspsp, link.country)" [disabled]="busy()">
+              {{ 'banks.reconnect' | t }}</button>
+          </div>
+        }
 
-          @if (link.accounts.length === 0) {
-            <p class="muted">{{ 'banks.accounts.none' | t }}</p>
-          }
-          <ul class="accounts">
-            @for (account of link.accounts; track account.id) {
-              <li class="account">
+        @if (link.accounts.length === 0) {
+          <p class="muted">{{ 'banks.accounts.none' | t }}</p>
+        }
+        <ul class="accounts">
+          @for (account of link.accounts; track account.id) {
+            <li class="account">
+              <div class="who">
                 @if (account.name) {
                   <div class="account-name">{{ account.name }}</div>
                 }
@@ -154,89 +159,96 @@
                     <span class="muted">{{ account.currency }}</span>
                   }
                 </div>
-                <div class="fact">{{ balanceText(account) }}</div>
-                <label class="money-account">{{ 'banks.moneyAccount' | t }}
-                  <select [name]="'money-' + account.id" [ngModel]="selectValue(account)"
-                          (ngModelChange)="choose(account, $event)" [disabled]="saving() === account.id || busy()">
-                    <option [value]="NO_ACCOUNT">{{ 'banks.moneyAccount.none' | t }}</option>
-                    @for (name of options(account); track name) {
-                      <option [value]="name">{{ name }}</option>
-                    }
-                    <option [value]="NEW_ACCOUNT">{{ 'banks.moneyAccount.new' | t }}</option>
-                  </select>
-                </label>
-                @if (newFor() === account.id) {
-                  <form class="new-account" (ngSubmit)="createNew(account)">
-                    <label>{{ 'banks.moneyAccount.newName' | t }}
-                      <input name="newName" [(ngModel)]="newName" required maxlength="100" autocomplete="off">
-                    </label>
-                    <div class="buttons">
-                      <button type="submit" class="primary" [disabled]="!newName.trim() || saving() === account.id">
-                        {{ 'banks.moneyAccount.create' | t }}</button>
-                      <button type="button" (click)="cancelNew()" [disabled]="saving() === account.id">
-                        {{ 'banks.moneyAccount.cancel' | t }}</button>
-                    </div>
-                  </form>
-                }
-                @if (saving() === account.id) {
-                  <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.moneyAccount.saving' | t }}</p>
-                } @else if (importing() === account.id) {
-                  <p role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.moneyAccount.importing' | t }}</p>
-                } @else if (accountError()[account.id]) {
-                  <p class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ accountError()[account.id] }}</p>
-                } @else if (savedAccount() === account.id) {
-                  <p class="ok" role="status"><span aria-hidden="true">&#10003; </span>{{ 'banks.moneyAccount.saved' | t }}</p>
-                } @else if (!account.moneyAccount && newFor() !== account.id) {
-                  <p class="muted">{{ 'banks.moneyAccount.unlinked' | t }}</p>
-                }
-                @if (lateForHistory(link, account)) {
-                  <p class="fact"><span aria-hidden="true">&#9888; </span>{{ 'banks.moneyAccount.late' | t }}</p>
-                }
-                @if (account.moneyAccount && saving() !== account.id) {
-                  <app-bank-history [account]="account" [active]="status(link) === 'ACTIVE'" [disabled]="busy()"
-                                    (changed)="load(true)" />
-                }
-              </li>
-            }
-          </ul>
+                <div class="fact small">{{ balanceText(account) }}</div>
+              </div>
+              <div class="field money-account">
+                <label [for]="'money-' + account.id">{{ 'banks.moneyAccount' | t }}</label>
+                <select [id]="'money-' + account.id" [name]="'money-' + account.id" [ngModel]="selectValue(account)"
+                        (ngModelChange)="choose(account, $event)" [disabled]="saving() === account.id || busy()">
+                  <option [value]="NO_ACCOUNT">{{ 'banks.moneyAccount.none' | t }}</option>
+                  @for (name of options(account); track name) {
+                    <option [value]="name">{{ name }}</option>
+                  }
+                  <option [value]="NEW_ACCOUNT">{{ 'banks.moneyAccount.new' | t }}</option>
+                </select>
+              </div>
+              @if (newFor() === account.id) {
+                <form class="new-account" (ngSubmit)="createNew(account)" (keydown.escape)="cancelNew()">
+                  <div class="field">
+                    <label [for]="'new-' + account.id">{{ 'banks.moneyAccount.newName' | t }}</label>
+                    <input [id]="'new-' + account.id" name="newName" [(ngModel)]="newName" required maxlength="100" autocomplete="off">
+                  </div>
+                  <div class="buttons">
+                    <button type="submit" class="btn primary" [disabled]="!newName.trim() || saving() === account.id">
+                      {{ 'banks.moneyAccount.create' | t }}</button>
+                    <button type="button" class="btn" (click)="cancelNew()" [disabled]="saving() === account.id">
+                      {{ 'banks.moneyAccount.cancel' | t }}</button>
+                  </div>
+                </form>
+              }
+              @if (saving() === account.id) {
+                <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.moneyAccount.saving' | t }}</p>
+              } @else if (importing() === account.id) {
+                <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>{{ 'banks.moneyAccount.importing' | t }}</p>
+              } @else if (accountError()[account.id]) {
+                <p class="line error-text" role="alert"><app-icon name="error"/><span>{{ accountError()[account.id] }}</span></p>
+              } @else if (savedAccount() === account.id) {
+                <p class="line ok" role="status"><app-icon name="ok"/><span>{{ 'banks.moneyAccount.saved' | t }}</span></p>
+              } @else if (!account.moneyAccount && newFor() !== account.id) {
+                <p class="muted small">{{ 'banks.moneyAccount.unlinked' | t }}</p>
+              }
+              @if (lateForHistory(link, account)) {
+                <p class="fact warn-text"><app-icon name="warn"/><span>{{ 'banks.moneyAccount.late' | t }}</span></p>
+              }
+              @if (account.moneyAccount && saving() !== account.id) {
+                <app-bank-history [account]="account" [active]="status(link) === 'ACTIVE'" [disabled]="busy()"
+                                  (changed)="load(true)" />
+              }
+            </li>
+          }
+        </ul>
 
-          @if (confirmUnlink() === link.id) {
-            <div class="banner banner-warning" role="alert">
-              <span class="grow">{{ 'banks.unlink.confirm' | t: {bank: link.aspsp} }}</span>
-              <button type="button" class="danger" (click)="unlink(link)" [disabled]="busy()">
+        @if (confirmUnlink() === link.id) {
+          <div class="banner banner-warning" role="alert">
+            <app-icon name="warn"/>
+            <span class="grow">{{ 'banks.unlink.confirm' | t: {bank: link.aspsp} }}</span>
+            <span class="buttons">
+              <button type="button" class="btn danger" (click)="unlink(link)" [disabled]="busy()">
                 @if (unlinking() === link.id) {
                   <span class="spinner" aria-hidden="true"></span>{{ 'banks.unlinking' | t }}
                 } @else {
-                  {{ 'banks.unlink.yes' | t }}
+                  <app-icon name="trash"/>{{ 'banks.unlink.yes' | t }}
                 }
               </button>
-              <button type="button" (click)="keepLink()" [disabled]="unlinking() === link.id">{{ 'banks.unlink.no' | t }}</button>
-            </div>
-          } @else {
-            <div class="buttons">
-              <button type="button" (click)="start(link.aspsp, link.country)" [disabled]="busy()">
-                @if (redirecting() === link.aspsp && redirectingFull() === null) {
-                  <span class="spinner" aria-hidden="true"></span>{{ 'banks.wait' | t }}
-                } @else {
-                  {{ 'banks.reconnect' | t }}
-                }
-              </button>
-              <button type="button" (click)="start(link.aspsp, link.country, true, link.id)" [disabled]="busy()">
-                @if (redirectingFull() === link.id) {
-                  <span class="spinner" aria-hidden="true"></span>{{ 'banks.wait' | t }}
-                } @else {
-                  {{ 'banks.reconnectFull' | t }}
-                }
-              </button>
-              <button type="button" (click)="askUnlink(link)" [disabled]="busy()">{{ 'banks.unlink' | t }}</button>
-            </div>
-            <p class="hint">{{ 'banks.reconnectFull.hint' | t }}</p>
-          }
-          @if (linkError()[link.id]) {
-            <p class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ linkError()[link.id] }}</p>
-          }
-        </li>
-      }
-    </ul>
+              <button type="button" class="btn" (click)="keepLink()" [disabled]="unlinking() === link.id">{{ 'banks.unlink.no' | t }}</button>
+            </span>
+          </div>
+        } @else {
+          <div class="buttons">
+            <button type="button" class="btn" (click)="start(link.aspsp, link.country)" [disabled]="busy()">
+              @if (redirecting() === link.aspsp && redirectingFull() === null) {
+                <span class="spinner" aria-hidden="true"></span>{{ 'banks.wait' | t }}
+              } @else {
+                <app-icon name="link"/>{{ 'banks.reconnect' | t }}
+              }
+            </button>
+            <button type="button" class="btn" (click)="start(link.aspsp, link.country, true, link.id)" [disabled]="busy()"
+                    [attr.aria-describedby]="'full-hint-' + link.id">
+              @if (redirectingFull() === link.id) {
+                <span class="spinner" aria-hidden="true"></span>{{ 'banks.wait' | t }}
+              } @else {
+                <app-icon name="import"/>{{ 'banks.reconnectFull' | t }}
+              }
+            </button>
+            <button type="button" class="btn danger" (click)="askUnlink(link)" [disabled]="busy()">
+              <app-icon name="trash"/>{{ 'banks.unlink' | t }}</button>
+          </div>
+          <p class="hint" [id]="'full-hint-' + link.id">{{ 'banks.reconnectFull.hint' | t }}</p>
+        }
+        @if (linkError()[link.id]) {
+          <p class="line error-text" role="alert"><app-icon name="error"/><span>{{ linkError()[link.id] }}</span></p>
+        }
+      </section>
+    }
   }
-</main>
+</div>
