@@ -1,5 +1,5 @@
 <main class="login-container">
-  <h1>{{ 'account.title' | t }}</h1>
+  <h1>{{ 'nav.settings' | t }}</h1>
   @if (account(); as a) {
     <form (ngSubmit)="submit()">
       <p><strong>{{ 'account.username' | t }}</strong> {{ a.username }}</p>

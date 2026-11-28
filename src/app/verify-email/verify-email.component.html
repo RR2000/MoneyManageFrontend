@@ -19,6 +19,6 @@
         <div class="error" role="alert">{{ 'verify.failed' | t }}</div>
       }
     }
-    <a class="back" [routerLink]="loggedIn() ? '/account' : '/login'">{{ (loggedIn() ? 'verify.toAccount' : 'verify.toLogin') | t }}</a>
+    <a class="back" [routerLink]="loggedIn() ? '/settings' : '/login'">{{ (loggedIn() ? 'verify.toAccount' : 'verify.toLogin') | t }}</a>
   </div>
 </main>
