@@ -8,11 +8,12 @@ import {PageHeaderComponent} from '../ui/page-header.component';
 import {LoadState, LoadStateComponent} from '../ui/load-state.component';
 import {AmountComponent} from '../ui/amount.component';
 import {IconComponent} from '../ui/icon.component';
+import {SampleDataComponent} from '../ui/sample-data.component';
 
 /** /accounts: every money account with its balance, where its rows come from, and the way to its page. */
 @Component({
   selector: 'app-accounts-page',
-  imports: [RouterLink, TPipe, PageHeaderComponent, LoadStateComponent, AmountComponent, IconComponent],
+  imports: [RouterLink, TPipe, PageHeaderComponent, LoadStateComponent, AmountComponent, IconComponent, SampleDataComponent],
   template: `
     <div class="page">
       <app-page-header [title]="'nav.accounts' | t" [subtitle]="'accounts.intro.short' | t">
@@ -54,7 +55,8 @@ import {IconComponent} from '../ui/icon.component';
         </ul>
       } @else {
         <app-load-state [state]="state()" [emptyText]="'accounts.none' | t" (retry)="load()">
-          <a class="btn primary" routerLink="/import">{{ 'nav.import' | t }}</a>
+          <a class="btn primary" routerLink="/import"><app-icon name="import"/>{{ 'nav.import' | t }}</a>
+          <app-sample-data (loaded)="load()"/>
         </app-load-state>
       }
     </div>`,

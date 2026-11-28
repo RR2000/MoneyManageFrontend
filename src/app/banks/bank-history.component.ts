@@ -5,6 +5,7 @@ import {BankAccount, BankingService, errorCode, ReplaceResult} from './banking.s
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
 import {MessageKey} from '../i18n/messages.en';
+import {IconComponent} from '../ui/icon.component';
 
 /** reading the whole history of a bank may take a while */
 const READ_TIMEOUT_MS = 180 * 1000;
@@ -17,7 +18,7 @@ const CALL_TIMEOUT_MS = 60 * 1000;
  */
 @Component({
   selector: 'app-bank-history',
-  imports: [TPipe],
+  imports: [TPipe, IconComponent],
   templateUrl: './bank-history.component.html',
   styleUrl: './banks.component.css'
 })

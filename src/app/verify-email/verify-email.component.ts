@@ -3,11 +3,12 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {RouterLink} from '@angular/router';
 import {AuthService, tokenFromFragment} from '../auth/auth.service';
 import {TPipe} from '../i18n/t.pipe';
+import {IconComponent} from '../ui/icon.component';
 
 /** The page of the link in the confirmation email: /verify-email#token=... */
 @Component({
   selector: 'app-verify-email',
-  imports: [RouterLink, TPipe],
+  imports: [RouterLink, TPipe, IconComponent],
   templateUrl: './verify-email.component.html',
   styleUrls: ['../login/login.component.css']
 })

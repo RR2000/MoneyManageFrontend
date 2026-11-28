@@ -73,11 +73,11 @@ describe('Assets', () => {
     expect(tiles[0]).toContain('Real estate');
     expect(tiles[0]).toContain('€168,000');
     expect(tiles[1]).toContain('€9,500');
-    expect(tiles[2]).toContain('−€6,200');
-    expect(tiles[3]).toContain('+€171,300');
+    expect(tiles[2]).toContain('−\u2060€6,200');
+    expect(tiles[3]).toContain('+\u2060€171,300');
     expect(tiles[3]).toContain('assets minus debts');
     expect(text(el.querySelector('.card p.note'))).toBe(
-      'In USD, kept apart and not converted: other assets US$1,000, debts −US$200, net +US$800.');
+      'In USD, kept apart and not converted: other assets US$1,000, debts −\u2060US$200, net +\u2060US$800.');
 
     const lists = Array.from(el.querySelectorAll('ul.items'));
     expect(lists.length).toBe(3);
@@ -90,7 +90,7 @@ describe('Assets', () => {
     expect(text(others[1])).toContain('in USD: kept apart, not in the euro total');
     expect(text(others[1])).toContain('no date of the estimate: counts on every day');
     const debts = lists[2].querySelectorAll('li');
-    expect(text(debts[0].querySelector('.amount'))).toBe('−€6,200 left to pay');
+    expect(text(debts[0].querySelector('.amount'))).toBe('−\u2060€6,200 left to pay');
     expect(text(debts[0].querySelector('.meta'))).toBe('payment €280.00 a month · rate 5.9% a year');
     expect(text(debts[0].querySelector('.payoff'))).toBe('Expected end November 2028, in 2 years (from the payment)');
     expect(text(debts[1].querySelector('.payoff'))).toBe('End not known: add the payment or the end date');

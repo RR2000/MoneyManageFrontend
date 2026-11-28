@@ -59,4 +59,10 @@ label { font-size: .84rem; font-weight: 600; }
 
 @media (max-width: 599px) {
   .form.two { grid-template-columns: minmax(0, 1fr); }
+  /* the buttons of a row on one line: "Edit" and "Delete" become icons (their words stay for screen readers) */
+  .acts { flex-wrap: nowrap; }
+  .btn.small { min-height: 44px; }
+  .btn.icon-phone { min-width: 44px; padding: 0 10px; --icon-size: 18px; }
+  .btn.icon-phone .bt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);
+    white-space: nowrap; }
 }

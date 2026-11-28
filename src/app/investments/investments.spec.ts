@@ -70,10 +70,10 @@ describe('Investments', () => {
     expect(el.querySelector('app-figure')?.textContent).toContain('€2,100');
     const tiles = Array.from(el.querySelectorAll('.tile')).map(t => t.textContent ?? '');
     expect(tiles[0]).toContain('€1,653');
-    expect(tiles[1]).toContain('+€447.00');
+    expect(tiles[1]).toContain('+\u2060€447.00');
     expect(tiles[1]).toContain('+27% on the invested');
-    expect(tiles[1]).toContain('+€97.00 already taken with sales');
-    expect(tiles[2]).toContain('+€330.78');
+    expect(tiles[1]).toContain('+\u2060€97.00 already taken with sales');
+    expect(tiles[2]).toContain('+\u2060€330.78');
     expect(tiles[2]).toContain('taxes at 26% on the gain, estimate: €116.22');
     expect(tiles[3]).toContain('+24.1%');
     expect(tiles[3]).toContain('money-weighted (XIRR)');
@@ -82,7 +82,7 @@ describe('Investments', () => {
     // up and down are said by the sign and an arrow, not only by the colour
     expect(el.querySelectorAll('.tile .value.up app-icon').length).toBe(4);
     expect(el.textContent).toContain('Returns computed on your real trades, fees included');
-    expect(el.textContent).toContain('Simple gain: +€544 (+24.7%) on €2,204 of purchases');
+    expect(el.textContent).toContain('Simple gain: +\u2060€544 (+24.7%) on €2,204 of purchases');
     expect(el.textContent).toContain('A security in USD is not in the totals: nothing is converted.');
     expect(el.querySelector('details')?.textContent).toContain('Time-weighted (TWR)');
   });
@@ -93,8 +93,8 @@ describe('Investments', () => {
     expect(rows.length).toBe(2);
     expect(rows[0].textContent).toContain('ETF Mondo (esempio)');
     expect(rows[0].textContent).toContain('€110.20');
-    expect(rows[0].textContent).toContain('+€447.00');
-    expect(rows[0].textContent).toContain('+€330.78');
+    expect(rows[0].textContent).toContain('+\u2060€447.00');
+    expect(rows[0].textContent).toContain('+\u2060€330.78');
     expect(rows[0].textContent).toContain('100%');
     expect(rows[1].classList).toContain('out');
     expect(rows[1].textContent).toContain('in USD, not in the totals');

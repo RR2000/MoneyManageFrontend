@@ -5,10 +5,11 @@ import {Router, RouterLink} from '@angular/router';
 import {AuthService, Providers} from '../auth/auth.service';
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
+import {IconComponent} from '../ui/icon.component';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink, TPipe],
+  imports: [FormsModule, RouterLink, TPipe, IconComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })

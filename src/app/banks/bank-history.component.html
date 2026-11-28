@@ -1,6 +1,6 @@
 @let a = account();
 <div class="history">
-  <p class="fact">
+  <p class="fact"><app-icon name="calendar"/><span>
     @if (a.bankFrom) {
       {{ 'banks.history.from' | t: {date: i18n.date(a.bankFrom)} }}
     } @else {
@@ -9,56 +9,58 @@
     @if (a.firstDate && a.firstDate !== a.bankFrom) {
       {{ 'banks.history.first' | t: {date: i18n.date(a.firstDate)} }}
     }
-  </p>
+  </span></p>
   @if (a.extraRows && a.bankFrom) {
-    <p class="fact"><span aria-hidden="true">&#9888; </span>
-      {{ 'banks.history.extra' | t: {count: a.extraRows, date: i18n.date(a.bankFrom)} }}</p>
+    <p class="fact warn-text"><app-icon name="warn"/>
+      <span>{{ 'banks.history.extra' | t: {count: a.extraRows, date: i18n.date(a.bankFrom)} }}</span></p>
   }
 
   @if (preview(); as p) {
     <div class="banner banner-warning confirm" role="alert">
+      <app-icon name="warn"/>
       <div class="grow">
         <p class="confirm-title">{{ 'banks.replace.title' | t: {account: a.moneyAccount ?? '', date: i18n.date(p.bankFrom)} }}</p>
         <ul class="summary">
-          <li><span class="icon" aria-hidden="true">&#10007;</span> {{ 'banks.replace.deleted' | t: {count: p.deleted} }}</li>
-          <li><span class="icon" aria-hidden="true">+</span> {{ 'banks.replace.added' | t: {count: p.added} }}</li>
-          <li><span class="icon" aria-hidden="true">&#10003;</span> {{ 'banks.replace.matched' | t: {count: p.matched} }}</li>
+          <li><app-icon name="trash"/><span>{{ 'banks.replace.deleted' | t: {count: p.deleted} }}</span></li>
+          <li><app-icon name="plus"/><span>{{ 'banks.replace.added' | t: {count: p.added} }}</span></li>
+          <li><app-icon name="ok"/><span>{{ 'banks.replace.matched' | t: {count: p.matched} }}</span></li>
           @if (p.otherCurrency) {
-            <li><span class="icon" aria-hidden="true">=</span> {{ 'banks.replace.otherCurrency' | t: {count: p.otherCurrency} }}</li>
+            <li><span class="sign" aria-hidden="true">=</span><span>{{ 'banks.replace.otherCurrency' | t: {count: p.otherCurrency} }}</span></li>
           }
-          <li><span class="icon" aria-hidden="true">=</span> {{ 'banks.replace.older' | t: {count: p.older, date: i18n.date(p.bankFrom)} }}</li>
-          <li>{{ 'banks.replace.today' | t: {before: amount(p.todayBefore, p.currency), after: amount(p.todayAfter, p.currency)} }}</li>
-          <li>{{ 'banks.replace.start' | t: {date: i18n.date(p.bankFrom), before: amount(p.startBefore, p.currency), after: amount(p.startAfter, p.currency)} }}</li>
+          <li><span class="sign" aria-hidden="true">=</span><span>{{ 'banks.replace.older' | t: {count: p.older, date: i18n.date(p.bankFrom)} }}</span></li>
+          <li><app-icon name="accounts"/><span>{{ 'banks.replace.today' | t: {before: amount(p.todayBefore, p.currency), after: amount(p.todayAfter, p.currency)} }}</span></li>
+          <li><app-icon name="calendar"/><span>{{ 'banks.replace.start' | t: {date: i18n.date(p.bankFrom), before: amount(p.startBefore, p.currency), after: amount(p.startAfter, p.currency)} }}</span></li>
         </ul>
       </div>
       <div class="buttons">
-        <button type="button" class="danger" (click)="replace()" [disabled]="replacing()">
+        <button type="button" class="btn danger" (click)="replace()" [disabled]="replacing()">
           @if (replacing()) {
             <span class="spinner" aria-hidden="true"></span>{{ 'banks.replace.working' | t }}
           } @else {
             {{ 'banks.replace.confirm' | t }}
           }
         </button>
-        <button type="button" (click)="cancelReplace()" [disabled]="replacing()">{{ 'banks.replace.cancel' | t }}</button>
+        <button type="button" class="btn" (click)="cancelReplace()" [disabled]="replacing()">{{ 'banks.replace.cancel' | t }}</button>
       </div>
     </div>
   } @else if (confirmOlder() && a.bankFrom) {
     <div class="banner banner-warning confirm" role="alert">
+      <app-icon name="warn"/>
       <span class="grow">{{ 'banks.older.confirm' | t: {count: a.olderRows ?? 0, date: i18n.date(a.bankFrom), account: a.moneyAccount ?? ''} }}</span>
       <div class="buttons">
-        <button type="button" class="danger" (click)="deleteOlder()" [disabled]="deletingOlder()">
+        <button type="button" class="btn danger" (click)="deleteOlder()" [disabled]="deletingOlder()">
           @if (deletingOlder()) {
             <span class="spinner" aria-hidden="true"></span>{{ 'banks.older.working' | t }}
           } @else {
             {{ 'banks.older.yes' | t }}
           }
         </button>
-        <button type="button" (click)="keepOlder()" [disabled]="deletingOlder()">{{ 'banks.replace.cancel' | t }}</button>
+        <button type="button" class="btn" (click)="keepOlder()" [disabled]="deletingOlder()">{{ 'banks.replace.cancel' | t }}</button>
       </div>
     </div>
   } @else {
     <div class="buttons">
-      <button type="button" (click)="askReplace()" [disabled]="!active() || disabled() || working()">
+      <button type="button" class="btn small" (click)="askReplace()" [disabled]="!active() || disabled() || working()">
         @if (reading()) {
           <span class="spinner" aria-hidden="true"></span>{{ 'banks.replace.reading' | t }}
         } @else {
@@ -66,27 +68,27 @@
         }
       </button>
       @if (a.olderRows && a.bankFrom) {
-        <button type="button" (click)="askOlder()" [disabled]="disabled() || working()">
+        <button type="button" class="btn small" (click)="askOlder()" [disabled]="disabled() || working()">
           {{ 'banks.older.ask' | t: {count: a.olderRows, date: i18n.date(a.bankFrom)} }}</button>
       }
     </div>
     @if (!active()) {
-      <p class="muted">{{ 'banks.replace.needsLink' | t }}</p>
+      <p class="muted small">{{ 'banks.replace.needsLink' | t }}</p>
     }
   }
 
   @if (reading()) {
-    <p role="status" class="muted">{{ 'banks.replace.readingHint' | t }}</p>
+    <p role="status" class="line muted"><span class="spinner" aria-hidden="true"></span>{{ 'banks.replace.readingHint' | t }}</p>
   }
   @if (replaced(); as r) {
-    <p class="ok" role="status"><span aria-hidden="true">&#10003; </span>
-      {{ 'banks.replace.done' | t: {deleted: r.deleted, added: r.added} }}</p>
+    <p class="line ok" role="status"><app-icon name="ok"/>
+      <span>{{ 'banks.replace.done' | t: {deleted: r.deleted, added: r.added} }}</span></p>
   }
   @if (olderDeleted() !== null) {
-    <p class="ok" role="status"><span aria-hidden="true">&#10003; </span>
-      {{ 'banks.older.done' | t: {count: olderDeleted() ?? 0} }}</p>
+    <p class="line ok" role="status"><app-icon name="ok"/>
+      <span>{{ 'banks.older.done' | t: {count: olderDeleted() ?? 0} }}</span></p>
   }
   @if (error()) {
-    <p class="error-text" role="alert"><span aria-hidden="true">&#9888; </span>{{ error() }}</p>
+    <p class="line error-text" role="alert"><app-icon name="error"/><span>{{ error() }}</span></p>
   }
 </div>

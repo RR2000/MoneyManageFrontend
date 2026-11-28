@@ -1,6 +1,0 @@
-.empty p { margin: 0 0 8px; }
-.empty button { padding: 6px 12px; font: inherit; cursor: pointer; }
-.empty { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; }
-.error { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0 0 12px; padding: 10px 14px;
-  border: 1px solid var(--bad); border-radius: 6px; color: var(--bad); background: var(--bad-bg); }
-.error button { padding: 4px 12px; font: inherit; cursor: pointer; }

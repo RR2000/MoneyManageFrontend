@@ -1,35 +1,32 @@
-.login-container {
-  max-width: 380px;
-  margin: 8vh auto;
-  padding: 0 16px;
-}
-h1 { margin: 0 0 4px; font-size: 1.8rem; color: var(--accent); }
-.intro { margin: 0 0 20px; color: var(--muted); }
-form, .panel {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-}
-h2 { margin: 0; font-size: 1.2rem; }
-label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--fg); }
-input:not([type=checkbox]) { padding: 8px; font-size: 1rem; border: 1px solid var(--line-strong); border-radius: 4px; }
-label.check { flex-direction: row; align-items: center; gap: 8px; }
-.hint { margin: 0; font-size: .85rem; color: var(--muted); }
-button { padding: 10px; font: inherit; border-radius: 4px; cursor: pointer; }
-button.primary { background: var(--accent); color: var(--accent-fg); border: none; }
-button.primary:disabled { opacity: .6; cursor: default; }
-a.github {
-  display: block; text-align: center; padding: 10px; border-radius: 4px;
-  border: 1px solid var(--fg); color: var(--fg); text-decoration: none; font-weight: 500;
-}
-button.link { background: none; border: none; color: var(--accent); text-decoration: underline; }
-.error { font-size: .9rem; }
-a.back, a.forgot { color: var(--accent); text-align: center; }
+/* the pages before the login (login, sign-up, forgotten password, links from the emails): one card in the middle */
+.auth { max-width: 420px; margin: 6vh auto 32px; padding: 0 16px; display: grid; gap: 16px; }
+.brand { display: flex; gap: 10px; align-items: center; font-weight: 800; font-size: 1.4rem; color: var(--fg); }
+.brand-mark { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: var(--accent-fg);
+  display: grid; place-items: center; font-size: 1rem; }
+.intro { margin: 0; color: var(--muted); }
+form, .panel { display: grid; gap: 14px; padding: 20px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow); }
+h1 { margin: 0; font-size: 1.3rem; font-weight: 800; }
 p { margin: 0; }
-.language { margin-top: 16px; }
-select { padding: 8px; font: inherit; border: 1px solid var(--line-strong); border-radius: 4px; }
-.theme { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--fg); }
+.field { display: grid; gap: 4px; min-width: 0; }
+label { font-size: .88rem; font-weight: 600; color: var(--fg); }
+.field input { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; font-size: 1rem; border-radius: 8px; }
+.field input[aria-invalid="true"] { border-color: var(--bad); border-width: 2px; }
+.check { display: flex; gap: 10px; align-items: center; min-height: 44px; font-weight: 500; }
+.check input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--accent); }
+.hint { font-size: .85rem; color: var(--muted); }
+.btn { min-height: 44px; width: 100%; font-size: 1rem; }
+.line { display: flex; gap: 6px; align-items: flex-start; overflow-wrap: anywhere; --icon-size: 18px; }
+.line app-icon { margin-top: 1px; }
+.line.bad { color: var(--bad); font-weight: 600; }
+.line.ok { color: var(--good); font-weight: 600; }
+.links { display: grid; gap: 4px; justify-items: center; text-align: center; }
+.links a, button.link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 8px; color: var(--accent);
+  font-weight: 600; }
+button.link { background: none; border: 0; text-decoration: underline; cursor: pointer; font-size: 1rem; }
+.or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .85rem; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.spinner { display: inline-block; flex: none; width: 1em; height: 1em; margin-top: 2px; border: 2px solid currentColor;
+  border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }

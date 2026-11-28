@@ -25,7 +25,7 @@ const LABEL: Record<ThemeMode, MessageKey> = {system: 'theme.system', light: 'th
     .seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden;
       background: var(--surface); }
     .seg button { display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 0; margin: 0;
-      background: transparent; color: var(--fg); padding: 4px 10px; min-height: 36px; min-width: 40px;
+      background: transparent; color: var(--fg); padding: 4px 10px; min-height: 44px; min-width: 44px;
       justify-content: center; cursor: pointer; --icon-size: 16px; }
     .seg button + button { border-left: 1px solid var(--line); }
     .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); font-weight: 600; }

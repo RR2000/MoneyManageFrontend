@@ -21,6 +21,9 @@ const KINDS: { kind: MovementKind; label: MessageKey }[] = [
   {kind: 'OUT', label: 'movements.out'}
 ];
 
+/** how many lists were made, for unique ids */
+let lists = 0;
+
 /**
  * The movements of an account (or of every account, `accountId` empty) as a list by day, newest first (on a phone
  * too: never a table with a column per account): search by words or amount, money in or out, only the ones without a
@@ -68,9 +71,11 @@ const KINDS: { kind: MovementKind; label: MessageKey }[] = [
       </div>
     }
     @if (state() === 'ready') {
-      <ul class="rows" [attr.aria-busy]="loadingMore()">
+      <ul class="days" [attr.aria-busy]="loadingMore()">
         @for (day of days(); track day.key) {
-          <li class="day" role="presentation">{{ day.label }}</li>
+          <li>
+          <span class="day" [id]="uid + '-' + day.key">{{ day.label }}</span>
+          <ul class="rows" [attr.aria-labelledby]="uid + '-' + day.key">
           @for (m of day.items; track m.id) {
             <li class="row">
               <span class="d">{{ m.description }}</span>
@@ -98,6 +103,8 @@ const KINDS: { kind: MovementKind; label: MessageKey }[] = [
               }
             </li>
           }
+          </ul>
+          </li>
         }
       </ul>
       @if (moreError()) {
@@ -131,8 +138,8 @@ const KINDS: { kind: MovementKind; label: MessageKey }[] = [
     .offer .q { flex: 1 1 14rem; min-width: 0; font-weight: 600; }
     .offer .btns { display: flex; flex-wrap: wrap; gap: 8px; }
     .offer .err { flex-basis: 100%; display: flex; gap: 6px; margin: 0; color: var(--bad); font-weight: 600; }
-    .rows { list-style: none; margin: 0; padding: 0; }
-    .day { font-size: .76rem; font-weight: 700; color: var(--muted); padding: 14px 0 4px; letter-spacing: .04em;
+    .days, .rows { list-style: none; margin: 0; padding: 0; }
+    .day { display: block; font-size: .76rem; font-weight: 700; color: var(--muted); padding: 14px 0 4px; letter-spacing: .04em;
       text-transform: uppercase; border-bottom: 1px solid var(--line); }
     .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 9px 0;
       border-bottom: 1px solid var(--line); align-items: center; }
@@ -159,6 +166,8 @@ export class MovementsComponent implements OnDestroy {
   readonly startUncategorized = input(false);
   readonly pageSize = PAGE_SIZE;
   readonly kinds = KINDS;
+  /** ids of the day headings, unique if the list is twice on a page */
+  readonly uid = 'mv' + (++lists);
 
   private service = inject(AccountsService);
   private costs = inject(CostsService);

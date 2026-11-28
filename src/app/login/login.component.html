@@ -1,43 +1,54 @@
-<main class="login-container">
-  <h1>Money Manage</h1>
+<div class="auth">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">m</span>money</div>
   <p class="intro">{{ 'login.intro' | t }}</p>
-  <form (ngSubmit)="submit()">
-    <h2>{{ (mode === 'login' ? 'login.title' : 'login.register.title') | t }}</h2>
-    <label>{{ (mode === 'login' ? 'login.username' : 'login.register.username') | t }}
-      <input name="username" [(ngModel)]="username" required autocomplete="username"
-             autocapitalize="none" autocorrect="off" spellcheck="false">
-    </label>
-    <label>{{ 'login.password' | t }}
-      <input name="password" type="password" [(ngModel)]="password" required
-             [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'">
-    </label>
+  <form novalidate (ngSubmit)="submit()">
+    <h1>{{ (mode === 'login' ? 'login.title' : 'login.register.title') | t }}</h1>
+    <div class="field">
+      <label for="login-username">{{ (mode === 'login' ? 'login.username' : 'login.register.username') | t }}</label>
+      <input id="login-username" name="username" [(ngModel)]="username" required autocomplete="username"
+             autocapitalize="none" autocorrect="off" spellcheck="false" [attr.aria-invalid]="!!error() || null">
+    </div>
+    <div class="field">
+      <label for="login-password">{{ 'login.password' | t }}</label>
+      <input id="login-password" name="password" type="password" [(ngModel)]="password" required
+             [attr.autocomplete]="mode === 'login' ? 'current-password' : 'new-password'"
+             [attr.aria-describedby]="mode === 'register' ? 'login-register-hint' : null" [attr.aria-invalid]="!!error() || null">
+    </div>
     @if (mode === 'register') {
-      <p class="hint">{{ 'login.register.hint' | t }}</p>
+      <p class="hint" id="login-register-hint">{{ 'login.register.hint' | t }}</p>
       @if (passwordReset()) {
-        <label>{{ 'login.email' | t }}
-          <input name="email" type="email" [(ngModel)]="email" autocomplete="email">
-        </label>
-        <p class="hint">{{ 'login.email.hint' | t }}</p>
+        <div class="field">
+          <label for="login-email">{{ 'login.email' | t }}</label>
+          <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="email"
+                 aria-describedby="login-email-hint">
+          <p class="hint" id="login-email-hint">{{ 'login.email.hint' | t }}</p>
+        </div>
       }
       <label class="check">
         <input name="sampleData" type="checkbox" [(ngModel)]="sampleData">
-        {{ 'login.sampleData' | t }}
+        <span>{{ 'login.sampleData' | t }}</span>
       </label>
     }
     @if (error()) {
-      <div class="error" role="alert">{{ error() }}</div>
+      <p class="line bad" role="alert"><app-icon name="error"/><span>{{ error() }}</span></p>
     }
-    <button type="submit" class="primary" [disabled]="busy() || !username || !password">
+    <button type="submit" class="btn primary" [disabled]="busy() || !username || !password">
       {{ (busy() ? 'common.wait' : mode === 'login' ? 'login.submit' : 'login.register.submit') | t }}
     </button>
-    @if (mode === 'login' && passwordReset()) {
-      <a class="forgot" routerLink="/forgot-password">{{ 'login.forgot' | t }}</a>
+    @if (busy()) {
+      <span class="sr-only" role="status">{{ 'common.wait' | t }}</span>
     }
     @if (githubUrl()) {
-      <a class="github" [href]="githubUrl()">{{ 'login.github' | t }}</a>
+      <p class="or" aria-hidden="true">{{ 'login.or' | t }}</p>
+      <a class="btn" [href]="githubUrl()">{{ 'login.github' | t }}</a>
     }
-    <button type="button" class="link" (click)="switchMode()">
-      {{ (mode === 'login' ? 'login.toRegister' : 'login.toLogin') | t }}
-    </button>
+    <div class="links">
+      @if (mode === 'login' && passwordReset()) {
+        <a routerLink="/forgot-password">{{ 'login.forgot' | t }}</a>
+      }
+      <button type="button" class="link" (click)="switchMode()">
+        {{ (mode === 'login' ? 'login.toRegister' : 'login.toLogin') | t }}
+      </button>
+    </div>
   </form>
-</main>
+</div>

@@ -10,7 +10,8 @@
 @if (isLoggedIn()) {
   <div class="shell">
     <a class="skip" href="#main">{{ 'nav.skip' | t }}</a>
-    <!-- desktop: side bar with every section -->
+    <!-- desktop: side bar with every section; the column runs to the end of the page, the bar inside stays in view -->
+    <div class="side-col">
     <nav class="side" [attr.aria-label]="'nav.sections' | t">
       <a class="brand" routerLink="/"><span class="brand-mark" aria-hidden="true">m</span>money</a>
       @for (item of sideItems(); track item.path) {
@@ -33,6 +34,7 @@
         </div>
       </div>
     </nav>
+    </div>
     <div class="content">
       <!-- phone: bar on top with the name, sections at the bottom -->
       <header class="topbar">
@@ -52,10 +54,12 @@
     </div>
   </div>
 } @else {
-  <div class="lang-bar">
+  <header class="lang-bar">
     <app-theme-switch [compact]="true"/>
     <button type="button" [attr.lang]="i18n.other()" [attr.aria-label]="'lang.switch.label' | t"
             (click)="i18n.setLang(i18n.other())">{{ 'lang.switch' | t }}</button>
-  </div>
-  <router-outlet></router-outlet>
+  </header>
+  <main id="main" tabindex="-1">
+    <router-outlet></router-outlet>
+  </main>
 }
