@@ -1,0 +1,237 @@
+<div class="page">
+  <app-page-header [title]="ready() ? title() : ('nav.plan' | t)" [subtitle]="ready() ? subtitle() : ''">
+    @if (ready()) {
+      @if (plans().length > 1 && !creating()) {
+        <label class="switch"><span>{{ 'plan.switch' | t }}</span>
+          <select [ngModel]="'' + (plan()?.id ?? '')" (ngModelChange)="switchTo($event)">
+            @for (p of plans(); track p.id) {
+              <option [value]="'' + p.id">{{ p.name }}</option>
+            }
+          </select>
+        </label>
+      }
+      @if (plan() && !creating()) {
+        <button type="button" class="btn" (click)="openDuplicate()" [disabled]="duplicating()">
+          <app-icon name="plus"/>{{ 'plan.duplicate' | t }}</button>
+      }
+      <button type="button" class="btn primary" (click)="save()" [disabled]="saving() || (!dirty() && !creating())">
+        {{ (saving() ? 'common.wait' : 'plan.save') | t }}</button>
+    }
+  </app-page-header>
+
+  <p class="saved" role="status" aria-live="polite">
+    @if (saved()) {
+      <app-icon name="ok"/><span>{{ saved() }}</span>
+    }
+  </p>
+  @if (saveError(); as e) {
+    <p class="alert" role="alert"><app-icon name="error"/><span>{{ e | t }}</span></p>
+  }
+
+  @if (duplicating()) {
+    <form class="card dup" novalidate (ngSubmit)="duplicate()" (keydown.escape)="duplicating.set(false)">
+      <div class="field">
+        <label for="dup-name">{{ 'plan.duplicate.name' | t }}</label>
+        <input id="dup-name" name="dupName" [(ngModel)]="dupName" [maxlength]="maxName" autocomplete="off"
+               [attr.aria-invalid]="!!dupError()" aria-describedby="dup-hint">
+        <p class="hint" id="dup-hint">{{ 'plan.duplicate.hint' | t }}</p>
+        @if (dupError(); as e) {<p class="ferr" role="alert"><app-icon name="error"/>{{ e | t }}</p>}
+      </div>
+      <div class="buttons">
+        <button type="submit" class="btn primary" [disabled]="dupBusy()">{{ (dupBusy() ? 'common.wait' : 'plan.duplicate.create') | t }}</button>
+        <button type="button" class="btn" (click)="duplicating.set(false)" [disabled]="dupBusy()">{{ 'common.cancel' | t }}</button>
+      </div>
+    </form>
+  }
+
+  @if (ready() && form; as f) {
+    @if (plan(); as p) {
+      @if (!p.latest) {
+        <p class="old" role="status"><app-icon name="info"/>
+          <span>{{ 'plan.version.old' | t: {number: p.version.number, date: i18n.date(p.version.savedOn)} }}
+            <button type="button" class="link" (click)="openVersion(p.id, null)">{{ 'plan.version.backToLatest' | t }}</button></span></p>
+      }
+    }
+
+    <div class="grid">
+      <!-- inputs -->
+      <section class="card inputs" aria-labelledby="plan-inputs">
+        <h2 id="plan-inputs">{{ 'plan.inputs' | t }}</h2>
+        <form class="form" novalidate (ngSubmit)="save()">
+          <div class="field">
+            <label for="p-name">{{ 'plan.field.name' | t }}</label>
+            <input id="p-name" name="name" [(ngModel)]="f.name" (ngModelChange)="changed()" [maxlength]="maxName"
+                   autocomplete="off" [attr.aria-invalid]="!!fieldError('name')"
+                   [attr.aria-describedby]="fieldError('name') ? 'p-name-err' : null">
+            @if (fieldError('name'); as e) {<p class="ferr" id="p-name-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </div>
+
+          @for (m of ['startValue', 'invested', 'monthly']; track m) {
+            @let field = $any(m);
+            <div class="field">
+              <label [for]="'p-' + m">{{ $any('plan.field.' + m) | t }}
+                <span class="from" [class.own]="own(field)">{{ (own(field) ? 'plan.from.own' : 'plan.from.money') | t }}</span></label>
+              <span class="suffix"><input [id]="'p-' + m" [name]="m" type="number" inputmode="decimal" min="0" step="any"
+                     [(ngModel)]="$any(f)[m]" (ngModelChange)="typed(field)" [attr.aria-invalid]="!!fieldError(field)"
+                     [attr.aria-describedby]="'p-' + m + '-hint' + (fieldError(field) ? ' p-' + m + '-err' : '')"><span
+                class="unit" aria-hidden="true">{{ m === 'monthly' ? ('plan.unit.month' | t) : '€' }}</span></span>
+              <p class="hint" [id]="'p-' + m + '-hint'">
+                @if (own(field)) {
+                  <button type="button" class="link" (click)="useMoney(field)">{{ 'plan.useMoney' | t: {value: moneyValue(field)} }}</button>
+                } @else {
+                  {{ moneyHint(field) }}
+                }
+              </p>
+              @if (fieldError(field); as e) {<p class="ferr" [id]="'p-' + m + '-err'"><app-icon name="error"/>{{ e | t }}</p>}
+            </div>
+          }
+
+          <div class="field">
+            <span class="lab" id="p-hist">{{ 'plan.field.historical' | t }} <span class="from">{{ 'plan.from.money' | t }}</span></span>
+            <p class="readonly" aria-labelledby="p-hist">{{ historical() }}</p>
+            <p class="hint">{{ 'plan.historical.hint' | t }}</p>
+          </div>
+
+          <div class="field">
+            <label for="p-target">{{ 'plan.field.target' | t }} <span class="from own">{{ 'plan.from.own' | t }}</span></label>
+            <input id="p-target" name="targetDate" type="date" [min]="today" [(ngModel)]="f.targetDate" (ngModelChange)="changed()"
+                   [attr.aria-invalid]="!!fieldError('targetDate')"
+                   [attr.aria-describedby]="'p-target-hint' + (fieldError('targetDate') ? ' p-target-err' : '')">
+            <p class="hint" id="p-target-hint">{{ 'plan.hint.target' | t }}</p>
+            @if (fieldError('targetDate'); as e) {<p class="ferr" id="p-target-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="p-inflation">{{ 'plan.field.inflation' | t }}</label>
+              <span class="suffix"><input id="p-inflation" name="inflation" type="number" inputmode="decimal" step="any"
+                     [(ngModel)]="f.inflation" (ngModelChange)="changed()" [attr.aria-invalid]="!!fieldError('inflation')"
+                     [attr.aria-describedby]="fieldError('inflation') ? 'p-inflation-err' : null"><span class="unit" aria-hidden="true">%</span></span>
+              @if (fieldError('inflation'); as e) {<p class="ferr" id="p-inflation-err"><app-icon name="error"/>{{ e | t }}</p>}
+            </div>
+            <div class="field">
+              <label for="p-tax">{{ 'plan.field.tax' | t }}</label>
+              <span class="suffix"><input id="p-tax" name="taxRate" type="number" inputmode="decimal" step="any"
+                     [(ngModel)]="f.taxRate" (ngModelChange)="changed()" [attr.aria-invalid]="!!fieldError('taxRate')"
+                     [attr.aria-describedby]="fieldError('taxRate') ? 'p-tax-err' : null"><span class="unit" aria-hidden="true">%</span></span>
+              @if (fieldError('taxRate'); as e) {<p class="ferr" id="p-tax-err"><app-icon name="error"/>{{ e | t }}</p>}
+            </div>
+          </div>
+
+          <fieldset class="rates" [attr.aria-describedby]="rateError() ? 'p-rates-err' : 'p-rates-hint'">
+            <legend>{{ 'plan.field.rates' | t }}</legend>
+            <div class="three">
+              @for (s of scenarioFields; track s.field) {
+                <div class="field">
+                  <label [for]="'p-' + s.field">{{ $any('plan.scenario.' + s.key) | t }}</label>
+                  <span class="suffix"><input [id]="'p-' + s.field" [name]="s.field" type="number" inputmode="decimal" step="any"
+                         [(ngModel)]="$any(f)[s.field]" (ngModelChange)="changed()"
+                         [attr.aria-invalid]="!!fieldError(s.field) || !!fieldError('rates')"><span class="unit" aria-hidden="true">%</span></span>
+                </div>
+              }
+            </div>
+            <p class="hint" id="p-rates-hint">{{ 'plan.hint.rates' | t }}</p>
+            @if (rateError(); as e) {<p class="ferr" id="p-rates-err"><app-icon name="error"/>{{ e | t }}</p>}
+          </fieldset>
+
+          <fieldset class="events">
+            <legend>{{ 'plan.events' | t }}</legend>
+            @if (f.events.length) {
+              <ol class="event-list">
+                @for (e of f.events; track $index; let i = $index) {
+                  <li>
+                    <fieldset class="event">
+                      <legend>{{ 'plan.event.n' | t: {n: i + 1} }}</legend>
+                      <div class="field full">
+                        <label [for]="'e-kind-' + i">{{ 'plan.event.kind' | t }}</label>
+                        <select [id]="'e-kind-' + i" [name]="'kind' + i" [(ngModel)]="e.kind" (ngModelChange)="changed()">
+                          @for (k of kinds; track k) {
+                            <option [value]="k">{{ $any('plan.event.' + k) | t }}</option>
+                          }
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label [for]="'e-date-' + i">{{ (e.kind === 'MONTHLY' ? 'plan.event.from' : 'plan.event.date') | t }}</label>
+                        <input [id]="'e-date-' + i" [name]="'date' + i" type="date" [(ngModel)]="e.date" (ngModelChange)="changed()"
+                               [attr.aria-invalid]="!!eventError(i, 'date')"
+                               [attr.aria-describedby]="eventError(i, 'date') ? 'e-date-err-' + i : null">
+                        @if (eventError(i, 'date'); as er) {<p class="ferr" [id]="'e-date-err-' + i"><app-icon name="error"/>{{ er | t }}</p>}
+                      </div>
+                      <div class="field">
+                        <label [for]="'e-amount-' + i">{{ $any('plan.event.amount.' + e.kind) | t }}</label>
+                        <input [id]="'e-amount-' + i" [name]="'amount' + i" type="number" inputmode="decimal" step="any"
+                               [(ngModel)]="e.amount" (ngModelChange)="changed()"
+                               [attr.aria-invalid]="!!eventError(i, 'amount')"
+                               [attr.aria-describedby]="'e-amount-hint-' + i + (eventError(i, 'amount') ? ' e-amount-err-' + i : '')">
+                        <p class="hint" [id]="'e-amount-hint-' + i">{{ $any('plan.event.amount.hint.' + e.kind) | t }}</p>
+                        @if (eventError(i, 'amount'); as er) {<p class="ferr" [id]="'e-amount-err-' + i"><app-icon name="error"/>{{ er | t }}</p>}
+                      </div>
+                      <div class="field full">
+                        <label [for]="'e-label-' + i">{{ 'plan.event.label' | t }} <span class="opt">{{ 'plan.optional' | t }}</span></label>
+                        <input [id]="'e-label-' + i" [name]="'label' + i" [(ngModel)]="e.label" (ngModelChange)="changed()"
+                               [maxlength]="maxLabel" autocomplete="off" [placeholder]="'plan.event.label.placeholder' | t"
+                               [attr.aria-invalid]="!!eventError(i, 'label')">
+                        @if (eventError(i, 'label'); as er) {<p class="ferr"><app-icon name="error"/>{{ er | t }}</p>}
+                      </div>
+                      <button type="button" class="btn small remove" (click)="removeEvent(i)">
+                        <app-icon name="trash"/>{{ 'plan.event.remove' | t }}<span class="sr-only"> {{ 'plan.event.n' | t: {n: i + 1} }}</span></button>
+                    </fieldset>
+                  </li>
+                }
+              </ol>
+            } @else {
+              <p class="hint">{{ 'plan.events.none' | t }}</p>
+            }
+            @if (fieldError('events'); as e) {<p class="ferr"><app-icon name="error"/>{{ e | t }}</p>}
+            <button type="button" class="btn add" (click)="addEvent()"><app-icon name="plus"/>{{ 'plan.event.add' | t }}</button>
+          </fieldset>
+        </form>
+      </section>
+
+      <div class="right">
+        <!-- what it gives -->
+        <app-plan-results [projection]="projection()" [taxRate]="projectedWith().taxRate"
+                          [inflation]="projectedWith().inflation" [pending]="pending()" [invalid]="invalid()"
+                          [failed]="projState() === 'error'" (retry)="runProjection()"/>
+
+        <section class="card" aria-labelledby="plan-proj">
+          <app-plan-projection [projection]="projection()" [mc]="mc()" [view]="view()" [mcState]="mcState()"
+                               [failed]="projState() === 'error'" [pending]="pending()" [currency]="currency()"
+                               (viewChange)="setView($event)" (retry)="runProjection()"/>
+        </section>
+
+        <!-- planned against real -->
+        @if (plan(); as p) {
+          <section class="card" aria-labelledby="plan-track">
+            <div class="card-head">
+              <h2 id="plan-track">{{ 'plan.track' | t }}</h2>
+              <span class="small muted">{{ 'plan.track.version' | t: {number: p.tracking.version, date: i18n.date(p.tracking.savedOn)} }}</span>
+            </div>
+            <app-plan-tracking [tracking]="p.tracking" [currency]="currency()" [height]="200"/>
+            <p class="small muted">{{ 'plan.track.note' | t }}</p>
+          </section>
+        }
+
+        <!-- versions -->
+        @if (plan(); as p) {
+          <section class="card" aria-labelledby="plan-versions">
+            <app-plan-versions [plan]="p" [loading]="versionLoading()" [deleting]="deleting()" [deleteError]="deleteError()"
+                               [currency]="currency()" (open)="openVersion(p.id, $event)" (remove)="deletePlan()"/>
+          </section>
+        }
+      </div>
+    </div>
+
+  } @else if (state() === 'empty') {
+    <section class="card">
+      <app-load-state state="empty" [emptyText]="emptyText()">
+        <button type="button" class="btn primary" (click)="create()"><app-icon name="plus"/>{{ 'plan.create' | t }}</button>
+      </app-load-state>
+    </section>
+  } @else {
+    <section class="card"><app-load-state [state]="state()" (retry)="load()"/></section>
+    @if (state() === 'loading') {
+      <section class="card"><app-load-state state="loading" shape="chart"/></section>
+    }
+  }
+</div>

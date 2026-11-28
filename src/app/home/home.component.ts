@@ -18,6 +18,8 @@ import {IconComponent, IconName} from '../ui/icon.component';
 import {SourceTagComponent} from '../ui/source-tag.component';
 import {CostsService, FixedCosts, monthOnly} from '../costs/costs.service';
 import {MonthBarComponent} from '../costs/month-bar.component';
+import {PlanService, PlanSummary} from '../plan/plan.service';
+import {PlanTrackingComponent} from '../plan/plan-tracking.component';
 
 type Range = '6M' | '1Y' | '3Y' | 'ALL';
 const RANGES: { range: Range; label: MessageKey; months: number | null }[] = [
@@ -47,13 +49,13 @@ interface Tile {
 
 /**
  * /, the overview: net worth today and over time, what needs a hand (consents about to end, syncs that failed, prices
- * that stopped, movements without a category), the parts of the net worth, the fixed costs of this month and the
- * newest movements of every account.
+ * that stopped, movements without a category), the parts of the net worth, the plan (planned against real), the fixed
+ * costs of this month and the newest movements of every account.
  */
 @Component({
   selector: 'app-home',
   imports: [RouterLink, TPipe, PageHeaderComponent, LoadStateComponent, FigureComponent, AmountComponent, ChartComponent,
-    IconComponent, SourceTagComponent, MonthBarComponent],
+    IconComponent, SourceTagComponent, MonthBarComponent, PlanTrackingComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -61,6 +63,7 @@ export class HomeComponent implements OnInit {
   readonly i18n = inject(I18nService);
   private service = inject(HomeService);
   private costs = inject(CostsService);
+  private plans = inject(PlanService);
   readonly banking = inject(BankingService);
   readonly ranges = RANGES;
 
@@ -78,6 +81,9 @@ export class HomeComponent implements OnInit {
   readonly linksState = signal<LoadState>('loading');
   readonly fixedCosts = signal<FixedCosts | null>(null);
   readonly costsState = signal<LoadState>('loading');
+  /** the plan saved last */
+  readonly plan = signal<PlanSummary | null>(null);
+  readonly planState = signal<LoadState>('loading');
   readonly syncing = signal(false);
   readonly syncError = signal(false);
   private netWorthCall?: Subscription;
@@ -234,6 +240,7 @@ export class HomeComponent implements OnInit {
     this.loadMovements();
     this.loadInstruments();
     this.loadCosts();
+    this.loadPlan();
   }
 
   setRange(range: Range): void {
@@ -300,6 +307,17 @@ export class HomeComponent implements OnInit {
         this.costsState.set(answer.categories.length ? 'ready' : 'empty');
       },
       error: () => this.costsState.set('error')
+    });
+  }
+
+  loadPlan(): void {
+    this.planState.set('loading');
+    this.plans.overview().subscribe({
+      next: answer => {
+        this.plan.set(answer.plans[0] ?? null);
+        this.planState.set(answer.plans.length ? 'ready' : 'empty');
+      },
+      error: () => this.planState.set('error')
     });
   }
 

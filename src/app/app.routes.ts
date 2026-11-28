@@ -12,7 +12,7 @@ import {AccountsPageComponent} from './accounts/accounts-page.component';
 import {AccountPageComponent} from './accounts/account-page.component';
 import {InvestmentsPageComponent} from './investments/investments-page.component';
 import {AssetsPageComponent} from './assets/assets-page.component';
-import {PlanPageComponent} from './pages/plan-page.component';
+import {PlanPageComponent} from './plan/plan-page.component';
 import {MoreComponent} from './pages/more.component';
 import {HomeComponent} from './home/home.component';
 import {CostsPageComponent} from './costs/costs-page.component';
@@ -37,7 +37,9 @@ export const routes: Routes = [
   {path: 'costs', component: CostsPageComponent, canActivate: [authGuard]},
   {path: 'costs/rules', component: RulesPageComponent, canActivate: [authGuard]},
   {path: 'costs/uncategorized', component: UncategorizedPageComponent, canActivate: [authGuard]},
+  // the plan saved last, or one by id
   {path: 'plan', component: PlanPageComponent, canActivate: [authGuard]},
+  {path: 'plan/:id', component: PlanPageComponent, canActivate: [authGuard]},
   {path: 'assets', component: AssetsPageComponent, canActivate: [authGuard]},
   // open banking; the backend sends the browser back here with ?result=ok|error
   {path: 'banks', component: BanksComponent, canActivate: [authGuard]},
