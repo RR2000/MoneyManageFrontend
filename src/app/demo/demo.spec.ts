@@ -46,6 +46,9 @@ describe('Demo', () => {
     const upload = demoError(error(413, {code: 'DEMO_UPLOAD_TOO_LARGE', limitKb: 64}))!;
     const i18n = TestBed.inject(I18nService);
     expect(i18n.t(upload.key, upload.params)).toBe('In the demo, files up to 64 KB: this one is larger.');
+    // the import page asks for text: the body comes as a string, the limit is read the same
+    const asText = demoError(error(413, '{"code":"DEMO_UPLOAD_TOO_LARGE","limitKb":128}'))!;
+    expect(i18n.t(asText.key, asText.params)).toBe('In the demo, files up to 128 KB: this one is larger.');
     for (const key of Object.values(DEMO_ERRORS)) {
       expect(en[key]).toBeTruthy();
       expect(itMessages[key]).toBeTruthy();

@@ -15,8 +15,8 @@ export const DEMO_ERRORS: Record<string, MessageKey> = {
   'DEMO_FULL': 'demo.error.full'
 };
 
-/** The demo code of an error (DEMO_NO_BANKING...), or null for any other error. */
-export function demoCode(err: unknown): string | null {
+/** The body of an error as an object, also when it came as text (a call made with responseType 'text'). */
+function bodyOf(err: unknown): { code?: unknown, message?: unknown, limitKb?: unknown } | null {
   if (!(err instanceof HttpErrorResponse)) {
     return null;
   }
@@ -28,7 +28,12 @@ export function demoCode(err: unknown): string | null {
       return null;
     }
   }
-  const b = body as { code?: unknown, message?: unknown } | null;
+  return typeof body === 'object' ? body as { code?: unknown, message?: unknown, limitKb?: unknown } | null : null;
+}
+
+/** The demo code of an error (DEMO_NO_BANKING...), or null for any other error. */
+export function demoCode(err: unknown): string | null {
+  const b = bodyOf(err);
   const code = typeof b?.code === 'string' ? b.code : typeof b?.message === 'string' ? b.message : null;
   return code !== null && Object.hasOwn(DEMO_ERRORS, code) ? code : null;
 }
@@ -39,7 +44,7 @@ export function demoError(err: unknown): { key: MessageKey, params: Record<strin
   if (code === null) {
     return null;
   }
-  const limit = err instanceof HttpErrorResponse ? Number(err.error?.limitKb) : NaN;
+  const limit = Number(bodyOf(err)?.limitKb);
   return {key: DEMO_ERRORS[code], params: {kb: Number.isFinite(limit) && limit > 0 ? limit : 256}};
 }
 
