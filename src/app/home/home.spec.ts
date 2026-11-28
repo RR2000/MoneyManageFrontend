@@ -57,7 +57,11 @@ describe('Home', () => {
     http = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => http.verify());
+  // the plan card has a test of its own: the other tests answer "no plan"
+  afterEach(() => {
+    http.match('/api/plans').forEach(r => r.flush({money: null, plans: []}));
+    http.verify();
+  });
 
   function open(banking: boolean | null = false) {
     TestBed.inject(BankingService).available.set(banking);
@@ -79,7 +83,8 @@ describe('Home', () => {
     const fixture = open();
     const el: HTMLElement = fixture.nativeElement;
     expect(el.querySelector('h1')?.textContent).toBe('Overview');
-    expect(el.querySelectorAll('app-load-state [role=status]').length).toBe(4);
+    // net worth, to do, plan, fixed costs, latest movements
+    expect(el.querySelectorAll('app-load-state [role=status]').length).toBe(5);
     expect(el.querySelectorAll('.tile .skel').length).toBeGreaterThan(0);
 
     const call = netWorthCall();
@@ -209,7 +214,7 @@ describe('Home', () => {
     const todo = el.querySelector('.todo li');
     expect(text(todo?.querySelector('.t'))).toBe('No data yet');
     expect(todo?.querySelector('a')?.getAttribute('href')).toBe('/import');
-    expect(text(el.querySelectorAll('app-load-state')[1])).toContain('No movement yet.');
+    expect(Array.from(el.querySelectorAll('app-load-state')).map(text).join(' ')).toContain('No movement yet.');
   });
 
   it('a failed call says so with Retry, card by card', () => {
@@ -306,5 +311,45 @@ describe('Home', () => {
     expect(daysSince('2026-11-28', now)).toBe(0);
     expect(daysSince('2026-11-17T10:00:00', now)).toBe(11);
     expect(daysSince(null, now)).toBeNull();
+  });
+
+  function flushRest() {
+    netWorthCall().flush(netWorth());
+    latestCall().flush([]);
+    flushInstruments([]);
+    flushCosts();
+  }
+
+  it('the plan: where the investments are against it, with the chart, and the way to open it', () => {
+    const fixture = open();
+    const el: HTMLElement = fixture.nativeElement;
+    http.expectOne('/api/plans').flush({money: null, plans: [{id: 7, name: 'Piano di prova', versions: 2,
+      savedAt: '2026-06-28T19:00:00Z', targetDate: '2045-06-30', tracking: {version: 2, savedOn: '2026-06-28',
+        status: 'ON_TRACK', month: '2026-10', planned: 58000, actual: 59820, gap: 1820, gapShare: 0.0314,
+        nextCheck: '2026-12-01', points: [{month: '2026-06', planned: 50000, actual: 50000},
+          {month: '2026-10', planned: 58000, actual: 59820}]}}]});
+    fixture.detectChanges();
+    const card = el.querySelector('.card.plan')!;
+    expect(text(card.querySelector('h2'))).toBe('Plan “Piano di prova”');
+    expect(card.querySelector('a')?.getAttribute('href')).toBe('/plan/7');
+    expect(text(card.querySelector('app-plan-tracking .status'))).toBe('On track: €1,820 above the plan (+3.1%) at the end of October 2026');
+    expect(card.querySelector('app-chart canvas')).toBeTruthy();
+    expect(card.querySelector('app-chart details')).toBeNull();
+    flushRest();
+  });
+
+  it('no plan yet: the card says so and leads to /plan; a failed call has Retry', () => {
+    const fixture = open();
+    const el: HTMLElement = fixture.nativeElement;
+    http.expectOne('/api/plans').flush({money: null, plans: []});
+    fixture.detectChanges();
+    const card = el.querySelector('.card.plan')!;
+    expect(text(card)).toContain('No plan yet');
+    expect(card.querySelector('a.btn')?.getAttribute('href')).toBe('/plan');
+    fixture.componentInstance.loadPlan();
+    http.expectOne('/api/plans').flush('no', {status: 500, statusText: 'Error'});
+    fixture.detectChanges();
+    expect(card.querySelector('[role=alert] button')).toBeTruthy();
+    flushRest();
   });
 });
