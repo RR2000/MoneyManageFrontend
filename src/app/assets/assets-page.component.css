@@ -1,0 +1,44 @@
+.page { display: grid; gap: 16px; }
+app-page-header { margin-bottom: 0; }
+.note { display: flex; gap: 6px; align-items: flex-start; margin: 0; font-size: .82rem; color: var(--muted);
+  --icon-size: 15px; }
+.note app-icon { margin-top: 1px; }
+.status { display: flex; gap: 6px; align-items: center; margin: 0; color: var(--good); font-weight: 600; --icon-size: 18px; }
+.status:empty { display: none; }
+
+/* summary: amounts with their sign written, the colour only helps */
+.tiles { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.tile { background: var(--surface-2); border-color: transparent; }
+.tile .value.up { color: var(--good); }
+.tile .value.down { color: var(--bad); }
+.empty-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.form-card { border-color: var(--accent); }
+
+/* the lists: one row per item, never a table wider than the page */
+.items { list-style: none; margin: 0; padding: 0; }
+.items li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--line); align-items: baseline; }
+.items li:last-child { border-bottom: 0; }
+.name { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
+.amount { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.amount .sub { display: block; font-size: .74rem; font-weight: 400; color: var(--muted); }
+.meta { grid-column: 1 / -1; font-size: .82rem; color: var(--muted); overflow-wrap: anywhere; min-width: 0; }
+.facts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 2px 0 0; font-size: .82rem; }
+.facts div { display: flex; gap: 6px; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.payoff { grid-column: 1 / -1; display: flex; gap: 6px; align-items: flex-start; font-size: .85rem; --icon-size: 15px; }
+.payoff app-icon { margin-top: 2px; color: var(--accent); }
+.payoff.warn { color: var(--warn); font-weight: 600; }
+.payoff.warn app-icon { color: var(--warn); }
+.chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.chips .chip { white-space: normal; }
+.acts, .confirm { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.btn.small { min-height: 36px; padding: 4px 12px; font-size: .84rem; --icon-size: 15px; }
+.confirm { padding: 10px 12px; border-radius: 10px; background: var(--warn-bg); }
+.confirm .q { display: flex; gap: 6px; align-items: center; font-weight: 600; color: var(--fg); flex: 1 1 14rem;
+  min-width: 0; overflow-wrap: anywhere; --icon-size: 16px; }
+.confirm .q app-icon { color: var(--warn); }
+.confirm .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.confirm .btn.danger { background: var(--surface); }
+.del-err { flex-basis: 100%; display: flex; gap: 6px; align-items: center; margin: 0; color: var(--bad); font-weight: 600; }

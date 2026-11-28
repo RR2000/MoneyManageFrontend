@@ -34,12 +34,13 @@ export interface TodoItem {
   action: { label: string; link: string; primary: boolean };
 }
 
-/** A box of the net worth (cash, investments...), with the page it leads to. */
+/** A box of the net worth (cash, investments...), with the page it leads to; `signed`: debts, with their minus. */
 interface Tile {
   label: string;
   value: number;
   note: string;
   link: string | null;
+  signed?: boolean;
 }
 
 /**
@@ -96,10 +97,10 @@ export class HomeComponent implements OnInit {
     return {labels: points.map(p => p.date), series, aria};
   });
 
-  /** "1 account in USD is not in the total" */
+  /** "1 item in USD is not in the total" */
   readonly excludedText = computed(() => {
     const e = this.netWorth()?.excluded;
-    const count = e ? e.accounts + e.realEstates : 0;
+    const count = e ? e.accounts + e.realEstates + e.otherAssets + e.debts : 0;
     if (!e || count === 0) {
       return '';
     }
@@ -123,17 +124,20 @@ export class HomeComponent implements OnInit {
         note: count(n.accounts, 'home.accounts.one', 'accounts.count') + share(t.cash)},
       {label: this.i18n.t('nav.investments'), value: t.investments, link: '/investments',
         note: count(n.instruments, 'home.instruments.one', 'home.instruments') + share(t.investments)},
-      {label: this.i18n.t('home.realEstate'), value: t.realEstate, link: '/assets',
-        note: count(n.realEstates, 'home.properties.one', 'home.properties') + share(t.realEstate)},
-      {label: this.i18n.t('home.debts'), value: t.debts, link: null,
-        note: t.debts === 0 ? this.i18n.t('home.debts.none') : ''}
+      {label: this.i18n.t('home.assets'), value: t.realEstate + t.otherAssets, link: '/assets',
+        note: count(n.realEstates, 'home.properties.one', 'home.properties') + ', '
+          + count(n.otherAssets, 'assets.count.other.one', 'assets.count.other') + share(t.realEstate + t.otherAssets)},
+      {label: this.i18n.t('home.debts'), value: t.debts, link: '/assets', signed: true,
+        note: n.debts === 0 ? this.i18n.t('home.debts.none') : count(n.debts, 'assets.count.debt.one', 'assets.count.debt')}
     ];
   });
 
-  /** nothing at all: no account, no investment, no property */
+  /** nothing at all: no account, no investment, no property, no other asset, no debt */
   readonly empty = computed(() => {
     const n = this.netWorth();
-    return !!n && n.accounts + n.realEstates + n.instruments + n.excluded.accounts + n.excluded.realEstates === 0;
+    const e = n?.excluded;
+    return !!n && !!e && n.accounts + n.realEstates + n.otherAssets + n.debts + n.instruments + e.accounts + e.realEstates
+      + e.otherAssets + e.debts === 0;
   });
 
   readonly todo = computed<TodoItem[]>(() => {

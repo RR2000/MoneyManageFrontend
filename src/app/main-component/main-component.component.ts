@@ -6,7 +6,6 @@ import {TransactionDto} from "../../models/transaction.dto";
 import {HttpClient} from "@angular/common/http";
 import {GraphPointsDto} from "../../models/graph-points.dto";
 import {MatTab, MatTabContent, MatTabGroup} from "@angular/material/tabs";
-import {RealEstateComponent} from "../real-estate/real-estate.component";
 import {MonteCarloComponent} from "../monte-carlo/monte-carlo.component";
 import {InstrumentsComponent} from "../instruments/instruments.component";
 import {interval, Subscription, timeout} from "rxjs";
@@ -27,7 +26,6 @@ const FAILED: MessageKey = 'common.loadFailed';
     MatTab,
     MatTabGroup,
     MatTabContent,
-    RealEstateComponent,
     MonteCarloComponent,
     InstrumentsComponent,
     TPipe
