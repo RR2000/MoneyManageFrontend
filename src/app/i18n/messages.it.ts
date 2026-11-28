@@ -546,6 +546,8 @@ export const it: Record<MessageKey, string> = {
   'account.balanceAt': 'Saldo al {date}',
   'account.chart': 'Saldo di {name} nel tempo',
   'account.noBalances': 'Nessun saldo in questo periodo.',
+  'account.notFound': 'Questo conto non c\'è:è stato eliminato o il link è vecchio.',
+  'account.toAccounts': 'Vai ai conti',
   'account.in': 'Entrate',
   'account.out': 'Uscite',
   'account.net': 'Netto',

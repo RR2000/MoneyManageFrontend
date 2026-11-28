@@ -3,7 +3,7 @@ import {Router, RouterLink} from '@angular/router';
 import {AccountDetail, AccountsService, BalancePoint, consentDaysLeft} from './accounts.service';
 import {MovementsComponent} from './movements.component';
 import {DeleteAccountComponent} from './delete-account.component';
-import {BankAccount, BankingService, BankLink} from '../banks/banking.service';
+import {BankAccount, BankingService, BankLink, isNotFound} from '../banks/banking.service';
 import {BankHistoryComponent} from '../banks/bank-history.component';
 import {I18nService} from '../i18n/i18n.service';
 import {TPipe} from '../i18n/t.pipe';
@@ -98,7 +98,8 @@ export class AccountPageComponent {
         this.loadChart();
         this.loadBank(detail);
       },
-      error: () => this.state.set('error')
+      // an address of an account that is not there (deleted, or an old link): said so, not "Retry"
+      error: (err: unknown) => this.state.set(isNotFound(err) ? 'empty' : 'error')
     });
   }
 

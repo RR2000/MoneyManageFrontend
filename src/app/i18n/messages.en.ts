@@ -544,6 +544,8 @@ export const en = {
   'account.balanceAt': 'Balance on {date}',
   'account.chart': 'Balance of {name} over time',
   'account.noBalances': 'No balance in this period.',
+  'account.notFound': 'This account is not there: it was deleted, or the link is old.',
+  'account.toAccounts': 'Go to the accounts',
   'account.in': 'In',
   'account.out': 'Out',
   'account.net': 'Net',
