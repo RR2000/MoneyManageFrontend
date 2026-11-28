@@ -35,11 +35,6 @@
         <app-instruments (changed)="refreshBrokerGraph()"></app-instruments>
       </ng-template>
     </mat-tab>
-    <mat-tab [label]="'dashboard.tab.realEstate' | t">
-      <ng-template matTabContent>
-        <app-real-estate></app-real-estate>
-      </ng-template>
-    </mat-tab>
     <mat-tab [label]="'dashboard.tab.monteCarlo' | t">
       <ng-template matTabContent>
         <app-monte-carlo></app-monte-carlo>

@@ -70,7 +70,8 @@
           @if (tile.link) {
             <a class="tile link" [routerLink]="tile.link">
               <span class="label">{{ tile.label }}</span>
-              <app-amount class="value" [value]="tile.value" [currency]="netWorth()!.currency" [decimals]="0"/>
+              <app-amount class="value" [value]="tile.value" [currency]="netWorth()!.currency" [decimals]="0"
+                          [signed]="!!tile.signed"/>
               <span class="note">{{ tile.note }}</span>
             </a>
           } @else {

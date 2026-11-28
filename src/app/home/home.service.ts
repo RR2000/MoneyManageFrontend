@@ -11,6 +11,9 @@ export interface NetWorthPoint {
   cash: number;
   investments: number;
   realEstate: number;
+  /** a car, gold, money in another currency... from the day of their estimate */
+  otherAssets: number;
+  /** what is left today, also on the days before */
   debts: number;
   total: number;
 }
@@ -25,8 +28,10 @@ export interface NetWorth {
   points: NetWorthPoint[];
   accounts: number;
   realEstates: number;
+  otherAssets: number;
+  debts: number;
   instruments: number;
-  excluded: { accounts: number; realEstates: number; currencies: string[] };
+  excluded: { accounts: number; realEstates: number; otherAssets: number; debts: number; currencies: string[] };
 }
 
 /** GET /api/money-accounts/movements/latest: a movement of any account, with its account. */

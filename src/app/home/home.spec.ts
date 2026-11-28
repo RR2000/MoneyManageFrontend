@@ -10,15 +10,16 @@ import {isoDay} from '../accounts/account-page.component';
 import {I18nService} from '../i18n/i18n.service';
 
 // made-up data only
-function point(date: string, cash: number, investments = 0, realEstate = 0): NetWorthPoint {
-  return {date, cash, investments, realEstate, debts: 0, total: cash + investments + realEstate};
+function point(date: string, cash: number, investments = 0, realEstate = 0, otherAssets = 0, debts = 0): NetWorthPoint {
+  return {date, cash, investments, realEstate, otherAssets, debts, total: cash + investments + realEstate + otherAssets + debts};
 }
 
 function netWorth(overrides: Partial<NetWorth> = {}): NetWorth {
   const today = point(isoDay(new Date()), 10000, 20000, 150000);
   return {currency: 'EUR', from: '2025-11-28', today, before: point('2026-10-29', 9000, 19000, 150000),
     points: [point('2025-11-28', 5000, 10000, 150000), point('2026-05-31', 8000, 15000, 150000), today],
-    accounts: 2, realEstates: 1, instruments: 1, excluded: {accounts: 0, realEstates: 0, currencies: []}, ...overrides};
+    accounts: 2, realEstates: 1, otherAssets: 0, debts: 0, instruments: 1,
+    excluded: {accounts: 0, realEstates: 0, otherAssets: 0, debts: 0, currencies: []}, ...overrides};
 }
 
 function movement(id: number, description: string, amount: number, daysAgo = 0): LatestMovement {
@@ -86,11 +87,14 @@ describe('Home', () => {
     expect(el.querySelector('app-chart canvas')?.getAttribute('aria-label')).toContain('Net worth from');
 
     const tiles = Array.from(el.querySelectorAll('.tiles .tile'));
-    expect(tiles.map(t => text(t.querySelector('.label')))).toEqual(['Cash', 'Investments', 'Real estate', 'Debts']);
+    expect(tiles.map(t => text(t.querySelector('.label')))).toEqual(['Cash', 'Investments', 'Property and assets', 'Debts']);
     expect(text(tiles[0])).toContain('€10,000');
     expect(text(tiles[0])).toContain('2 accounts · 6% of the total');
     expect(tiles[1].getAttribute('href')).toBe('/investments');
+    expect(text(tiles[2])).toContain('1 property, 0 assets');
+    expect(tiles[2].getAttribute('href')).toBe('/assets');
     expect(text(tiles[3])).toContain('none recorded');
+    expect(tiles[3].getAttribute('href')).toBe('/assets');
 
     const rows = Array.from(el.querySelectorAll('.rows li'));
     expect(text(rows[0])).toContain('Spesa di prova');
@@ -215,11 +219,30 @@ describe('Home', () => {
   it('accounts in another currency are not in the total, and the page says it', () => {
     const fixture = open();
     const el: HTMLElement = fixture.nativeElement;
-    netWorthCall().flush(netWorth({excluded: {accounts: 1, realEstates: 0, currencies: ['USD']}}));
+    netWorthCall().flush(netWorth({excluded: {accounts: 1, realEstates: 0, otherAssets: 0, debts: 0, currencies: ['USD']}}));
     latestCall().flush([]);
     flushInstruments([]);
     fixture.detectChanges();
-    expect(text(el.querySelector('.note'))).toBe('An account or a property in USD is not in the total: nothing is converted.');
+    expect(text(el.querySelector('.note'))).toBe('One item in USD is not in the total: nothing is converted.');
+  });
+
+  it('other assets and debts are in the tiles with their real values and lead to /assets', () => {
+    const fixture = open();
+    const el: HTMLElement = fixture.nativeElement;
+    const today = point(isoDay(new Date()), 10000, 20000, 150000, 12000, -6200);
+    netWorthCall().flush(netWorth({today, points: [point('2025-11-28', 5000, 10000, 150000, 12000, -6200), today],
+      otherAssets: 2, debts: 1,
+      excluded: {accounts: 0, realEstates: 0, otherAssets: 1, debts: 1, currencies: ['CHF', 'USD']}}));
+    latestCall().flush([]);
+    flushInstruments([]);
+    fixture.detectChanges();
+    const tiles = Array.from(el.querySelectorAll('.tiles .tile'));
+    expect(text(tiles[2])).toContain('€162,000');
+    expect(text(tiles[2])).toContain('1 property, 2 assets');
+    expect(text(tiles[3])).toContain('−€6,200');
+    expect(text(tiles[3])).toContain('1 debt');
+    expect(tiles[3].getAttribute('href')).toBe('/assets');
+    expect(text(el.querySelector('.note'))).toBe('2 items in CHF, USD are not in the total: nothing is converted.');
   });
 
   it('days since a date', () => {

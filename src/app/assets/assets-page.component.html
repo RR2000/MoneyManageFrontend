@@ -1,0 +1,180 @@
+<div class="page">
+  <app-page-header [title]="'nav.assets' | t" [subtitle]="'assets.subtitle' | t">
+    @if (state() === 'ready' && !form() && !nothing()) {
+      <button type="button" class="btn primary add-main" (click)="add('realEstate', $event)">
+        <app-icon name="plus"/>{{ 'assets.add' | t }}</button>
+    }
+  </app-page-header>
+
+  <p class="status" role="status" aria-live="polite">
+    @if (status()) {
+      <app-icon name="ok"/><span>{{ status() }}</span>
+    }
+  </p>
+
+  @if (state() === 'ready' && data(); as d) {
+    <section class="card" aria-labelledby="assets-sum">
+      <h2 id="assets-sum" class="sr-only">{{ 'assets.summary' | t }}</h2>
+      @if (nothing()) {
+        <app-load-state state="empty" [emptyText]="'assets.empty' | t">
+          <span class="empty-actions">
+            <button type="button" class="btn primary add-main" (click)="add('realEstate', $event)">
+              <app-icon name="plus"/>{{ 'assets.add.realEstate' | t }}</button>
+            <button type="button" class="btn" (click)="add('other', $event)"><app-icon name="plus"/>{{ 'assets.add.other' | t }}</button>
+            <button type="button" class="btn" (click)="add('debt', $event)"><app-icon name="plus"/>{{ 'assets.add.debt' | t }}</button>
+          </span>
+        </app-load-state>
+      } @else {
+        <div class="tiles">
+          @for (tile of tiles(); track tile.label) {
+            <div class="tile">
+              <span class="label">{{ tile.label }}</span>
+              <span class="value" [class.up]="tile.sign === 1" [class.down]="tile.sign === -1">{{ tile.value }}</span>
+              <span class="note">{{ tile.note }}</span>
+            </div>
+          }
+        </div>
+        @for (t of others(); track t.currency) {
+          <p class="note"><app-icon name="info"/><span>{{ otherCurrencyText(t) }}</span></p>
+        }
+        <p class="note"><app-icon name="info"/><span>{{ 'assets.rules' | t }}
+          <a routerLink="/">{{ 'assets.rules.link' | t }}</a></span></p>
+      }
+    </section>
+
+    @if (form(); as f) {
+      <section class="card form-card" [attr.aria-label]="'assets.form' | t">
+        <app-asset-form [target]="f" [today]="today()" (saved)="saved($event)" (cancelled)="closeForm()"/>
+      </section>
+    }
+
+    @if (!nothing()) {
+      <!-- real estate -->
+      <section class="card" aria-labelledby="assets-re">
+        <div class="card-head">
+          <h2 id="assets-re">{{ 'assets.realEstate' | t }}</h2>
+          <button type="button" class="btn" (click)="add('realEstate', $event)"><app-icon name="plus"/>{{ 'assets.add.realEstate' | t }}</button>
+        </div>
+        @if (d.realEstates.length) {
+          <ul class="items">
+            @for (r of d.realEstates; track r.id) {
+              <li>
+                <span class="name">{{ r.name }}</span>
+                <span class="amount">{{ money(r.currentEstimatedValue, r.currency) }}</span>
+                @if (reMeta(r); as meta) {<span class="meta">{{ meta }}</span>}
+                @if (r.purchasePrice !== null || r.monthlyRent !== null || r.monthlyExpenses !== null) {
+                  <dl class="facts">
+                    @if (r.purchasePrice !== null) {<div><dt>{{ 'assets.field.purchasePrice' | t }}</dt><dd>{{ money(r.purchasePrice, r.currency) }}</dd></div>}
+                    @if (r.monthlyRent !== null) {<div><dt>{{ 'assets.field.monthlyRent' | t }}</dt><dd>{{ money(r.monthlyRent, r.currency) }}</dd></div>}
+                    @if (r.monthlyExpenses !== null) {<div><dt>{{ 'assets.field.monthlyExpenses' | t }}</dt><dd>{{ money(r.monthlyExpenses, r.currency) }}</dd></div>}
+                  </dl>
+                }
+                @if (!isEuro(r.currency) || notYet(r)) {
+                  <span class="chips">
+                    @if (!isEuro(r.currency)) {<span class="chip"><app-icon name="info"/>{{ 'assets.apart' | t: {currency: r.currency!} }}</span>}
+                    @if (notYet(r)) {<span class="chip warn"><app-icon name="calendar"/>{{ 'assets.from' | t: {date: i18n.date(r.purchaseDate)} }}</span>}
+                  </span>
+                }
+                <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{type: 'realEstate', item: r}"/>
+              </li>
+            }
+          </ul>
+        } @else {
+          <app-load-state state="empty" [emptyText]="'assets.realEstate.none' | t">
+            <button type="button" class="btn primary" (click)="add('realEstate', $event)"><app-icon name="plus"/>{{ 'assets.add.realEstate' | t }}</button>
+          </app-load-state>
+        }
+      </section>
+
+      <!-- other assets -->
+      <section class="card" aria-labelledby="assets-other">
+        <div class="card-head">
+          <h2 id="assets-other">{{ 'assets.other' | t }}</h2>
+          <button type="button" class="btn" (click)="add('other', $event)"><app-icon name="plus"/>{{ 'assets.add.other' | t }}</button>
+        </div>
+        @if (d.otherAssets.length) {
+          <ul class="items">
+            @for (o of d.otherAssets; track o.id) {
+              <li>
+                <span class="name">{{ o.name }}</span>
+                <span class="amount">{{ money(o.value, o.currency) }}</span>
+                <span class="meta">{{ otherMeta(o) }}</span>
+                @if (!isEuro(o.currency)) {
+                  <span class="chips"><span class="chip"><app-icon name="info"/>{{ 'assets.apart' | t: {currency: o.currency} }}</span></span>
+                }
+                <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{type: 'other', item: o}"/>
+              </li>
+            }
+          </ul>
+        } @else {
+          <app-load-state state="empty" [emptyText]="'assets.other.none' | t">
+            <button type="button" class="btn primary" (click)="add('other', $event)"><app-icon name="plus"/>{{ 'assets.add.other' | t }}</button>
+          </app-load-state>
+        }
+      </section>
+
+      <!-- debts -->
+      <section class="card" aria-labelledby="assets-debts">
+        <div class="card-head">
+          <h2 id="assets-debts">{{ 'assets.debts' | t }}</h2>
+          <button type="button" class="btn" (click)="add('debt', $event)"><app-icon name="plus"/>{{ 'assets.add.debt' | t }}</button>
+        </div>
+        @if (d.debts.length) {
+          <ul class="items">
+            @for (debt of d.debts; track debt.id) {
+              <li>
+                <span class="name">{{ debt.name }}</span>
+                <span class="amount">{{ i18n.signedMoney(-debt.balance, debt.currency, debt.balance >= 1000 ? 0 : 2) }}
+                  <span class="sub">{{ 'assets.left' | t }}</span></span>
+                @if (debtMeta(debt); as meta) {<span class="meta">{{ meta }}</span>}
+                @if (payoff(debt); as p) {
+                  <span class="payoff" [class.warn]="p.warn"><app-icon [name]="p.warn ? 'warn' : 'calendar'"/><span>{{ p.text }}</span></span>
+                }
+                @if (!isEuro(debt.currency)) {
+                  <span class="chips"><span class="chip"><app-icon name="info"/>{{ 'assets.apart' | t: {currency: debt.currency} }}</span></span>
+                }
+                <ng-container [ngTemplateOutlet]="actions" [ngTemplateOutletContext]="{type: 'debt', item: debt}"/>
+              </li>
+            }
+          </ul>
+          <p class="note"><app-icon name="info"/><span>{{ 'assets.debts.rule' | t }}</span></p>
+        } @else {
+          <app-load-state state="empty" [emptyText]="'assets.debts.none' | t">
+            <button type="button" class="btn primary" (click)="add('debt', $event)"><app-icon name="plus"/>{{ 'assets.add.debt' | t }}</button>
+          </app-load-state>
+        }
+      </section>
+    }
+  } @else {
+    <section class="card">
+      <app-load-state [state]="state()" (retry)="load()"/>
+    </section>
+    @if (state() === 'loading') {
+      <section class="card"><app-load-state state="loading"/></section>
+    }
+  }
+</div>
+
+<!-- edit and delete of a row; delete asks first, in the row -->
+<ng-template #actions let-type="type" let-item="item">
+  @if (confirming() === key(type, item.id)) {
+    <div class="confirm" role="group" [attr.aria-label]="'assets.delete.ask' | t: {name: item.name}">
+      <span class="q"><app-icon name="warn"/>{{ 'assets.delete.ask' | t: {name: item.name} }}</span>
+      <span class="btns">
+        <button type="button" class="btn danger" (click)="remove(type, item)" [disabled]="deleting() === key(type, item.id)">
+          <app-icon name="trash"/>{{ (deleting() === key(type, item.id) ? 'common.wait' : 'assets.delete.yes') | t }}</button>
+        <button type="button" class="btn no" (click)="cancelDelete(type, item.id)">{{ 'common.cancel' | t }}</button>
+      </span>
+      @if (deleteError()) {
+        <p class="del-err" role="alert"><app-icon name="error"/><span>{{ deleteError() }}</span></p>
+      }
+    </div>
+  } @else {
+    <span class="acts">
+      <button type="button" class="btn small" (click)="edit(type, item, $event)">
+        <app-icon name="edit"/>{{ 'assets.edit' | t }}<span class="sr-only"> {{ item.name }}</span></button>
+      <button type="button" class="btn small" [attr.data-del]="key(type, item.id)" (click)="askDelete(type, item.id)">
+        <app-icon name="trash"/>{{ 'assets.delete' | t }}<span class="sr-only"> {{ item.name }}</span></button>
+    </span>
+  }
+</ng-template>
