@@ -55,12 +55,6 @@ const LINK_ERRORS: Record<string, MessageKey> = {
       @if (state() === 'ready' && account()?.oidc || linkMessage()) {
         <section class="card" aria-labelledby="settings-sso">
           <h2 id="settings-sso">raoulrondinella.dev</h2>
-          <div aria-live="polite">
-            @if (linkMessage(); as m) {
-              <p class="line" [class.ok]="m.ok" [class.bad]="!m.ok" [attr.role]="m.ok ? 'status' : 'alert'">
-                <app-icon [name]="m.ok ? 'ok' : 'error'"/><span>{{ m.text }}</span></p>
-            }
-          </div>
           @if (state() === 'ready' && account(); as a) {
             @if (a.oidcLinked) {
               <p class="line ok sso-state"><span class="sso-mark" aria-hidden="true">r</span>
@@ -90,15 +84,18 @@ const LINK_ERRORS: Record<string, MessageKey> = {
                   <span class="sso-mark" aria-hidden="true">r</span>{{ 'sso.link' | t }}</button>
               </div>
             }
-            <div aria-live="polite">
-              @if (linkBusy()) {
-                <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>
-                  <span>{{ (a.oidcLinked ? 'common.wait' : 'sso.opening') | t }}</span></p>
-              } @else if (linkError()) {
-                <p class="line bad" role="alert"><app-icon name="error"/><span>{{ linkError() }}</span></p>
-              }
-            </div>
           }
+          <div aria-live="polite">
+            @if (linkBusy()) {
+              <p class="line" role="status"><span class="spinner" aria-hidden="true"></span>
+                <span>{{ (account()?.oidcLinked ? 'common.wait' : 'sso.opening') | t }}</span></p>
+            } @else if (linkError()) {
+              <p class="line bad" role="alert"><app-icon name="error"/><span>{{ linkError() }}</span></p>
+            } @else if (linkMessage(); as m) {
+              <p class="line" [class.ok]="m.ok" [class.bad]="!m.ok" [attr.role]="m.ok ? 'status' : 'alert'">
+                <app-icon [name]="m.ok ? 'ok' : 'error'"/><span>{{ m.text }}</span></p>
+            }
+          </div>
         </section>
       }
 
