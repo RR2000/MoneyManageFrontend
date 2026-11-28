@@ -78,6 +78,8 @@
     </section>
   } @else {
     <app-page-header [title]="'nav.accounts' | t" [crumb]="'nav.accounts' | t" crumbLink="/accounts" [crumbLabel]="'nav.back' | t"/>
-    <app-load-state [state]="state()" (retry)="load()"/>
+    <app-load-state [state]="state()" (retry)="load()" [emptyText]="'account.notFound' | t">
+      <a class="btn" routerLink="/accounts">{{ 'account.toAccounts' | t }}</a>
+    </app-load-state>
   }
 </div>

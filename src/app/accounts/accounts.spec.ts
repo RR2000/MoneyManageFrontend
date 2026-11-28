@@ -69,6 +69,26 @@ describe('Accounts', () => {
     expect(el.querySelector('app-load-state a')?.getAttribute('href')).toBe('/import');
   });
 
+  it('the address of an account that is not there: says so and leads to the accounts, no Retry', () => {
+    const fixture = TestBed.createComponent(AccountPageComponent);
+    fixture.componentRef.setInput('id', '000000000000');
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    http.expectOne('/api/money-accounts/000000000000').flush({status: 404}, {status: 404, statusText: 'Not Found'});
+    fixture.detectChanges();
+    expect(el.textContent).toContain('This account is not there');
+    expect(el.querySelector('[role=alert]')).toBeNull();
+    expect(buttons(el, 'Retry').length).toBe(0);
+    expect(el.querySelector('app-load-state a')?.getAttribute('href')).toBe('/accounts');
+    // any other failure is still an error with Retry
+    const other = TestBed.createComponent(AccountPageComponent);
+    other.componentRef.setInput('id', 'a1b2c3d4e5f6');
+    other.detectChanges();
+    http.expectOne('/api/money-accounts/a1b2c3d4e5f6').flush('', {status: 500, statusText: 'Server Error'});
+    other.detectChanges();
+    expect(buttons(other.nativeElement, 'Retry').length).toBe(1);
+  });
+
   it('the page of an account: balance, month, chart by period, movements', () => {
     const fixture = TestBed.createComponent(AccountPageComponent);
     fixture.componentRef.setInput('id', 'a1b2c3d4e5f6');
