@@ -1,6 +1,6 @@
 <div class="page banks">
   <app-page-header [title]="'banks.title' | t" [subtitle]="'banks.intro' | t">
-    @if (!pickerOpen()) {
+    @if (!pickerOpen() && !demoReason()) {
       <button type="button" class="btn primary" (click)="openPicker()" [disabled]="busy()">
         <app-icon name="plus"/>{{ 'banks.connect' | t }}</button>
     }
@@ -15,6 +15,9 @@
     }
   </app-page-header>
 
+  @if (demoReason()) {
+    <p class="line" role="status"><app-icon name="info"/><span>{{ demoReason() }}</span></p>
+  }
   @if (result(); as r) {
     <div class="banner" [class.banner-ok]="r === 'ok'" [class.banner-error]="r === 'error'"
          [attr.role]="r === 'ok' ? 'status' : 'alert'">

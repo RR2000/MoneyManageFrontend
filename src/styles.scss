@@ -69,6 +69,9 @@
 }
 :root[data-theme="dark"] { @include dark-tokens; }
 
+/* a field brought into view (focus, an anchor) lands below the demo bar, not under it */
+html { scroll-padding-top: var(--demo-bar-h, 0px); }
+
 html, body { height: 100%; }
 body {
   margin: 0;

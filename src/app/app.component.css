@@ -2,8 +2,9 @@
 .shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100dvh; }
 /* the column has the background and the border down to the end of the page; the bar in it stays on screen */
 .side-col { background: var(--surface); border-right: 1px solid var(--line); min-width: 0; }
-.side { position: sticky; top: 0; height: 100dvh; overflow-y: auto; display: flex; flex-direction: column; gap: 2px;
-  padding: 18px 12px; }
+/* below the demo bar, when there is one (--demo-bar-h, set by the bar) */
+.side { position: sticky; top: var(--demo-bar-h, 0px); height: calc(100dvh - var(--demo-bar-h, 0px)); overflow-y: auto;
+  display: flex; flex-direction: column; gap: 2px; padding: 18px 12px; }
 .brand { display: flex; gap: 8px; align-items: center; padding: 4px 10px 16px; color: var(--fg); text-decoration: none;
   font-weight: 800; font-size: 1.15rem; }
 .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--accent); color: var(--accent-fg);

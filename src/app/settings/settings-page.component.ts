@@ -11,6 +11,8 @@ import {LoadState, LoadStateComponent} from '../ui/load-state.component';
 import {IconComponent} from '../ui/icon.component';
 import {CALL_TIMEOUT_MS} from '../accounts/accounts.service';
 import {MessageKey} from '../i18n/messages.en';
+import {demoError} from '../demo/demo';
+import {DemoService} from '../demo/demo.service';
 
 /** The codes of /settings#oidc-link-error=code (the backend's OidcLinks and SecurityConfig) and their texts. */
 const LINK_ERRORS: Record<string, MessageKey> = {
@@ -52,7 +54,25 @@ const LINK_ERRORS: Record<string, MessageKey> = {
         </div>
       </section>
 
-      @if (state() === 'ready' && account()?.oidc || linkMessage()) {
+      @if (state() === 'ready' && account()?.demo) {
+        <!-- a demo sandbox: what is off and why, instead of the email and raoulrondinella.dev -->
+        <section class="card" aria-labelledby="settings-demo">
+          <h2 id="settings-demo">{{ 'demo.settings.title' | t }}</h2>
+          <p class="hint">{{ 'demo.settings.text' | t: {hours: account()?.demoHours ?? 24} }}</p>
+          <ul class="off">
+            <li><app-icon name="bank"/><span>{{ 'demo.settings.banking' | t }}</span></li>
+            <li><app-icon name="file"/><span>{{ 'demo.settings.email' | t }}</span></li>
+            <li><app-icon name="link"/><span>{{ 'demo.settings.sso' | t }}</span></li>
+            <li><app-icon name="investments"/><span>{{ 'demo.settings.prices' | t }}</span></li>
+            <li><app-icon name="import"/><span>{{ 'demo.settings.upload' | t: {kb: account()?.demoMaxUploadKb ?? 256} }}</span></li>
+          </ul>
+          <div class="buttons">
+            <button type="button" class="btn primary" (click)="leaveDemo()">{{ 'demo.bar.real' | t }}</button>
+          </div>
+        </section>
+      }
+
+      @if (!account()?.demo && (state() === 'ready' && account()?.oidc || linkMessage())) {
         <section class="card" aria-labelledby="settings-sso">
           <h2 id="settings-sso">raoulrondinella.dev</h2>
           @if (state() === 'ready' && account(); as a) {
@@ -99,7 +119,7 @@ const LINK_ERRORS: Record<string, MessageKey> = {
         </section>
       }
 
-      @if (state() === 'ready' && account()?.emailLinks) {
+      @if (state() === 'ready' && account()?.emailLinks && !account()?.demo) {
         <section class="card" aria-labelledby="settings-email">
           <h2 id="settings-email">{{ (account()?.email ? 'account.changeEmail' : 'account.addEmail') | t }}</h2>
           <p class="hint" id="settings-email-hint">{{ 'account.emailHint' | t }}</p>
@@ -168,6 +188,9 @@ const LINK_ERRORS: Record<string, MessageKey> = {
     .sso-state .sso-mark { background: var(--accent); color: var(--accent-fg); }
     .sso-state { align-items: center; }
     .confirm { display: grid; gap: 8px; }
+    .off { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; --icon-size: 18px; }
+    .off li { display: flex; gap: 8px; align-items: flex-start; overflow-wrap: anywhere; }
+    .off app-icon { color: var(--muted); flex: none; margin-top: 2px; }
     .confirm .q { margin: 0; font-weight: 600; }
     .spinner { display: inline-block; flex: none; width: 1em; height: 1em; border: 2px solid currentColor;
       border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
@@ -189,6 +212,7 @@ export class SettingsPageComponent implements OnInit {
   readonly linkBusy = signal(false);
   readonly linkError = signal('');
   readonly confirmUnlink = signal(false);
+  private demo = inject(DemoService);
   private host = inject(ElementRef<HTMLElement>);
   private injector = inject(Injector);
 
@@ -228,6 +252,11 @@ export class SettingsPageComponent implements OnInit {
         if (err.status === 409) {
           // linked meanwhile (another tab): show it
           this.load();
+          return;
+        }
+        const demo = demoError(err);
+        if (demo) {
+          this.linkError.set(this.i18n.t(demo.key, demo.params));
           return;
         }
         this.linkError.set(this.i18n.t(err.status === 404 ? 'sso.error.off'
@@ -300,6 +329,11 @@ export class SettingsPageComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.busy.set(false);
+        const demo = demoError(err);
+        if (demo) {
+          this.error.set(this.i18n.t(demo.key, demo.params));
+          return;
+        }
         this.error.set(this.i18n.t(err.status === 429 ? 'common.tooMany'
           : err.status === 400 ? 'account.invalidEmail' : 'common.failed'));
       }
@@ -308,5 +342,10 @@ export class SettingsPageComponent implements OnInit {
 
   logout(): void {
     this.auth.signOut();
+  }
+
+  /** "Create a real account" in a demo sandbox: out of it, to the sign-up */
+  leaveDemo(): void {
+    this.demo.leave();
   }
 }

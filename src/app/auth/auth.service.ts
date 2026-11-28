@@ -19,6 +19,13 @@ export interface Account {
   oidcLinked?: boolean;
   /** it can be unlinked (not when raoulrondinella.dev is the only way to log in) */
   oidcCanUnlink?: boolean;
+  /** a demo sandbox ("Try the demo"): made-up data, removed at expiresAt; bank, mail and sign-on are off */
+  demo?: boolean;
+  expiresAt?: string | null;
+  /** how long a sandbox lasts */
+  demoHours?: number;
+  /** the largest file a sandbox uploads */
+  demoMaxUploadKb?: number;
 }
 
 /** What the backend puts in the fragment of /settings after "Link to raoulrondinella.dev". */
@@ -54,6 +61,8 @@ export interface Providers {
   oidcUrl?: string;
   /** its logout, with client and way back; the app adds id_token_hint */
   oidcLogoutUrl?: string;
+  /** "Try the demo": POST /api/demo makes a sandbox with made-up data */
+  demo?: boolean;
 }
 
 /** What the backend puts in the fragment of /login after a login with GitHub or raoulrondinella.dev. */

@@ -8,6 +8,7 @@ import {I18nService} from './i18n/i18n.service';
 import {ThemeSwitchComponent} from './theme/theme-switch.component';
 import {IconComponent} from './ui/icon.component';
 import {BOTTOM_ITEMS, FOOT_ITEMS, MORE_ITEMS, SIDE_ITEMS} from './nav';
+import {DemoBarComponent} from './demo/demo-bar.component';
 
 /**
  * The frame of the app: a side bar on a wide screen, a bar at the bottom on a phone (the same links, chosen by CSS),
@@ -16,7 +17,7 @@ import {BOTTOM_ITEMS, FOOT_ITEMS, MORE_ITEMS, SIDE_ITEMS} from './nav';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, TPipe, ThemeSwitchComponent, IconComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, TPipe, ThemeSwitchComponent, IconComponent, DemoBarComponent],
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {

@@ -5,7 +5,8 @@ costs, property, other assets and debts, and a plan of where the investments cou
 This is the web app (Angular); the REST API is in
 [money-manage-backend](https://github.com/RR2000/money-manage-backend).
 
-Demo: https://money.raoulrondinella.dev - register with any username; tick "Start with sample data" to start with a
+Demo: https://money.raoulrondinella.dev/demo - one click, no password and no sign-up: a sandbox of your own with
+made-up data, gone after 24 hours. Or register with any username; tick "Start with sample data" to start with a
 made-up year of movements, or start empty and import the export files of your bank (Revolut, Degiro,
 Unicredit, Intesa Sanpaolo); an empty account can also load the sample data later, from the overview, Accounts or
 Import. Every account sees only its own data.
@@ -29,6 +30,17 @@ the app asks `POST /api/account/oidc-link` for a link request and goes to the ad
 `/settings#oidc-link=linked&id_token=...` or `/settings#oidc-link-error=<code>`, shown on the page and removed from the
 address bar. Linked, it says "Linked to raoulrondinella.dev" and offers "Unlink" with a confirmation (not when
 `oidcCanUnlink` is false: raoulrondinella.dev is then the only way in).
+
+"Try the demo" (`/demo`, also the link of the CV and of raoulrondinella.dev, and a button at the bottom of the login
+page when `GET /api/auth/providers` says `demo: true`): `POST /api/demo` makes a sandbox with the sample data and its
+token becomes the login; a browser already logged in goes straight in (no new sandbox). Over the limits the page says
+why (three demos an hour from one connection, too many open, demo off). In a sandbox (`demo: true` in
+`GET /api/account`, from the one call per login) a bar stays on top of every page: "Demo: made-up data, gone after
+24 hours" and "Create a real account" (out of the sandbox, to the sign-up); it is sticky without covering the page
+(its height goes to `--demo-bar-h`, which the side bar and `scroll-padding-top` leave free). Settings says what is off
+in a demo instead of the email and raoulrondinella.dev forms; what the backend refuses to a sandbox (`DEMO_NO_BANKING`,
+`DEMO_NO_EMAIL`, `DEMO_NO_SSO`, `DEMO_NO_PRICES`, `DEMO_UPLOAD_TOO_LARGE`) is explained where it happens (Banks,
+Import, the instruments, Settings), never as a generic error.
 
 The "Banks" page (`/banks`, open banking through the backend) links bank accounts so their movements arrive by
 themselves: the consent is given on the bank's site, which comes back to `/banks?result=ok|error`. The menu entry and
@@ -59,7 +71,8 @@ One address per section:
 - `/import`: the files of a bank and of the broker, today's balance of each account;
 - `/settings`: account and email, language, theme, log out;
 - `/more` on a phone: the sections that are not in the bar at the bottom;
-- `/login`, `/forgot-password`, `/reset-password`, `/verify-email`: before the login.
+- `/login`, `/forgot-password`, `/reset-password`, `/verify-email`: before the login;
+- `/demo`: "Try the demo", a sandbox with made-up data and in (see above).
 
 Old addresses lead to the new pages: `/classic` (the old dashboard with tabs, removed) to `/`, `/setup` to `/import`,
 `/account` to `/settings`. On a wide screen the sections are in a side bar (it stays on screen while the page scrolls),

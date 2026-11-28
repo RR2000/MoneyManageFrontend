@@ -2,6 +2,7 @@ import {Component, EventEmitter, inject, OnInit, Output, signal} from '@angular/
 import {FormsModule} from '@angular/forms';
 import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {I18nService} from '../i18n/i18n.service';
+import {demoError} from '../demo/demo';
 import {TPipe} from '../i18n/t.pipe';
 import {NumPipe} from '../i18n/num.pipe';
 import {MessageKey} from '../i18n/messages.en';
@@ -173,9 +174,11 @@ export class InstrumentsComponent implements OnInit {
 
   private failed(isin: string, err: HttpErrorResponse): void {
     this.busy.set(false);
-    // the server's reason (no prices for this symbol...) is shown as it comes
-    const text = err.status === 0 ? this.i18n.t('common.unreachable')
-      : (err.error?.message as string | undefined) ?? this.i18n.t('common.failed');
+    // a demo sandbox: why (no market lookups, small files); otherwise the server's reason as it comes
+    const demo = demoError(err);
+    const text = demo ? this.i18n.t(demo.key, demo.params)
+      : err.status === 0 ? this.i18n.t('common.unreachable')
+        : (err.error?.message as string | undefined) ?? this.i18n.t('common.failed');
     this.message.set({isin, text, error: true});
   }
 }

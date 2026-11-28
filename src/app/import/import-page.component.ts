@@ -5,6 +5,7 @@ import {RouterLink} from '@angular/router';
 import {forkJoin, Observable, of, timeout} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import {I18nService} from '../i18n/i18n.service';
+import {demoError} from '../demo/demo';
 import {TPipe} from '../i18n/t.pipe';
 import {MessageKey} from '../i18n/messages.en';
 import {PageHeaderComponent} from '../ui/page-header.component';
@@ -318,6 +319,10 @@ export class ImportPageComponent implements OnInit {
     if (err instanceof HttpErrorResponse) {
       if (err.status === 0) {
         return this.i18n.t('common.unreachable');
+      }
+      const demo = demoError(err);
+      if (demo) {
+        return this.i18n.t(demo.key, demo.params);
       }
       let message: unknown = err.error?.message;
       if (!message && typeof err.error === 'string') {

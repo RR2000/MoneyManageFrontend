@@ -11,6 +11,7 @@ import {BankHistoryComponent} from './bank-history.component';
 import {PageHeaderComponent} from '../ui/page-header.component';
 import {LoadStateComponent} from '../ui/load-state.component';
 import {IconComponent, IconName} from '../ui/icon.component';
+import {demoError} from '../demo/demo';
 
 /** countries the open banking provider covers; Italy first */
 export const COUNTRIES = ['IT', 'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS',
@@ -65,6 +66,8 @@ export class BanksComponent implements OnInit {
   links = signal<BankLink[] | null>(null);
   loading = signal(true);
   loadError = signal(false);
+  /** a demo sandbox: why there are no banks here */
+  demoReason = signal('');
   /** outcome of the consent, from ?result= of the bank's redirect */
   result = signal<'ok' | 'error' | null>(null);
   moneyAccounts = signal<string[]>([]);
@@ -138,7 +141,10 @@ export class BanksComponent implements OnInit {
       error: (err: unknown) => {
         this.loading.set(false);
         this.importing.set(null);
-        if (isNotFound(err)) {
+        const demo = demoError(err);
+        if (demo) {
+          this.demoReason.set(this.i18n.t(demo.key, demo.params));
+        } else if (isNotFound(err)) {
           // the feature is off, or not for this user: the page is not there
           this.router.navigate(['/']);
         } else if (!quiet || !this.links()) {

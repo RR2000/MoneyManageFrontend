@@ -17,10 +17,13 @@ import {HomeComponent} from './home/home.component';
 import {CostsPageComponent} from './costs/costs-page.component';
 import {RulesPageComponent} from './costs/rules-page.component';
 import {UncategorizedPageComponent} from './costs/uncategorized-page.component';
+import {DemoStartComponent} from './demo/demo-start.component';
 
 /** One address per section (see nav.ts for the menus). */
 export const routes: Routes = [
   {path: 'login', component: LoginComponent},
+  // "Try the demo", also the link of the CV and of raoulrondinella.dev: a sandbox with made-up data, no sign-up
+  {path: 'demo', component: DemoStartComponent},
   // links from the emails, with the token in the fragment
   {path: 'forgot-password', component: ForgotPasswordComponent},
   {path: 'reset-password', component: ResetPasswordComponent},
