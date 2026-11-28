@@ -2,7 +2,7 @@ import {TestBed} from '@angular/core/testing';
 import {HttpClient, provideHttpClient, withInterceptors} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {provideRouter, Router} from '@angular/router';
-import {AuthService, tokenFromFragment} from './auth.service';
+import {AuthService, loginReturn, tokenFromFragment} from './auth.service';
 import {authInterceptor} from './auth.interceptor';
 
 describe('auth', () => {
@@ -81,5 +81,41 @@ describe('auth', () => {
 
     expect(auth.isLoggedIn()).toBe(false);
     expect(navigate).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('reads the return from GitHub or raoulrondinella.dev: token, id token, error codes', () => {
+    expect(loginReturn('#token=abc')).toEqual({token: 'abc'});
+    expect(loginReturn('#token=abc&id_token=x.y.z')).toEqual({token: 'abc', idToken: 'x.y.z'});
+    expect(loginReturn('#github-error')).toEqual({error: 'github-error'});
+    expect(loginReturn('#oidc-error=email-unverified')).toEqual({oidcError: 'email-unverified'});
+    expect(loginReturn('')).toEqual({});
+  });
+
+  it('logs out at raoulrondinella.dev too, with the id token as hint, after a login there', () => {
+    auth.acceptToken('abc', 'id.token.value');
+    const leave = vi.spyOn(auth, 'leaveTo').mockImplementation(() => undefined);
+    auth.signOut();
+    expect(auth.isLoggedIn()).toBe(false);
+    expect(localStorage.getItem('auth_id_token')).toBeNull();
+    http.expectOne('/api/auth/providers').flush({
+      github: false, oidc: true, oidcUrl: '/api/oauth2/authorization/zitadel',
+      oidcLogoutUrl: 'https://auth.example.org/oidc/v1/end_session?client_id=1&post_logout_redirect_uri=https%3A%2F%2Fmoney.example.org%2F'
+    });
+    expect(leave).toHaveBeenCalledWith('https://auth.example.org/oidc/v1/end_session?client_id=1'
+      + '&post_logout_redirect_uri=https%3A%2F%2Fmoney.example.org%2F&id_token_hint=id.token.value');
+  });
+
+  it('logs out only here after a password login, or when the logout address is not known', () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const leave = vi.spyOn(auth, 'leaveTo').mockImplementation(() => undefined);
+    auth.acceptToken('abc');
+    auth.signOut();
+    expect(navigate).toHaveBeenCalledWith(['/login']);
+
+    auth.acceptToken('abc', 'id.token.value');
+    auth.signOut();
+    http.expectOne('/api/auth/providers').flush({github: false, oidc: true});
+    expect(leave).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledTimes(2);
   });
 });

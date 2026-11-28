@@ -1,7 +1,6 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
-import {Router} from '@angular/router';
 import {timeout} from 'rxjs';
 import {Account, AuthService} from '../auth/auth.service';
 import {I18nService, Lang} from '../i18n/i18n.service';
@@ -116,7 +115,6 @@ import {CALL_TIMEOUT_MS} from '../accounts/accounts.service';
 export class SettingsPageComponent implements OnInit {
   readonly i18n = inject(I18nService);
   private auth = inject(AuthService);
-  private router = inject(Router);
   readonly account = signal<Account | null>(null);
   readonly state = signal<LoadState>('loading');
   email = '';
@@ -167,7 +165,6 @@ export class SettingsPageComponent implements OnInit {
   }
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+    this.auth.signOut();
   }
 }

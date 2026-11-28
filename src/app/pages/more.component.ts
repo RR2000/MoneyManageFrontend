@@ -1,5 +1,5 @@
 import {Component, computed, inject} from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
+import {RouterLink} from '@angular/router';
 import {AuthService} from '../auth/auth.service';
 import {BankingService} from '../banks/banking.service';
 import {I18nService} from '../i18n/i18n.service';
@@ -50,11 +50,9 @@ export class MoreComponent {
   readonly i18n = inject(I18nService);
   private banking = inject(BankingService);
   private auth = inject(AuthService);
-  private router = inject(Router);
   readonly items = computed(() => MORE_ITEMS.filter(item => !item.banking || this.banking.available()));
 
   logout(): void {
-    this.auth.logout();
-    this.router.navigate(['/login']);
+    this.auth.signOut();
   }
 }
