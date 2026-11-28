@@ -24,6 +24,12 @@ for the other apps that use it) and comes back to the site; without that address
 here, and the next click on the button may log in again without asking. A 401 (expired token) only forgets the login
 here.
 
+Settings offers "Link to raoulrondinella.dev" when `GET /api/account` says `oidc: true` and the account is not linked:
+the app asks `POST /api/account/oidc-link` for a link request and goes to the address it gets; the backend comes back to
+`/settings#oidc-link=linked&id_token=...` or `/settings#oidc-link-error=<code>`, shown on the page and removed from the
+address bar. Linked, it says "Linked to raoulrondinella.dev" and offers "Unlink" with a confirmation (not when
+`oidcCanUnlink` is false: raoulrondinella.dev is then the only way in).
+
 The "Banks" page (`/banks`, open banking through the backend) links bank accounts so their movements arrive by
 themselves: the consent is given on the bank's site, which comes back to `/banks?result=ok|error`. The menu entry and
 the page exist only when `GET /api/account` says `banking: true` (without the flag: when `GET /api/banking/links` does
