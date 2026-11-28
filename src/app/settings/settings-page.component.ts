@@ -41,11 +41,14 @@ const LINK_ERRORS: Record<string, MessageKey> = {
             <div><dt>{{ 'settings.username' | t }}</dt><dd>{{ a.username }}</dd></div>
             <div><dt>{{ 'settings.email' | t }}</dt><dd>{{ a.email || ('settings.email.none' | t) }}</dd></div>
           </dl>
-          <p class="hint">{{ (a.email ? 'account.loginHint.email' : 'account.loginHint') | t }}
-            @if (a.emailLinks && a.email) {
-              {{ 'account.noPasswordHint' | t }}
-            }
-          </p>
+          @if (!a.demo) {
+            <!-- a demo sandbox has no password to log in with: the card below says what it is -->
+            <p class="hint">{{ (a.email ? 'account.loginHint.email' : 'account.loginHint') | t }}
+              @if (a.emailLinks && a.email) {
+                {{ 'account.noPasswordHint' | t }}
+              }
+            </p>
+          }
         } @else {
           <app-load-state [state]="state()" [errorText]="'account.unavailable' | t" (retry)="load()"/>
         }

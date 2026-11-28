@@ -182,6 +182,8 @@ describe('Demo', () => {
     expect(off).toContain('files: up to 256 KB');
     expect(off.join(' ')).toContain('banks');
     expect(el.querySelector('#settings-email')).toBeNull();
+    // no password to log in with: no hint about it
+    expect(text(el.querySelector('section[aria-labelledby=settings-account]'))).not.toContain('To log in with the password');
     expect(el.querySelector('#settings-sso')).toBeNull();
   });
 
